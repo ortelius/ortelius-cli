@@ -1,5 +1,5 @@
+from pprint import pprint
 import click
-import pprint
 
 from deployhub import dhapi
 
