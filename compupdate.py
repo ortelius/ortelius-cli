@@ -9,7 +9,7 @@ from deployhub import dhapi
 @click.option('--dhpass', help='DeployHub Password', required=True)
 @click.option('--kubeyaml', help='kubectl get deployment -o yaml (output)')
 @click.option('--defaultdomain', help='Default Domain')
-@click.option('--project', help='Application Project', required=True)
+@click.option('--project', help='Application Project')
 @click.option('--compname', help='Component Name')
 @click.option('--compvariant', help='Component Variant')
 @click.option('--compversion', help='Component Version')
