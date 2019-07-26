@@ -1,4 +1,5 @@
 import click
+import pprint
 
 from deployhub import dhapi
 
@@ -25,6 +26,7 @@ def main(dhurl, dhuser, dhpass, kubeyaml, defaultdomain, project, compname, comp
         complist = dhapi.import_cluster(kubeyaml, defaultdomain, dhurl, cookies)
     else:
         comp = {'project': project, 'compname': compname, 'compvariant': compvariant, 'compversion': compversion, 'compattr': compattr}
+        pprint(comp)
         complist.append(comp)
 
     print("\n")
