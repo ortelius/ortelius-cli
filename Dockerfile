@@ -7,6 +7,6 @@ ADD https://raw.githubusercontent.com/DeployHubProject/compupdate/master/compupd
 
 WORKDIR /opt/deployhub/scripts
 
-RUN pip install click qtoml requests PyYAML
+RUN pip install --upgrade pip;pip install click qtoml requests PyYAML;chmod -R 755 /opt/deployhub/scripts;
 
-ENTRYPOINT [ "python3", "/opt/deployhub/scripts/compupdate.py" ]
+ENTRYPOINT [ "/opt/deployhub/scripts/compupdate.py" ]
