@@ -1,3 +1,5 @@
+#!/usr/local/bin/python3
+
 from pprint import pprint
 import click
 
@@ -8,47 +10,52 @@ from deployhub import dhapi
 @click.option('--dhurl', help='DeployHub Url', required=True)
 @click.option('--dhuser', help='DeployHub User', required=True)
 @click.option('--dhpass', help='DeployHub Password', required=True)
-@click.option('--kubeyaml', help='kubectl get deployment -o yaml (output)')
-@click.option('--defaultdomain', help='Default Domain')
-@click.option('--project', help='Application Project')
-@click.option('--compname', help='Component Name')
+@click.option('--appname', help='Application Name', required=True)
+@click.option('--appversion', help='Application Version')
+@click.option('--compname', help='Component Name', required=True)
 @click.option('--compvariant', help='Component Variant')
 @click.option('--compversion', help='Component Version')
+@click.option('--docker', 'kind', flag_value='docker',
+              default=True, help='Component Item Type')
+@click.option('--file', 'kind', flag_value='file')
 @click.option('--compattr', help='Component Attribute', multiple=True)
-def main(dhurl, dhuser, dhpass, kubeyaml, defaultdomain, project, compname, compvariant, compversion, compattr):
+@click.option('--env', help='Environments', multiple=True)
+def main(dhurl, dhuser, dhpass, appname, appversion, compname, compvariant, compversion, kind, env, compattr):
+
+    print("Logging into DeployHub")
     cookies = dhapi.login(dhurl, dhuser, dhpass)
-    complist = []
 
     if cookies is None:
         return
 
-    if (kubeyaml is not None):
-        complist = dhapi.import_cluster(kubeyaml, defaultdomain, dhurl, cookies)
-    else:
-        comp = {'project': project, 'compname': compname, 'compvariant': compvariant, 'compversion': compversion, 'compattr': compattr}
-        pprint(comp)
-        complist.append(comp)
+    if (compvariant is None):
+        compvariant = ""
 
-    print("\n")
+    # create component version
+    print("Creating Component")
+    compid = dhapi.new_component_version(dhurl, cookies, compname, compvariant, compversion, kind, None)
+    print("Creation Done: " + str(compid))
 
-    for comp in complist:
-        project = comp['project']
-        compname = comp['compname']
-        compattr = comp['compattr']
-        compvariant = comp['compvariant']
-        compversion = comp['compversion']
-        print("Processing " + compname + ":" + compvariant + "-" + compversion)
+    attrs = {}
+    print("Updating Component Attributes\n")
+    for attr in compattr:
+        (key, value) = attr.split(':', 1)
+        attrs[key] = value
 
-        compvariant = comp['compvariant'].replace("-", "_").replace(".", "_")
-        compversion = comp['compversion'].replace("-", "_").replace(".", "_")
+    pprint(attrs)
+    print("")
 
-        compid = dhapi.new_component_version(compname, compvariant, compversion, 'docker', dhurl, cookies)
+    data = dhapi.update_component_attrs(dhurl, cookies, compname, "", compversion, attrs)
+    print("Attribute Update Done")
 
-        # Update the compattrs for the new compid version
-        dhapi.update_component_attrs(compid, compattr, dhurl, cookies)
+    print("Creating Application Version")
+    data = dhapi.new_application(dhurl, cookies, appname, appversion, env)
+    appid = data[0]
+    print("Creation Done: " + str(appid))
 
-    # dhapi.update_versions(project, compname, compvariant, compversion)
-    print("\n")
+    print("Assigning Component Version to Application Version")
+    data = dhapi.add_compver_to_appver(dhurl, cookies, appid, compid)
+    print("Assignment Done")
 
 
 if __name__ == '__main__':
