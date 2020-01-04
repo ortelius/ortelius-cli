@@ -22,9 +22,14 @@ def main(dhurl, dhuser, dhpass, appname, env):
 
     # Deploy Application to Environment
     print(f'Deploying {appname} to {env}')
-    deployid = dhapi.deploy_application(dhurl, cookies, appname, env)
+    data = dhapi.deploy_application(dhurl, cookies, appname, env)
 
-    print("Fetching Logs")
+    deployid = data[0]
+    if (deployid < 0):
+        print(data[1])
+        sys.exit(1)
+
+    print(f"Fetching Logs for {deployid}")
     data = dhapi.get_logs(dhurl, cookies, deployid)
 
     print(data[1])
