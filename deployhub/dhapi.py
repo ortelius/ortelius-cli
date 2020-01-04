@@ -55,7 +55,12 @@ def login(dhurl, user, password):
 def deploy_application(dhurl, cookies, app, env):
     """Deploy the application to the environment
     Returns: deployment_id"""
-    return get_json(dhurl + "/dmadminweb/API/deploy/" + urllib.parse.quote(app) + "/" + urllib.parse.quote(env), cookies)
+    data = get_json(dhurl + "/dmadminweb/API/deploy/" + urllib.parse.quote(app) + "/" + urllib.parse.quote(env), cookies)
+
+    if (data.get('success', False)):
+        return data.get('deploymentid', -1)
+
+    return -1
 
 
 def move_application(dhurl, cookies, app, from_domain, task):
@@ -686,7 +691,7 @@ def import_cluster(dhurl, cookies, kubeyaml, defaultdomain):
     return complist
 
 
-#def update_versions(project, compname, compvariant, compversion):
+# def update_versions(project, compname, compvariant, compversion):
 #    # Clone apprepo
 #    data = clone_repo(project)
 #    if (data is not None):
