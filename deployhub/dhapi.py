@@ -98,13 +98,13 @@ def approve_application(dhurl, cookies, app):
 
 def is_deployment_done(dhurl, cookies, deployment_id):
     """Check to see if the deployment has completed"""
-    data = get_json(dhurl + "/dmadminweb/API/log/" + deployment_id + "?checkcomplete=Y", cookies)
+    data = get_json(dhurl + "/dmadminweb/API/log/" + str(deployment_id) + "?checkcomplete=Y", cookies)
 
     if (data is None):
-        return [False, "Could not get log #" + deployment_id]
+        return [False, "Could not get log #" + str(deployment_id)]
 
     if (data.get('text')):
-        return [False, "Could not get log #" + deployment_id]
+        return [False, "Could not get log #" + str(deployment_id)]
 
     return [True, data]
 
@@ -126,10 +126,10 @@ def get_logs(dhurl, cookies, deployid):
 
         time.sleep(10)
 
-    data = get_json(dhurl + "/dmadminweb/API/log/" + deployid, cookies)
+    data = get_json(dhurl + "/dmadminweb/API/log/" + str(deployid), cookies)
 
     if (data is None or not data):
-        return [False, "Could not get log #" + deployid]
+        return [False, "Could not get log #" + str(deployid)]
 
     lines = data.get('logoutput', '')
     exitcode = data.get('exitcode', 1)
