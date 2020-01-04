@@ -58,9 +58,9 @@ def deploy_application(dhurl, cookies, app, env):
     data = get_json(dhurl + "/dmadminweb/API/deploy/" + urllib.parse.quote(app) + "/" + urllib.parse.quote(env), cookies)
 
     if (data.get('success', False)):
-        return data.get('deploymentid', -1)
+        return [data.get('deploymentid', -1), ""]
 
-    return -1
+    return [-1, data.get('error', "")]
 
 
 def move_application(dhurl, cookies, app, from_domain, task):
@@ -101,10 +101,10 @@ def is_deployment_done(dhurl, cookies, deployment_id):
     data = get_json(dhurl + "/dmadminweb/API/log/" + str(deployment_id) + "?checkcomplete=Y", cookies)
 
     if (data is None):
-        return [False, "Could not get log #" + str(deployment_id)]
+        return [False, {'msg': "Could not get log #" + str(deployment_id)}]
 
     if (data.get('text')):
-        return [False, "Could not get log #" + str(deployment_id)]
+        return [False, {'msg': "Could not get log #" + str(deployment_id)}]
 
     return [True, data]
 
@@ -119,7 +119,8 @@ def get_logs(dhurl, cookies, deployid):
 
         if (res is not None):
             if (res[0]):
-                if (res[1]['success'] and res[1]['iscomplete']):
+                data = res[1]
+                if (data.get('success', False) and data.get('iscomplete', False)):
                     done = 1
             else:
                 done = 1
