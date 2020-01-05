@@ -1,0 +1,109 @@
+#!/usr/bin/env python3
+
+import sys
+from pprint import pprint
+
+import click
+
+from deployhub import dhapi
+
+
+@click.command()
+@click.argument('action', required=True)
+@click.option('--dhurl', help='DeployHub Url', required=True)
+@click.option('--dhuser', help='DeployHub User', required=True)
+@click.option('--dhpass', help='DeployHub Password', required=True)
+@click.option('--appname', help='Application Name', required=True)
+@click.option('--appversion', help='Application Version')
+@click.option('--deployenv', help='Deployment Environment')
+@click.option('--compname', help='Component Name')
+@click.option('--compvariant', help='Component Variant')
+@click.option('--compversion', help='Component Version')
+@click.option('--docker', 'kind', flag_value='docker', default=True, help='Component Item Type')
+@click.option('--file', 'kind', flag_value='file')
+@click.option('--compattr', help='Component Attributes, use multiple time for each attr', multiple=True)
+@click.option('--envs', help='Environments to Associate App to, use multiple time for each env', multiple=True)
+def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvariant, compversion, kind, deployenv, envs, compattr):
+    """
+    ACTION is (deploy, updatecomp) for the type of action to perform.
+
+    deploy: deploy the application to the evironment\n
+    updatecomp: create/replace the component version for the application verion
+    """
+    print("Logging into DeployHub")
+    errors = []
+    cookies = dhapi.login(dhurl, dhuser, dhpass, errors)
+
+    if cookies is None:
+        if (errors):
+            print(errors[0])
+        sys.exit(1)
+
+    if (action.lower() == "deploy"):
+        # Deploy Application to Environment
+        if (dhapi.is_empty(appname)):
+            print("--appname is required")
+            sys.exit(1)
+
+        if (dhapi.is_empty(deployenv)):
+            print("--deployenv is required")
+            sys.exit(1)
+
+        print(f'Deploying {appname} to {deployenv}')
+        data = dhapi.deploy_application(dhurl, cookies, appname, deployenv)
+
+        deployid = data[0]
+        if (deployid < 0):
+            print(data[1])
+            sys.exit(1)
+
+        print(f"Fetching Logs for {deployid}")
+        data = dhapi.get_logs(dhurl, cookies, deployid)
+
+        print(data[1])
+        if (data[0]):
+            print("Successful")
+            sys.exit(0)
+        else:
+            print("Failed")
+            sys.exit(1)
+    elif (action.lower() == "updatecomp"):
+
+        if (dhapi.is_empty(compname)):
+            print("--compname is required")
+            sys.exit(1)
+
+        if (compvariant is None):
+            compvariant = ""
+
+        # create component version
+        print("Creating Component")
+        compid = dhapi.new_component_version(dhurl, cookies, compname, compvariant, compversion, kind, None)
+        print("Creation Done: " + str(compid))
+
+        attrs = {}
+        print("Updating Component Attributes\n")
+        for attr in compattr:
+            (key, value) = attr.split(':', 1)
+            attrs[key] = value
+
+        pprint(attrs)
+        print("")
+
+        data = dhapi.update_component_attrs(dhurl, cookies, compname, "", compversion, attrs)
+        print("Attribute Update Done")
+
+        print("Creating Application Version")
+        data = dhapi.new_application(dhurl, cookies, appname, appversion, envs)
+        appid = data[0]
+        print("Creation Done: " + str(appid))
+
+        print("Assigning Component Version to Application Version")
+        data = dhapi.add_compver_to_appver(dhurl, cookies, appid, compid)
+        print("Assignment Done")
+    else:
+        print("Action is not defined.  Use deploy or updatecomp for action")
+        sys.exit(1)
+
+if __name__ == '__main__':
+    main()
