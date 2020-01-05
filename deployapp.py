@@ -13,11 +13,13 @@ from deployhub import dhapi
 @click.option('--appname', help='Application Name', required=True)
 @click.option('--env', help='Environment', required=True)
 def main(dhurl, dhuser, dhpass, appname, env):
-
     print("Logging into DeployHub")
-    cookies = dhapi.login(dhurl, dhuser, dhpass)
+    errors = []
+    cookies = dhapi.login(dhurl, dhuser, dhpass, errors)
 
     if cookies is None:
+        if (errors):
+            print(errors[0])
         return
 
     # Deploy Application to Environment
