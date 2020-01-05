@@ -1,6 +1,8 @@
 #!/usr/local/bin/python3
 
+import sys
 from pprint import pprint
+
 import click
 
 from deployhub import dhapi
@@ -23,10 +25,13 @@ from deployhub import dhapi
 def main(dhurl, dhuser, dhpass, appname, appversion, compname, compvariant, compversion, kind, env, compattr):
 
     print("Logging into DeployHub")
-    cookies = dhapi.login(dhurl, dhuser, dhpass)
+    errors = []
+    cookies = dhapi.login(dhurl, dhuser, dhpass, errors)
 
     if cookies is None:
-        return
+        if (errors):
+            print(errors[0])
+        sys.exit(1)
 
     if (compvariant is None):
         compvariant = ""

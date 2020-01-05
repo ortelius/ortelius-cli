@@ -1,6 +1,7 @@
 #!/usr/local/bin/python3
 
 import sys
+
 import click
 
 from deployhub import dhapi
@@ -20,7 +21,7 @@ def main(dhurl, dhuser, dhpass, appname, env):
     if cookies is None:
         if (errors):
             print(errors[0])
-        return
+        sys.exit(1)
 
     # Deploy Application to Environment
     print(f'Deploying {appname} to {env}')
