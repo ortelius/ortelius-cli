@@ -39,24 +39,29 @@ def is_not_empty(my_string):
     return bool(my_string and my_string.strip())
 
 
-def login(dhurl, user, password):
+def login(dhurl, user, password, errors):
     """Login to DeployHub using the DH Url, userid and password.
     Returns: cookies to be used in subsequent API calls"""
+
     try:
         result = requests.post(dhurl + "/dmadminweb/API/login", data={'user': user, 'pass': password})
         cookies = result.cookies
         if (result.status_code == 200):
+            data = result.json()
+            if (not data.get('success', False)):
+                errors.append(data.get('error', ''))
+                return None
             return cookies
     except requests.exceptions.ConnectionError as conn_error:
-        print(str(conn_error))
+        errors.append(str(conn_error))
     return None
 
 
 def deploy_application(dhurl, cookies, app, env):
     """Deploy the application to the environment
     Returns: deployment_id"""
-    pprint(dhurl + "/dmadminweb/API/deploy/" + urllib.parse.quote(app) + "/" + urllib.parse.quote(env))
-    data = get_json(dhurl + "/dmadminweb/API/deploy/" + urllib.parse.quote(app) + "/" + urllib.parse.quote(env), cookies)
+    pprint(dhurl + "/dmadminweb/API/deploy?app=" + urllib.parse.quote(app) + "&env=" + urllib.parse.quote(env))
+    data = get_json(dhurl + "/dmadminweb/API/deploy?app=" + urllib.parse.quote(app) + "&env=" + urllib.parse.quote(env), cookies)
 
     if (data.get('success', False)):
         return [data.get('deploymentid', -1), ""]
