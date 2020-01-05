@@ -60,7 +60,6 @@ def login(dhurl, user, password, errors):
 def deploy_application(dhurl, cookies, app, env):
     """Deploy the application to the environment
     Returns: deployment_id"""
-    pprint(dhurl + "/dmadminweb/API/deploy?app=" + urllib.parse.quote(app) + "&env=" + urllib.parse.quote(env))
     data = get_json(dhurl + "/dmadminweb/API/deploy?app=" + urllib.parse.quote(app) + "&env=" + urllib.parse.quote(env), cookies)
 
     if (data.get('success', False)):
