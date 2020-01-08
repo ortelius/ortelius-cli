@@ -63,7 +63,7 @@ def deploy_application(dhurl, cookies, app, env):
     data = get_json(dhurl + "/dmadminweb/API/deploy?app=" + urllib.parse.quote(app) + "&env=" + urllib.parse.quote(env), cookies)
 
     if (data is None):
-       return [-1, "Deployment Failed"] 
+        return [-1, "Deployment Failed"]
 
     if (data.get('success', False)):
         return [data.get('deploymentid', -1), ""]
