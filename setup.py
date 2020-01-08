@@ -16,7 +16,7 @@ setup(
      install_requires=[
         'click',
         'qtoml',
-        'yaml',
+        'PyYAML',
         'requests'
         ],
 )
