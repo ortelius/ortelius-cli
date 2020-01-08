@@ -1,0 +1,11 @@
+[build-system]
+requires = ["flit_core >=2,<3"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.metadata]
+module = "deployhub"
+author = "Steve Taylor"
+author-email = "steve@deployhub.com"
+home-page = "https://www.deployhub.com"
+classifiers = ["License :: OSI Approved :: MIT License"]
+
