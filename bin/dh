@@ -13,9 +13,9 @@ from deployhub import dhapi
 
 @click.command()
 @click.argument('action', required=True)
-@click.option('--dhurl', help='DeployHub Url', required=True)
-@click.option('--dhuser', help='DeployHub User', required=True)
-@click.option('--dhpass', help='DeployHub Password', required=True)
+@click.option('--dhurl', help='DeployHub Url', required=True, envvar='DHURL')
+@click.option('--dhuser', help='DeployHub User', required=True, envvar='DHUSER')
+@click.option('--dhpass', help='DeployHub Password', required=True, envvar='DHPASS')
 @click.option('--appname', help='Application Name', required=True)
 @click.option('--appversion', help='Application Version')
 @click.option('--deployenv', help='Deployment Environment')
