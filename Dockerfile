@@ -2,6 +2,7 @@
 
 FROM python:3-alpine
 RUN apk --no-cache add bash ca-certificates curl git jq openssh && update-ca-certificates
+ADD http://worldclockapi.com/api/json/mst/now /tmp/buildtime
 RUN pip install --upgrade deployhub;
 
 ENTRYPOINT [ "dh" ]
