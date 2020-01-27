@@ -2,6 +2,6 @@
 
 FROM python:3-alpine
 RUN apk --no-cache add bash ca-certificates curl git jq openssh && update-ca-certificates
-RUN pip install deployhub;
+RUN pip install --upgrade deployhub;
 
 ENTRYPOINT [ "dh" ]
