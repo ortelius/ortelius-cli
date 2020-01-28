@@ -568,7 +568,7 @@ def new_application(dhurl, cookies, appname, appversion, envs):
 
     # Create base version
     if (parent_appid < 0):
-        data = get_json(dhurl + "/dmadminweb/API/new/application/" + urllib.parse.quote(appname) + "?" + domain)
+        data = get_json(dhurl + "/dmadminweb/API/new/application/" + urllib.parse.quote(appname) + "?" + domain, cookies)
         if (data.get('success', False)):
             data = get_application(dhurl, cookies, appname, "")
             parent_appid = data[0]
