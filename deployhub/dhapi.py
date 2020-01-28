@@ -282,6 +282,27 @@ def get_component(dhurl, cookies, compname, compvariant, compversion):
 
     return [-1, ""]
 
+def get_component_name(dhurl, cookies, compid)
+    name = ""
+    data = get_json(dhurl + "/dmadminweb/API/component/" + str(compid), cookies)
+
+    if (data is None):
+        return name
+
+    if (data['success']):
+        name = data['result']['name']
+    return name
+
+def get_application_name(dhurl, cookies, appid)
+    name = ""
+    data = get_json(dhurl + "/dmadminweb/API/component/" + str(appid), cookies)
+
+    if (data is None):
+        return name
+
+    if (data['success']):
+        name = data['result']['name']
+    return name
 
 def new_component_version(dhurl, cookies, compname, compvariant, compversion, kind, component_items):
     compvariant = clean_name(compvariant)
