@@ -282,7 +282,7 @@ def get_component(dhurl, cookies, compname, compvariant, compversion):
 
     return [-1, ""]
 
-def get_component_name(dhurl, cookies, compid)
+def get_component_name(dhurl, cookies, compid):
     name = ""
     data = get_json(dhurl + "/dmadminweb/API/component/" + str(compid), cookies)
 
@@ -293,7 +293,7 @@ def get_component_name(dhurl, cookies, compid)
         name = data['result']['name']
     return name
 
-def get_application_name(dhurl, cookies, appid)
+def get_application_name(dhurl, cookies, appid):
     name = ""
     data = get_json(dhurl + "/dmadminweb/API/component/" + str(appid), cookies)
 
