@@ -35,7 +35,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
     """
     print("Logging into DeployHub")
     errors = []
-    
+
     cookies = dhapi.login(dhurl, dhuser, dhpass, errors)
 
     if cookies is None:
