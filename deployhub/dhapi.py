@@ -295,7 +295,7 @@ def get_component_name(dhurl, cookies, compid):
 
 def get_application_name(dhurl, cookies, appid):
     name = ""
-    data = get_json(dhurl + "/dmadminweb/API/component/" + str(appid), cookies)
+    data = get_json(dhurl + "/dmadminweb/API/application/" + str(appid), cookies)
 
     if (data is None):
         return name

@@ -89,7 +89,12 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
         print("Updating Component Attributes\n")
         for attr in compattr:
             (key, value) = attr.split(':', 1)
-            attrs[key] = value
+            if (value.startswith('@')):
+                value = value[1:]
+                value = open(value, 'r').read().replace('\n', ' ')
+                attrs[key] = value
+            else:
+                attrs[key] = value
 
         pprint(attrs)
         print("")
