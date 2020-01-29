@@ -3,11 +3,11 @@
 
 __version__ = '9.0.10'
 
+import os
 import sys
 from pprint import pprint
 
 import click
-
 from deployhub import dhapi
 
 
@@ -91,8 +91,11 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             (key, value) = attr.split(':', 1)
             if (value.startswith('@')):
                 value = value[1:]
-                value = open(value, 'r').read().replace('\n', ' ')
-                attrs[key] = value
+                if (os.path.exists(value)):
+                    value = open(value, 'r').read().replace('\n', ' ')
+                    attrs[key] = value
+                else:
+                    attrs[key] = ""
             else:
                 attrs[key] = value
 
