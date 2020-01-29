@@ -92,7 +92,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             if (value.startswith('@')):
                 value = value[1:]
                 if (os.path.exists(value)):
-                    value = open(value, 'r').read().replace('\n', ' ')
+                    value = open(value, 'r').read().replace('\n', '')
                     attrs[key] = value
                 else:
                     attrs[key] = ""
