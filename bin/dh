@@ -22,15 +22,19 @@ from deployhub import dhapi
 @click.option('--compname', help='Component Name')
 @click.option('--compvariant', help='Component Variant')
 @click.option('--compversion', help='Component Version')
+@click.option('--from_domain', help='Move from domain')
+@click.option('--task', help='Task to use for move')
 @click.option('--docker', 'kind', flag_value='docker', default=True, help='Component Item Type')
 @click.option('--file', 'kind', flag_value='file')
 @click.option('--compattr', help='Component Attributes, use multiple time for each attr', multiple=True)
 @click.option('--envs', help='Environments to Associate App to, use multiple time for each env', multiple=True)
-def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvariant, compversion, kind, deployenv, envs, compattr):
+def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvariant, compversion, kind, deployenv, envs, compattr, from_domain, task):
     """
-    ACTION is (deploy, updatecomp) for the type of action to perform.
+    ACTION is (deploy, updatecomp, approve, move) for the type of action to perform.
 
     deploy: deploy the application to the evironment\n
+    approve: approve the application version\n
+    move: move the application version using the supplied task\n
     updatecomp: create/replace the component version for the application verion
     """
     print("Logging into DeployHub")
@@ -113,9 +117,34 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
         print("Assigning Component Version to Application Version")
         data = dhapi.add_compver_to_appver(dhurl, cookies, appid, compid)
         print("Assignment Done")
+    elif (action.lower() == "approve"):
+        if (dhapi.is_empty(appname)):
+            print("--appname is required")
+            sys.exit(1)
+
+        print(f'Approving {appname};{appversion}')
+        data = dhapi.approve_application(dhurl, cookies, appname, appversion)
+        print(data[1])
+    elif (action.lower() == "move"):
+        if (dhapi.is_empty(appname)):
+            print("--appname is required")
+            sys.exit(1)
+
+        if (dhapi.is_empty(from_domain)):
+            print("--from_domain is required")
+            sys.exit(1)
+
+        if (dhapi.is_empty(task)):
+            print("--task is required")
+            sys.exit(1)
+
+        print(f'Moving {appname};{appversion} from {from_domain}')
+        data = dhapi.move_application(dhurl, cookies, appname, appversion, from_domain, task)
+        print(data[1])
     else:
         print("Action is not defined.  Use deploy or updatecomp for action")
         sys.exit(1)
+
 
 if __name__ == '__main__':
     main()
