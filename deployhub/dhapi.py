@@ -57,10 +57,13 @@ def login(dhurl, user, password, errors):
     return None
 
 
-def deploy_application(dhurl, cookies, app, env):
+def deploy_application(dhurl, cookies, appname, appversion, env):
     """Deploy the application to the environment
     Returns: deployment_id"""
-    data = get_json(dhurl + "/dmadminweb/API/deploy?app=" + urllib.parse.quote(app) + "&env=" + urllib.parse.quote(env), cookies)
+    data = get_application(dhurl, cookies, appname, appversion)
+    appid = data[0]
+
+    data = get_json(dhurl + "/dmadminweb/API/deploy?app=" + str(appid) + "&env=" + urllib.parse.quote(env), cookies)
 
     if (data is None):
         return [-1, "Deployment Failed"]
@@ -71,11 +74,10 @@ def deploy_application(dhurl, cookies, app, env):
     return [-1, data.get('error', "")]
 
 
-def move_application(dhurl, cookies, app, from_domain, task):
+def move_application(dhurl, cookies, appname, appversion, from_domain, task):
     """Move an application from the from_domain using the task"""
-    # Get appid
-    data = get_json(dhurl + "/dmadminweb/API/application/" + urllib.parse.quote(app), cookies)
-    appid = str(data['result']['id'])
+    data = get_application(dhurl, cookies, appname, appversion)
+    appid = data[0]
 
     # Get from domainid
     data = get_json(dhurl + "/dmadminweb/API/domain/" + urllib.parse.quote(from_domain), cookies)
@@ -91,17 +93,30 @@ def move_application(dhurl, cookies, app, from_domain, task):
 
     # Move App Version
     data = get_json(dhurl + "/dmadminweb/RunTask?f=run&tid=" + taskid + "&notes=&id=" + appid + "&pid=" + fromid, cookies)
-    return data
+
+    if (data is None):
+        return [-1, "Move Failed"]
+
+    if (data.get('success', False)):
+        return [appid, "Move Successful"]
+
+    return [-1, data.get('error', "")]
 
 
-def approve_application(dhurl, cookies, app):
+def approve_application(dhurl, cookies, appname, appversion):
     """Approve the application for the current domain that it is in."""
-    # Get appid
-    data = get_json(dhurl + "/dmadminweb/API/application/" + urllib.parse.quote(app), cookies)
-    appid = str(data['result']['id'])
+    data = get_application(dhurl, cookies, appname, appversion)
+    appid = data[0]
 
     data = get_json(dhurl + "/dmadminweb/API/approve/" + appid, cookies)
-    return data
+
+    if (data is None):
+        return [-1, "Approval Failed"]
+
+    if (data.get('success', False)):
+        return [appid, "Approval Successful"]
+
+    return [-1, data.get('error', "")]
 
 
 def is_deployment_done(dhurl, cookies, deployment_id):
@@ -282,6 +297,7 @@ def get_component(dhurl, cookies, compname, compvariant, compversion):
 
     return [-1, ""]
 
+
 def get_component_name(dhurl, cookies, compid):
     name = ""
     data = get_json(dhurl + "/dmadminweb/API/component/" + str(compid), cookies)
@@ -293,6 +309,7 @@ def get_component_name(dhurl, cookies, compid):
         name = data['result']['name']
     return name
 
+
 def get_application_name(dhurl, cookies, appid):
     name = ""
     data = get_json(dhurl + "/dmadminweb/API/application/" + str(appid), cookies)
@@ -303,6 +320,7 @@ def get_application_name(dhurl, cookies, appid):
     if (data['success']):
         name = data['result']['name']
     return name
+
 
 def new_component_version(dhurl, cookies, compname, compvariant, compversion, kind, component_items):
     compvariant = clean_name(compvariant)
