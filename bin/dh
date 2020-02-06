@@ -93,6 +93,10 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
         print("Updating Component Attributes\n")
         for attr in compattr:
             (key, value) = attr.split(':', 1)
+
+            if ("@sha256:" in value):
+                value = value.split("@sha256:", 1)
+
             if (value.startswith('@')):
                 value = value[1:]
                 if (os.path.exists(value)):
