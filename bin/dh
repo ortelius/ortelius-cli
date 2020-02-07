@@ -81,7 +81,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             print("--compname is required")
             sys.exit(1)
 
-        if (compvariant is None):
+        if (dhapi.is_empty(compvariant)):
             compvariant = ""
 
         # create component version
@@ -92,10 +92,15 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
         attrs = {}
         print("Updating Component Attributes\n")
         for attr in compattr:
-            (key, value) = attr.split(':', 1)
+            if (':' in attr):
+                key = attr.split(':')[0]
+                value = ':'.join(attr.split(':')[1:])
+            else:
+                key = attr
+                value = ""
 
             if ("@sha256:" in value):
-                value = value.split("@sha256:", 1)
+                value = value.split("@sha256:")[1]
 
             if (value.startswith('@')):
                 value = value[1:]
@@ -110,7 +115,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
         pprint(attrs)
         print("")
 
-        data = dhapi.update_component_attrs(dhurl, cookies, compname, "", compversion, attrs)
+        data = dhapi.update_component_attrs(dhurl, cookies, compname, compvariant, compversion, attrs)
         print("Attribute Update Done")
 
         print("Creating Application Version")
