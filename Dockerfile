@@ -5,4 +5,4 @@ RUN apk --no-cache add bash ca-certificates curl git jq openssh && update-ca-cer
 ADD http://worldclockapi.com/api/json/mst/now /tmp/buildtime
 RUN pip install --upgrade deployhub;
 
-ENTRYPOINT [ "dh" ]
+ENTRYPOINT [ "/usr/local/bin/dh" ]
