@@ -7,6 +7,7 @@ import os
 import stat
 import subprocess
 import sys
+import time
 from pprint import pprint
 
 import click
@@ -55,6 +56,14 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             print("--dhpass is required")
             sys.exit(1)
 
+        applist = []
+        if (appname is not None and appname.startswith('@')):
+            appname = appname[1:]
+            if (os.path.exists(appname)):
+                applist = open(appname, 'r').read().split("\n")
+        else:
+            applist.append(appname)
+
         print("Logging into DeployHub")
         errors = []
 
@@ -87,24 +96,25 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             print("--deployenv is required")
             sys.exit(1)
 
-        print(f'Deploying {appname} to {deployenv}')
-        data = dhapi.deploy_application(dhurl, cookies, appname, deployenv)
+        for appname in applist:
+            print(f'Deploying {appname} to {deployenv}')
+            data = dhapi.deploy_application(dhurl, cookies, appname, deployenv)
 
-        deployid = data[0]
-        if (deployid < 0):
+            deployid = data[0]
+            if (deployid < 0):
+                print(data[1])
+                sys.exit(1)
+
+            print(f"Fetching Logs for {deployid}")
+            data = dhapi.get_logs(dhurl, cookies, deployid)
+
             print(data[1])
-            sys.exit(1)
-
-        print(f"Fetching Logs for {deployid}")
-        data = dhapi.get_logs(dhurl, cookies, deployid)
-
-        print(data[1])
-        if (data[0]):
-            print("Successful")
-            sys.exit(0)
-        else:
-            print("Failed")
-            sys.exit(1)
+            if (data[0]):
+                print("Successful")
+                sys.exit(0)
+            else:
+                print("Failed")
+                sys.exit(1)
     elif (action.lower() == "updatecomp"):
 
         if (dhapi.is_empty(dhurl)):
@@ -172,14 +182,15 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
         data = dhapi.update_component_attrs(dhurl, cookies, compname, compvariant, compversion, attrs)
         print("Attribute Update Done")
 
-        print("Creating Application Version")
-        data = dhapi.new_application(dhurl, cookies, appname, appversion, envs)
-        appid = data[0]
-        print("Creation Done: " + dhapi.get_application_name(dhurl, cookies, appid))
+        for appname in applist:
+            print("Creating Application Version")
+            data = dhapi.new_application(dhurl, cookies, appname, appversion, envs)
+            appid = data[0]
+            print("Creation Done: " + dhapi.get_application_name(dhurl, cookies, appid))
 
-        print("Assigning Component Version to Application Version")
-        data = dhapi.add_compver_to_appver(dhurl, cookies, appid, compid)
-        print("Assignment Done")
+            print("Assigning Component Version to Application Version")
+            data = dhapi.add_compver_to_appver(dhurl, cookies, appid, compid)
+            print("Assignment Done")
     elif (action.lower() == "approve"):
         if (dhapi.is_empty(dhurl)):
             print("--dhurl is required")
@@ -197,9 +208,10 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             print("--appname is required")
             sys.exit(1)
 
-        print(f'Approving {appname};{appversion}')
-        data = dhapi.approve_application(dhurl, cookies, appname, appversion)
-        print(data[1])
+        for appname in applist:
+            print(f'Approving {appname}')
+            data = dhapi.approve_application(dhurl, cookies, appname, appversion)
+            print(data[1])
     elif (action.lower() == "move"):
         if (dhapi.is_empty(appname)):
             print("--appname is required")
@@ -213,15 +225,16 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             print("--task is required")
             sys.exit(1)
 
-        print(f'Moving {appname};{appversion} from {from_domain}')
-        data = dhapi.move_application(dhurl, cookies, appname, appversion, from_domain, task)
-        print(data[1])
+        for appname in applist:
+            print(f'Moving {appname} from {from_domain}')
+            data = dhapi.move_application(dhurl, cookies, appname, appversion, from_domain, task)
+            print(data[1])
     elif (action.lower() == "envscript"):
         if (dhapi.is_empty(envvars)):
             print("--envvars is required")
             sys.exit(1)
 
-        print(f'Creating dhvars.sh from {envvars}')
+        print(f'Creating cloudbuild.sh from {envvars}')
         envscript(envvars)
     else:
         print("Action is not defined.  Use deploy or updatecomp for action")
@@ -232,26 +245,28 @@ def envscript(envvars):
 
     vardict = qtoml.loads(lines)
 
-    fp_script = open('dhvars.sh', 'w')
+    fp_script = open('cloudbuild.sh', 'w')
 
     if ("Component" in vardict):
         vardict = vardict["Component"]
 
+    fp_script.write("export BLDDATE=\"" + time.ctime(time.time()) + "\"\n")
+
     for key in vardict:
         if (key.upper() == "APPLICATIONS"):
             applist = vardict[key]
-            i = 1
+
+            fp_applist = open('APPLIST', 'w')
+
             for app in applist:
-                if ("AppName" in app):
-                    fp_script.write("export COMPONENT_APPNAME_" + str(i) + '="' + app["AppName"] + "\"\n")
-                if ("AppVersion" in app):
-                    fp_script.write("export COMPONENT_APPVERS_" + str(i) + '="' + app["AppVersion"] + "\"\n")
-                i = i + 1
+                fp_script.write(app + "\n")
+
+            fp_applist.close()
         else:
             fp_script.write("export COMPONENT_" + key.upper() + '="' + str(vardict[key]) + "\"\n")
 
     fp_script.close()
-    os.chmod('dhvars.sh', stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+    os.chmod('cloudbuild.sh', stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
 
 if __name__ == '__main__':
     main()
