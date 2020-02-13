@@ -235,12 +235,12 @@ def envscript(envvars):
             i = 1
             for app in applist:
                 if ("AppName" in app):
-                    fp_script.write("export COMPONENT_APPNAME_" + str(i) + '=' + app["AppName"] + "\n")
+                    fp_script.write("export COMPONENT_APPNAME_" + str(i) + '="' + app["AppName"] + "\"\n")
                 if ("AppVersion" in app):
-                    fp_script.write("export COMPONENT_APPVERS_" + str(i) + '=' + app["AppVersion"] + "\n")
+                    fp_script.write("export COMPONENT_APPVERS_" + str(i) + '="' + app["AppVersion"] + "\"\n")
                 i = i + 1
         else:
-            fp_script.write("export COMPONENT_" + key.upper() + '=' + str(vardict[key]) + "\n")
+            fp_script.write("export COMPONENT_" + key.upper() + '="' + str(vardict[key]) + "\"\n")
 
     fp_script.close()
     os.chmod('dhvars.sh', stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
