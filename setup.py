@@ -7,7 +7,7 @@ setup(
     author='Steve Taylor',
     author_email='steve@deployhub.com',
     name='deployhub',
-    version='9.2.0',
+    version='9.2.1',
     packages=['deployhub',],
     scripts=['bin/dh'],
     license='GNU AFFERO GENERAL PUBLIC LICENSE',
