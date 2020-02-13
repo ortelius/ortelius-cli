@@ -232,7 +232,7 @@ def envscript(envvars):
 
     vardict = qtoml.loads(lines)
 
-    fp_script = open('dhvars.sh', 'w')
+    fp_script = open('/tmp/dhvars.sh', 'w')
 
     if ("Component" in vardict):
         vardict = vardict["Component"]
@@ -251,7 +251,7 @@ def envscript(envvars):
             fp_script.write("export COMPONENT_" + key.upper() + '="' + str(vardict[key]) + "\"\n")
 
     fp_script.close()
-    os.chmod('dhvars.sh', stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+    os.chmod('/tmp/dhvars.sh', stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
 
 if __name__ == '__main__':
     main()
