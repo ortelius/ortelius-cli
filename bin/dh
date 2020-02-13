@@ -158,6 +158,14 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             else:
                 attrs[key] = value
 
+        gittag = attrs.get("GitTag", None)
+        if (dhapi.is_empty(gittag)):
+            attrs['GitTag'] = attrs.get('GitBranch', '')
+
+        comptype = attrs.get("CompType", None)
+        if (dhapi.is_empty(comptype)):
+            attrs['CompType'] = "Application File"
+
         pprint(attrs)
         print("")
 
