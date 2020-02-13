@@ -4,19 +4,22 @@
 __version__ = '9.2.0'
 
 import os
+import stat
+import subprocess
 import sys
 from pprint import pprint
 
 import click
+import qtoml
 from deployhub import dhapi
 
 
 @click.command()
 @click.argument('action', required=True)
-@click.option('--dhurl', help='DeployHub Url', required=True, envvar='DHURL')
-@click.option('--dhuser', help='DeployHub User', required=True, envvar='DHUSER')
-@click.option('--dhpass', help='DeployHub Password', required=True, envvar='DHPASS')
-@click.option('--appname', help='Application Name', required=True)
+@click.option('--dhurl', help='DeployHub Url', envvar='DHURL')
+@click.option('--dhuser', help='DeployHub User', envvar='DHUSER')
+@click.option('--dhpass', help='DeployHub Password', envvar='DHPASS')
+@click.option('--appname', help='Application Name')
 @click.option('--appversion', help='Application Version')
 @click.option('--deployenv', help='Deployment Environment')
 @click.option('--compname', help='Component Name')
@@ -24,31 +27,58 @@ from deployhub import dhapi
 @click.option('--compversion', help='Component Version')
 @click.option('--from_domain', help='Move from domain')
 @click.option('--task', help='Task to use for move')
+@click.option('--envvars', help='Env Variables TOML file')
 @click.option('--docker', 'kind', flag_value='docker', default=True, help='Component Item Type')
 @click.option('--file', 'kind', flag_value='file')
 @click.option('--compattr', help='Component Attributes, use multiple time for each attr', multiple=True)
 @click.option('--envs', help='Environments to Associate App to, use multiple time for each env', multiple=True)
-def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvariant, compversion, kind, deployenv, envs, compattr, from_domain, task):
+def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvariant, compversion, kind, deployenv, envs, compattr, from_domain, task, envvars):
     """
-    ACTION is (deploy, updatecomp, approve, move) for the type of action to perform.
+    ACTION is (deploy, updatecomp, approve, move, envscript) for the type of action to perform.
 
     deploy: deploy the application to the evironment\n
     approve: approve the application version\n
     move: move the application version using the supplied task\n
     updatecomp: create/replace the component version for the application verion
     """
-    print("Logging into DeployHub")
-    errors = []
 
-    cookies = dhapi.login(dhurl, dhuser, dhpass, errors)
+    if (action.lower() == "deploy" or action.lower() == "updatecomp" or action.lower() == "approve" or action.lower() == "move"):
+        if (dhapi.is_empty(dhurl)):
+            print("--dhurl is required")
+            sys.exit(1)
 
-    if cookies is None:
-        if (errors):
-            print(errors[0])
-        sys.exit(1)
+        if (dhapi.is_empty(dhuser)):
+            print("--dhuser is required")
+            sys.exit(1)
+
+        if (dhapi.is_empty(dhpass)):
+            print("--dhpass is required")
+            sys.exit(1)
+
+        print("Logging into DeployHub")
+        errors = []
+
+        cookies = dhapi.login(dhurl, dhuser, dhpass, errors)
+
+        if cookies is None:
+            if (errors):
+                print(errors[0])
+            sys.exit(1)
 
     if (action.lower() == "deploy"):
         # Deploy Application to Environment
+        if (dhapi.is_empty(dhurl)):
+            print("--dhurl is required")
+            sys.exit(1)
+
+        if (dhapi.is_empty(dhuser)):
+            print("--dhuser is required")
+            sys.exit(1)
+
+        if (dhapi.is_empty(dhpass)):
+            print("--dhpass is required")
+            sys.exit(1)
+
         if (dhapi.is_empty(appname)):
             print("--appname is required")
             sys.exit(1)
@@ -76,6 +106,22 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             print("Failed")
             sys.exit(1)
     elif (action.lower() == "updatecomp"):
+
+        if (dhapi.is_empty(dhurl)):
+            print("--dhurl is required")
+            sys.exit(1)
+
+        if (dhapi.is_empty(dhuser)):
+            print("--dhuser is required")
+            sys.exit(1)
+
+        if (dhapi.is_empty(dhpass)):
+            print("--dhpass is required")
+            sys.exit(1)
+
+        if (dhapi.is_empty(appname)):
+            print("--appname is required")
+            sys.exit(1)
 
         if (dhapi.is_empty(compname)):
             print("--compname is required")
@@ -127,6 +173,18 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
         data = dhapi.add_compver_to_appver(dhurl, cookies, appid, compid)
         print("Assignment Done")
     elif (action.lower() == "approve"):
+        if (dhapi.is_empty(dhurl)):
+            print("--dhurl is required")
+            sys.exit(1)
+
+        if (dhapi.is_empty(dhuser)):
+            print("--dhuser is required")
+            sys.exit(1)
+
+        if (dhapi.is_empty(dhpass)):
+            print("--dhpass is required")
+            sys.exit(1)
+
         if (dhapi.is_empty(appname)):
             print("--appname is required")
             sys.exit(1)
@@ -150,10 +208,42 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
         print(f'Moving {appname};{appversion} from {from_domain}')
         data = dhapi.move_application(dhurl, cookies, appname, appversion, from_domain, task)
         print(data[1])
+    elif (action.lower() == "envscript"):
+        if (dhapi.is_empty(envvars)):
+            print("--envvars is required")
+            sys.exit(1)
+
+        print(f'Creating dhvars.sh from {envvars}')
+        envscript(envvars)
     else:
         print("Action is not defined.  Use deploy or updatecomp for action")
         sys.exit(1)
 
+def envscript(envvars):
+    lines = subprocess.run(['cat', envvars], check=False, stdout=subprocess.PIPE).stdout.decode('utf-8')
+
+    vardict = qtoml.loads(lines)
+
+    fp_script = open('dhvars.sh', 'w')
+
+    if ("Component" in vardict):
+        vardict = vardict["Component"]
+
+    for key in vardict:
+        if (key.upper() == "APPLICATIONS"):
+            applist = vardict[key]
+            i = 1
+            for app in applist:
+                if ("AppName" in app):
+                    fp_script.write("export COMPONENT_APPNAME_" + str(i) + '=' + app["AppName"] + "\n")
+                if ("AppVersion" in app):
+                    fp_script.write("export COMPONENT_APPVERS_" + str(i) + '=' + app["AppVersion"] + "\n")
+                i = i + 1
+        else:
+            fp_script.write("export COMPONENT_" + key.upper() + '=' + str(vardict[key]) + "\n")
+
+    fp_script.close()
+    os.chmod('dhvars.sh', stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
 
 if __name__ == '__main__':
     main()
