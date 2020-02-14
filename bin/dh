@@ -103,6 +103,9 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
                     appname = parts[0] + ';' + parts[1]
                     appversion = parts[2]
 
+            if (dhapi.is_empty(appname)):
+                continue
+
             print(f'Deploying {appname} {appversion} to {deployenv}')
             data = dhapi.deploy_application(dhurl, cookies, appname, deployenv)
 
@@ -195,6 +198,9 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
                     appname = parts[0] + ';' + parts[1]
                     appversion = parts[2]
 
+            if (dhapi.is_empty(appname)):
+                continue
+
             print("Creating Application Version '" + str(appname) + "' '" + appversion + "'")
             data = dhapi.new_application(dhurl, cookies, appname, appversion, envs)
             appid = data[0]
@@ -228,6 +234,9 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
                     appname = parts[0] + ';' + parts[1]
                     appversion = parts[2]
 
+            if (dhapi.is_empty(appname)):
+                continue
+
             print(f'Approving {appname} {appversion}')
             data = dhapi.approve_application(dhurl, cookies, appname, appversion)
             print(data[1])
@@ -250,6 +259,10 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
                 if (len(parts) == 3):
                     appname = parts[0] + ';' + parts[1]
                     appversion = parts[2]
+
+            if (dhapi.is_empty(appname)):
+                continue
+
             print(f'Moving {appname} {appversion} from {from_domain}')
             data = dhapi.move_application(dhurl, cookies, appname, appversion, from_domain, task)
             print(data[1])
