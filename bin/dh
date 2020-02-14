@@ -195,12 +195,13 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
                     appname = ';'.join(parts[:2])
                     appversion = parts[2]
 
-            print("Creating Application Version" + str(appname))
+            print("Creating Application Version" + str(appname) + " " + appversion)
             data = dhapi.new_application(dhurl, cookies, appname, appversion, envs)
             appid = data[0]
             print("Creation Done: " + dhapi.get_application_name(dhurl, cookies, appid))
 
-            print("Assigning Component Version to Application Version")
+            print("Assigning Component Version to Application Version " + str(appid))
+
             data = dhapi.add_compver_to_appver(dhurl, cookies, appid, compid)
             print("Assignment Done")
     elif (action.lower() == "approve"):
