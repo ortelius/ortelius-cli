@@ -671,6 +671,7 @@ def add_compver_to_appver(dhurl, cookies, appid, compid):
 
 def assign_comp_to_app(dhurl, cookies, appid, compid, parent_compid, xpos, ypos):
     get_json(dhurl + "/dmadminweb/UpdateAttrs?f=acd&a=" + str(appid) + "&c=" + str(compid), cookies)
+    print(dhurl + "/dmadminweb/UpdateAttrs?f=acvm&a=" + str(appid) + "&c=" + str(compid) + "&xpos=" + str(xpos) + "&ypos=" + str(ypos))
     get_json(dhurl + "/dmadminweb/UpdateAttrs?f=acvm&a=" + str(appid) + "&c=" + str(compid) + "&xpos=" + str(xpos) + "&ypos=" + str(ypos), cookies)
     get_json(dhurl + "/dmadminweb/UpdateAttrs?f=cal&a=" + str(appid) + "&fn=" + str(parent_compid) + "&tn=" + str(compid), cookies)
 
