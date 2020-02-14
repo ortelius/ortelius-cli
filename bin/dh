@@ -267,10 +267,7 @@ def envscript(envvars):
 
     fp_script.close()
     os.chmod('cloudbuild.sh', stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
-
-    lines = subprocess.run(['cat', 'cloudbuild.sh'], check=False, stdout=subprocess.PIPE).stdout.decode('utf-8')
-    for line in lines:
-        print(line)
+    
 
 if __name__ == '__main__':
     main()
