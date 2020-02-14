@@ -97,7 +97,13 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             sys.exit(1)
 
         for appname in applist:
-            print(f'Deploying {appname} to {deployenv}')
+            if (appversion is None):
+                parts = appname.split(';')
+                if (len(parts) == 3):
+                    appname = ';'.join(parts[:2])
+                    appversion = parts[2]
+
+            print(f'Deploying {appname} {appversion} to {deployenv}')
             data = dhapi.deploy_application(dhurl, cookies, appname, deployenv)
 
             deployid = data[0]
@@ -183,7 +189,13 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
         print("Attribute Update Done")
 
         for appname in applist:
-            print("Creating Application Version")
+            if (appversion is None):
+                parts = appname.split(';')
+                if (len(parts) == 3):
+                    appname = ';'.join(parts[:2])
+                    appversion = parts[2]
+
+            print("Creating Application Version" + str(appname))
             data = dhapi.new_application(dhurl, cookies, appname, appversion, envs)
             appid = data[0]
             print("Creation Done: " + dhapi.get_application_name(dhurl, cookies, appid))
@@ -209,7 +221,13 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             sys.exit(1)
 
         for appname in applist:
-            print(f'Approving {appname}')
+            if (appversion is None):
+                parts = appname.split(';')
+                if (len(parts) == 3):
+                    appname = ';'.join(parts[:2])
+                    appversion = parts[2]
+
+            print(f'Approving {appname} {appversion}')
             data = dhapi.approve_application(dhurl, cookies, appname, appversion)
             print(data[1])
     elif (action.lower() == "move"):
@@ -226,7 +244,12 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             sys.exit(1)
 
         for appname in applist:
-            print(f'Moving {appname} from {from_domain}')
+            if (appversion is None):
+                parts = appname.split(';')
+                if (len(parts) == 3):
+                    appname = ';'.join(parts[:2])
+                    appversion = parts[2]
+            print(f'Moving {appname} {appversion} from {from_domain}')
             data = dhapi.move_application(dhurl, cookies, appname, appversion, from_domain, task)
             print(data[1])
     elif (action.lower() == "envscript"):
@@ -267,7 +290,7 @@ def envscript(envvars):
 
     fp_script.close()
     os.chmod('cloudbuild.sh', stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
-    
+
 
 if __name__ == '__main__':
     main()
