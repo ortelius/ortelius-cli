@@ -100,7 +100,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             if (appversion is None):
                 parts = appname.split(';')
                 if (len(parts) == 3):
-                    appname = ';'.join(parts[:2])
+                    appname = parts[0] + ';' + parts[1]
                     appversion = parts[2]
 
             print(f'Deploying {appname} {appversion} to {deployenv}')
@@ -192,10 +192,10 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             if (appversion is None):
                 parts = appname.split(';')
                 if (len(parts) == 3):
-                    appname = ';'.join(parts[:2])
+                    appname = parts[0] + ';' + parts[1]
                     appversion = parts[2]
 
-            print("Creating Application Version" + str(appname) + " " + appversion)
+            print("Creating Application Version '" + str(appname) + "' '" + appversion + "'")
             data = dhapi.new_application(dhurl, cookies, appname, appversion, envs)
             appid = data[0]
             print("Creation Done: " + dhapi.get_application_name(dhurl, cookies, appid))
@@ -225,7 +225,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             if (appversion is None):
                 parts = appname.split(';')
                 if (len(parts) == 3):
-                    appname = ';'.join(parts[:2])
+                    appname = parts[0] + ';' + parts[1]
                     appversion = parts[2]
 
             print(f'Approving {appname} {appversion}')
@@ -248,7 +248,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             if (appversion is None):
                 parts = appname.split(';')
                 if (len(parts) == 3):
-                    appname = ';'.join(parts[:2])
+                    appname = parts[0] + ';' + parts[1]
                     appversion = parts[2]
             print(f'Moving {appname} {appversion} from {from_domain}')
             data = dhapi.move_application(dhurl, cookies, appname, appversion, from_domain, task)
