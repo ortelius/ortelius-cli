@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """DeployHub's CLI using the dhapi module"""
 
-__version__ = '9.3.1'
+__version__ = '9.3.0'
 
 import os
 import stat
+import subprocess
 import sys
 import time
 from pprint import pprint
@@ -278,17 +279,13 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
         sys.exit(1)
 
 def envscript(envvars, envvars_sh):
-    print("Loading " + envvars)
-    fp_in = open(envvars, 'r')
-    lines = fp_in.read()
-    fp_in.close()
+    lines = subprocess.run(['cat', envvars], check=False, stdout=subprocess.PIPE).stdout.decode('utf-8')
 
     vardict = qtoml.loads(lines)
 
     if (dhapi.is_empty(envvars_sh)):
         envvars_sh = 'cloudbuild.sh'
 
-    print("Appending vars to " + envvars_sh)
     fp_script = open(envvars_sh, 'a')
 
     if ("Component" in vardict):
