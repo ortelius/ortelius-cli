@@ -191,7 +191,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
         print("Attribute Update Done")
 
         for appname in applist:
-            if (appversion is None):
+            if (dhapi.is_empty(appversion)):
                 parts = appname.split(';')
                 if (len(parts) == 3):
                     appname = parts[0] + ';' + parts[1]
