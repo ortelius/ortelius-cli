@@ -58,10 +58,8 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             sys.exit(1)
 
         applist = []
-        if (appname is not None and appname.startswith('@')):
-            appname = appname[1:]
-            if (os.path.exists(appname)):
-                applist = open(appname, 'r').read().split("\n")
+        if (appname is not None and ',' in appname):
+            applist = appname.split(',')
         else:
             applist.append(appname)
 
@@ -280,10 +278,6 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
 
 def envscript(envvars, envvars_sh):
 
-    applist_file = "APPLIST"
-    if ('/' in envvars):
-        applist_file = os.path.dirname(envvars) + "/APPLIST"
-
     lines = subprocess.run(['cat', envvars], check=False, stdout=subprocess.PIPE).stdout.decode('utf-8')
 
     vardict = qtoml.loads(lines)
@@ -292,7 +286,7 @@ def envscript(envvars, envvars_sh):
         envvars_sh = 'cloudbuild.sh'
 
     fp_script = open(envvars_sh, 'a')
-    fp_applist = open(applist_file, 'w')
+    applistenv = ""
 
     if ("Component" in vardict):
         vardict = vardict["Component"]
@@ -304,11 +298,11 @@ def envscript(envvars, envvars_sh):
             applist = vardict[key]
 
             for app in applist:
-                fp_applist.write(app + "\n")
+                applistenv = applistenv + "," + app
         else:
             fp_script.write("export COMPONENT_" + key.upper() + '="' + str(vardict[key]) + "\"\n")
 
-    fp_applist.close()
+    fp_script.write("export COMPONENT_APPLICATIONS=\"" + applistenv[1:] + "\"\n")
     fp_script.close()
     os.chmod(envvars_sh, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
 
