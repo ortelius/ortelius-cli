@@ -212,7 +212,6 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             print("Assignment Done")
 
             compname = os.environ.get("COMPONENT_NAME_" + str(cnt), None)
-            compversion = os.environ.get("COMPONENT_VERSION_" + str(cnt), None)
             appname = os.environ.get("COMPONENT_APPLICATION_" + str(cnt), None)
             appversion = ""
             cnt = cnt + 1
