@@ -147,7 +147,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
 
         if (dhapi.is_empty(compvariant)):
             compvariant = ""
-        
+
         if (dhapi.is_empty(appversion)):
             appversion = ""
 
@@ -289,7 +289,6 @@ def envscript(envvars, envvars_sh):
         envvars_sh = 'cloudbuild.sh'
 
     fp_script = open(envvars_sh, 'a')
-    applistenv = ""
 
     if ("Component" in vardict):
         vardict = vardict["Component"]
@@ -297,15 +296,24 @@ def envscript(envvars, envvars_sh):
     fp_script.write("export BLDDATE=\"" + time.ctime(time.time()) + "\"\n")
 
     for key in vardict:
-        if (key.upper() == "APPLICATIONS"):
-            applist = vardict[key]
+        if (key.upper() == "COMPONENTS"):
+            comp_to_app = vardict[key]
 
-            for app in applist:
-                applistenv = applistenv + "," + app
+            cnt = 0
+            for compapp in comp_to_app:
+                if (cnt == 0):
+                    fp_script.write("export COMPONENT_NAME=\"" + compapp.get("Name", "") + "\"\n")
+                    fp_script.write("export COMPONENT_VERSION=\"" + compapp.get("Version", "") + "\"\n")
+                    fp_script.write("export COMPONENT_APPLICATION=\"" + compapp.get("Application", "") + "\"\n")
+                else:
+                    fp_script.write("export COMPONENT_NAME_" + str(cnt) + "=\"" + compapp.get("Name", "") + "\"\n")
+                    fp_script.write("export COMPONENT_VERSION_" + str(cnt) + "=\"" + compapp.get("Version", "") + "\"\n")
+                    fp_script.write("export COMPONENT_APPLICATION_" + str(cnt) + "=\"" + compapp.get("Application", "") + "\"\n")
+
+                cnt = cnt + 1
         else:
             fp_script.write("export COMPONENT_" + key.upper() + '="' + str(vardict[key]) + "\"\n")
 
-    fp_script.write("export COMPONENT_APPLICATIONS=\"" + applistenv[1:] + "\"\n")
     fp_script.close()
     os.chmod(envvars_sh, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
 
