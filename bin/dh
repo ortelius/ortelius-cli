@@ -147,6 +147,9 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
 
         if (dhapi.is_empty(compvariant)):
             compvariant = ""
+        
+        if (dhapi.is_empty(appversion)):
+            appversion = ""
 
         # create component version
         print(f"Creating Component")
