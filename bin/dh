@@ -211,8 +211,6 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             data = dhapi.add_compver_to_appver(dhurl, cookies, appid, compid)
             print("Assignment Done")
 
-            for item, value in os.environ.items():
-                print('{}: {}'.format(item, value))
             compname = os.environ.get("COMPONENT_NAME_" + str(cnt), None)
             compversion = os.environ.get("COMPONENT_VERSION_" + str(cnt), None)
             appname = os.environ.get("COMPONENT_APPLICATION_" + str(cnt), None)
