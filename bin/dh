@@ -201,9 +201,6 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
                     appname = parts[0] + ';' + parts[1]
                     appversion = parts[2]
 
-            if (dhapi.is_empty(appname)):
-                continue
-
             print("Creating Application Version '" + str(appname) + "' '" + appversion + "'")
             data = dhapi.new_application(dhurl, cookies, appname, appversion, envs)
             appid = data[0]
@@ -214,10 +211,13 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             data = dhapi.add_compver_to_appver(dhurl, cookies, appid, compid)
             print("Assignment Done")
 
+            for item, value in os.environ.items():
+                print('{}: {}'.format(item, value))
             compname = os.environ.get("COMPONENT_NAME_" + str(cnt), None)
             compversion = os.environ.get("COMPONENT_VERSION_" + str(cnt), None)
             appname = os.environ.get("COMPONENT_APPLICATION_" + str(cnt), None)
             appversion = ""
+            cnt = cnt + 1
 
             if (compname is None):  # leave loop if no more components defined in env
                 break
