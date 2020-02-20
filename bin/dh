@@ -57,12 +57,6 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             print("--dhpass is required")
             sys.exit(1)
 
-        applist = []
-        if (appname is not None and ',' in appname):
-            applist = appname.split(',')
-        else:
-            applist.append(appname)
-
         print("Logging into DeployHub")
         errors = []
 
@@ -95,34 +89,30 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             print("--deployenv is required")
             sys.exit(1)
 
-        for appname in applist:
-            if (appversion is None):
-                parts = appname.split(';')
-                if (len(parts) == 3):
-                    appname = parts[0] + ';' + parts[1]
-                    appversion = parts[2]
+        if (dhapi.is_empty(appversion)):
+            parts = appname.split(';')
+            if (len(parts) == 3):
+                appname = parts[0] + ';' + parts[1]
+                appversion = parts[2]
 
-            if (dhapi.is_empty(appname)):
-                continue
+        print(f'Deploying {appname} {appversion} to {deployenv}')
+        data = dhapi.deploy_application(dhurl, cookies, appname, deployenv)
 
-            print(f'Deploying {appname} {appversion} to {deployenv}')
-            data = dhapi.deploy_application(dhurl, cookies, appname, deployenv)
-
-            deployid = data[0]
-            if (deployid < 0):
-                print(data[1])
-                sys.exit(1)
-
-            print(f"Fetching Logs for {deployid}")
-            data = dhapi.get_logs(dhurl, cookies, deployid)
-
+        deployid = data[0]
+        if (deployid < 0):
             print(data[1])
-            if (data[0]):
-                print("Successful")
-                sys.exit(0)
-            else:
-                print("Failed")
-                sys.exit(1)
+            sys.exit(1)
+
+        print(f"Fetching Logs for {deployid}")
+        data = dhapi.get_logs(dhurl, cookies, deployid)
+
+        print(data[1])
+        if (data[0]):
+            print("Successful")
+            sys.exit(0)
+        else:
+            print("Failed")
+            sys.exit(1)
     elif (action.lower() == "updatecomp"):
 
         if (dhapi.is_empty(dhurl)):
@@ -148,52 +138,63 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
         if (dhapi.is_empty(compvariant)):
             compvariant = ""
 
-        if (dhapi.is_empty(appversion)):
-            appversion = ""
+        saveappver = ""
+        if (dhapi.is_not_empty(appversion)):
+            saveappver = appversion
 
-        # create component version
-        print(f"Creating Component")
-        compid = dhapi.new_component_version(dhurl, cookies, compname, compvariant, compversion, kind, None)
-        print("Creation Done: " + dhapi.get_component_name(dhurl, cookies, compid))
+        cnt = 1
+        while True:
+            if (dhapi.is_not_empty(saveappver)):
+                appversion = saveappver
 
-        attrs = {}
-        print("Updating Component Attributes\n")
-        for attr in compattr:
-            if (':' in attr):
-                key = attr.split(':')[0]
-                value = ':'.join(attr.split(':')[1:])
-            else:
-                key = attr
-                value = ""
+            if (dhapi.is_empty(appversion)):
+                parts = appname.split(';')
+                if (len(parts) == 3):
+                    appname = parts[0] + ';' + parts[1]
+                    appversion = parts[2]
 
-            if ("@sha256:" in value):
-                value = value.split("@sha256:")[1]
+            # create component version
+            print(f"Creating Component")
+            compid = dhapi.new_component_version(dhurl, cookies, compname, compvariant, compversion, kind, None)
+            print("Creation Done: " + dhapi.get_component_name(dhurl, cookies, compid))
 
-            if (value.startswith('@')):
-                value = value[1:]
-                if (os.path.exists(value)):
-                    value = open(value, 'r').read().replace('\n', '')
-                    attrs[key] = value
+            attrs = {}
+            print("Updating Component Attributes\n")
+            for attr in compattr:
+                if (':' in attr):
+                    key = attr.split(':')[0]
+                    value = ':'.join(attr.split(':')[1:])
                 else:
-                    attrs[key] = ""
-            else:
-                attrs[key] = value
+                    key = attr
+                    value = ""
 
-        gittag = attrs.get("GitTag", None)
-        if (dhapi.is_empty(gittag)):
-            attrs['GitTag'] = attrs.get('GitBranch', '')
+                if ("@sha256:" in value):
+                    value = value.split("@sha256:")[1]
 
-        comptype = attrs.get("CompType", None)
-        if (dhapi.is_empty(comptype)):
-            attrs['CompType'] = "Application File"
+                if (value.startswith('@')):
+                    value = value[1:]
+                    if (os.path.exists(value)):
+                        value = open(value, 'r').read().replace('\n', '')
+                        attrs[key] = value
+                    else:
+                        attrs[key] = ""
+                else:
+                    attrs[key] = value
 
-        pprint(attrs)
-        print("")
+            gittag = attrs.get("GitTag", None)
+            if (dhapi.is_empty(gittag)):
+                attrs['GitTag'] = attrs.get('GitBranch', '')
 
-        data = dhapi.update_component_attrs(dhurl, cookies, compname, compvariant, compversion, attrs)
-        print("Attribute Update Done")
+            comptype = attrs.get("CompType", None)
+            if (dhapi.is_empty(comptype)):
+                attrs['CompType'] = "Application File"
 
-        for appname in applist:
+            pprint(attrs)
+            print("")
+
+            data = dhapi.update_component_attrs(dhurl, cookies, compname, compvariant, compversion, attrs)
+            print("Attribute Update Done")
+
             if (dhapi.is_empty(appversion)):
                 parts = appname.split(';')
                 if (len(parts) == 3):
@@ -212,6 +213,15 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
 
             data = dhapi.add_compver_to_appver(dhurl, cookies, appid, compid)
             print("Assignment Done")
+
+            compname = os.environ.get("COMPONENT_NAME_" + str(cnt), None)
+            compversion = os.environ.get("COMPONENT_VERSION_" + str(cnt), None)
+            appname = os.environ.get("COMPONENT_APPLICATION_" + str(cnt), None)
+            appversion = ""
+
+            if (compname is None):  # leave loop if no more components defined in env
+                break
+
     elif (action.lower() == "approve"):
         if (dhapi.is_empty(dhurl)):
             print("--dhurl is required")
@@ -229,19 +239,15 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             print("--appname is required")
             sys.exit(1)
 
-        for appname in applist:
-            if (appversion is None):
-                parts = appname.split(';')
-                if (len(parts) == 3):
-                    appname = parts[0] + ';' + parts[1]
-                    appversion = parts[2]
+        if (dhapi.is_empty(appversion)):
+            parts = appname.split(';')
+            if (len(parts) == 3):
+                appname = parts[0] + ';' + parts[1]
+                appversion = parts[2]
 
-            if (dhapi.is_empty(appname)):
-                continue
-
-            print(f'Approving {appname} {appversion}')
-            data = dhapi.approve_application(dhurl, cookies, appname, appversion)
-            print(data[1])
+        print(f'Approving {appname} {appversion}')
+        data = dhapi.approve_application(dhurl, cookies, appname, appversion)
+        print(data[1])
     elif (action.lower() == "move"):
         if (dhapi.is_empty(appname)):
             print("--appname is required")
@@ -255,19 +261,15 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             print("--task is required")
             sys.exit(1)
 
-        for appname in applist:
-            if (appversion is None):
-                parts = appname.split(';')
-                if (len(parts) == 3):
-                    appname = parts[0] + ';' + parts[1]
-                    appversion = parts[2]
+        if (dhapi.is_empty(appversion)):
+            parts = appname.split(';')
+            if (len(parts) == 3):
+                appname = parts[0] + ';' + parts[1]
+                appversion = parts[2]
 
-            if (dhapi.is_empty(appname)):
-                continue
-
-            print(f'Moving {appname} {appversion} from {from_domain}')
-            data = dhapi.move_application(dhurl, cookies, appname, appversion, from_domain, task)
-            print(data[1])
+        print(f'Moving {appname} {appversion} from {from_domain}')
+        data = dhapi.move_application(dhurl, cookies, appname, appversion, from_domain, task)
+        print(data[1])
     elif (action.lower() == "envscript"):
         if (dhapi.is_empty(envvars)):
             print("--envvars is required")
