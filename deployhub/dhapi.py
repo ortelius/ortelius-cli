@@ -186,7 +186,7 @@ def get_attrs(dhurl, cookies, app, comp, env, srv):
             srv_attrs = data['attributes']
             break
 
-    data = get_json(dhurl + "/dmadminweb/API/application/" + app, cookies)
+    data = get_json(dhurl + "/dmadminweb/API/application/?name=" + urllib.parse.quote(app), cookies)
 
     if (app == data['result']['name']):
         appid = str(data['result']['id'])
@@ -276,7 +276,7 @@ def get_component(dhurl, cookies, compname, compvariant, compversion):
     else:
         check_compname = short_compname
 
-    data = get_json(dhurl + "/dmadminweb/API/component/" + urllib.parse.quote(component), cookies)
+    data = get_json(dhurl + "/dmadminweb/API/component/?name=" + urllib.parse.quote(component), cookies)
 
     if (data is None):
         return [-1, ""]
@@ -389,7 +389,7 @@ def new_docker_component(dhurl, cookies, compname, compvariant, compversion, par
     compid = 0
     # Create base version
     if (parent_compid < 0):
-        data = get_json(dhurl + "/dmadminweb/API/new/compver/" + urllib.parse.quote(compname + ";" + compvariant), cookies)
+        data = get_json(dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname + ";" + compvariant), cookies)
         compid = data['result']['id']
     else:
         data = get_json(dhurl + "/dmadminweb/API/new/compver/" + str(parent_compid), cookies)
@@ -415,7 +415,7 @@ def new_file_component(dhurl, cookies, compname, compvariant, compversion, paren
     # Create base version
     pprint(parent_compid)
     if (parent_compid < 0):
-        data = get_json(dhurl + "/dmadminweb/API/new/compver/" + urllib.parse.quote(compname + ";" + compvariant), cookies)
+        data = get_json(dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname + ";" + compvariant), cookies)
         compid = data['result']['id']
     else:
         data = get_json(dhurl + "/dmadminweb/API/new/compver/" + str(parent_compid), cookies)
@@ -489,7 +489,7 @@ def new_component(dhurl, cookies, compname, compvariant, compversion, kind, pare
 
     # Create base version
     if (parent_compid is None):
-        data = get_json(dhurl + "/dmadminweb/API/new/compver/" + urllib.parse.quote(compname + ";" + compvariant), cookies)
+        data = get_json(dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname + ";" + compvariant), cookies)
         compid = data['result']['id']
     else:
         data = get_json(dhurl + "/dmadminweb/API/new/compver/" + str(parent_compid), cookies)
@@ -546,7 +546,7 @@ def get_application(dhurl, cookies, appname, appversion):
     else:
         application = appname
 
-    data = get_json(dhurl + "/dmadminweb/API/application/" + urllib.parse.quote(application), cookies)
+    data = get_json(dhurl + "/dmadminweb/API/application/?name=" + urllib.parse.quote(application), cookies)
 
     if (data is None):
         return [-1, "", -1]
@@ -607,14 +607,14 @@ def new_application(dhurl, cookies, appname, appversion, envs):
 
     # Create base version
     if (parent_appid < 0):
-        data = get_json(dhurl + "/dmadminweb/API/new/application/" + urllib.parse.quote(appname) + "?" + domain, cookies)
+        data = get_json(dhurl + "/dmadminweb/API/new/application/?name=" + urllib.parse.quote(appname) + "&" + domain, cookies)
         if (data.get('success', False)):
             data = get_application(dhurl, cookies, appname, "")
             parent_appid = data[0]
 
         if (envs is not None):
             for env in envs:
-                data = get_json(dhurl + "/dmadminweb/API/assign/application/" + urllib.parse.quote(appname) + "/" + urllib.parse.quote(env), cookies)
+                data = get_json(dhurl + "/dmadminweb/API/assign/application/?name=" + urllib.parse.quote(appname) + "&env=" + urllib.parse.quote(env), cookies)
 
     # Refetch parent to get version list
     data = get_application(dhurl, cookies, appname, "")
