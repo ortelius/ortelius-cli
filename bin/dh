@@ -302,11 +302,11 @@ def envscript(envvars, envvars_sh):
             for compapp in comp_to_app:
                 if (cnt == 0):
                     fp_script.write("export COMPONENT_NAME=\"" + compapp.get("Name", "") + "\"\n")
-                    fp_script.write("export COMPONENT_VERSION=\"" + compapp.get("Version", "") + "\"\n")
+                    fp_script.write("export COMPONENT_VERSION=\"" + vardict.get("Version", "") + "\"\n")
                     fp_script.write("export COMPONENT_APPLICATION=\"" + compapp.get("Application", "") + "\"\n")
                 else:
                     fp_script.write("export COMPONENT_NAME_" + str(cnt) + "=\"" + compapp.get("Name", "") + "\"\n")
-                    fp_script.write("export COMPONENT_VERSION_" + str(cnt) + "=\"" + compapp.get("Version", "") + "\"\n")
+                    fp_script.write("export COMPONENT_VERSION_" + str(cnt) + "=\"" + vardict.get("Version", "") + "\"\n")
                     fp_script.write("export COMPONENT_APPLICATION_" + str(cnt) + "=\"" + compapp.get("Application", "") + "\"\n")
 
                 cnt = cnt + 1
