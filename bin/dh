@@ -138,6 +138,10 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
         if (dhapi.is_empty(compvariant)):
             compvariant = ""
 
+        if (dhapi.is_empty(compvariant) and "_v" in compversion):
+            compvariant = compversion.split("_v")[0]
+            compversion = "v" + compversion.split("_v")[1]
+
         saveappver = ""
         if (dhapi.is_not_empty(appversion)):
             saveappver = appversion
