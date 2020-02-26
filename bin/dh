@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """DeployHub's CLI using the dhapi module"""
 
-__version__ = '9.3.19'
+__version__ = '9.3.18'
 
 import os
 import stat
@@ -138,9 +138,13 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
         if (dhapi.is_empty(compvariant)):
             compvariant = ""
 
-        if (dhapi.is_empty(compvariant) and "_v" in compversion):
-            compvariant = compversion.split("_v")[0]
-            compversion = "v" + compversion.split("_v")[1]
+        if (dhapi.is_empty(compvariant) and "-v" in compversion):
+            compvariant = compversion.split("-v")[0]
+            compversion = "v" + compversion.split("-v")[1]
+        
+        if (dhapi.is_empty(compvariant) and "-V" in compversion):
+            compvariant = compversion.split("-V")[0]
+            compversion = "v" + compversion.split("-V")[1]
 
         saveappver = ""
         if (dhapi.is_not_empty(appversion)):
