@@ -18,7 +18,7 @@ def get_json(url, cookies):
         Returns: json string"""
 
     try:
-        print(url)
+        
         res = requests.get(url, cookies=cookies)
         if (res is None):
             return None
