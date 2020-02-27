@@ -3,7 +3,9 @@
 
 __version__ = '9.3.21'
 
+import json
 import os
+import re
 import stat
 import subprocess
 import sys
@@ -12,6 +14,7 @@ from pprint import pprint
 
 import click
 import qtoml
+
 from deployhub import dhapi
 
 
@@ -34,14 +37,20 @@ from deployhub import dhapi
 @click.option('--file', 'kind', flag_value='file')
 @click.option('--compattr', help='Component Attributes, use multiple time for each attr', multiple=True)
 @click.option('--envs', help='Environments to Associate App to, use multiple time for each env', multiple=True)
-def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvariant, compversion, kind, deployenv, envs, compattr, from_domain, task, envvars, envvars_sh):
+@click.option('--importfile', help='File to Import')
+@click.option('--fromdom', help='From Domain')
+@click.option('--todom', help='To Domain')
+def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvariant, compversion, kind, deployenv, envs, compattr, from_domain, task, envvars, envvars_sh, importfile, fromdom, todom):
     """
-    ACTION is (deploy, updatecomp, approve, move, envscript) for the type of action to perform.
+    ACTION is (deploy, updatecomp, approve, move, envscript, export, import) for the type of action to perform.
 
     deploy: deploy the application to the evironment\n
     approve: approve the application version\n
     move: move the application version using the supplied task\n
     updatecomp: create/replace the component version for the application verion
+    envscript: creates a bash file from the component toml file
+    export: exports a domain including all objects to stdout
+    import: imports the export file into the new domain
     """
 
     if (action.lower() == "deploy" or action.lower() == "updatecomp" or action.lower() == "approve" or action.lower() == "move"):
@@ -141,7 +150,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
         if (dhapi.is_empty(compvariant) and "-v" in compversion):
             compvariant = compversion.split("-v")[0]
             compversion = "v" + compversion.split("-v")[1]
-        
+
         if (dhapi.is_empty(compvariant) and "-V" in compversion):
             compvariant = compversion.split("-V")[0]
             compversion = "v" + compversion.split("-V")[1]
@@ -282,6 +291,88 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
 
         print(f'Creating env shell script from {envvars}')
         envscript(envvars, envvars_sh)
+    elif (action.lower() == "export"):
+        if (dhapi.is_empty(dhurl)):
+            print("--dhurl is required")
+            sys.exit(1)
+
+        if (dhapi.is_empty(dhuser)):
+            print("--dhuser is required")
+            sys.exit(1)
+
+        if (dhapi.is_empty(dhpass)):
+            print("--dhpass is required")
+            sys.exit(1)
+
+        if (dhapi.is_empty(fromdom)):
+            print("--fromdom is required")
+            sys.exit(1)
+
+        allobjs = {}
+        filterdict(dhurl, cookies, "users", fromdom, allobjs)
+        filterdict(dhurl, cookies, "groups", fromdom, allobjs)
+        filterdict(dhurl, cookies, "comptypes", fromdom, allobjs)
+        filterdict(dhurl, cookies, "credentials", fromdom, allobjs)
+        filterdict(dhurl, cookies, "endpoints", fromdom, allobjs)
+        filterdict(dhurl, cookies, "datasources", fromdom, allobjs)
+        filterdict(dhurl, cookies, "buildengines", fromdom, allobjs)
+        filterdict(dhurl, cookies, "builjobs", fromdom, allobjs)
+        filterdict(dhurl, cookies, "tasks", fromdom, allobjs)
+        filterdict(dhurl, cookies, "engines", fromdom, allobjs)
+        filterdict(dhurl, cookies, "repositories", fromdom, allobjs)
+        filterdict(dhurl, cookies, "environments", fromdom, allobjs)
+        filterdict(dhurl, cookies, "components", fromdom, allobjs)
+        filterdict(dhurl, cookies, "applications", fromdom, allobjs)
+        filterdict(dhurl, cookies, "releases", fromdom, allobjs)
+
+        jstr = json.dumps(allobjs, indent=2)
+        print(jstr)
+    elif (action.lower() == "import"):
+        if (dhapi.is_empty(dhurl)):
+            print("--dhurl is required")
+            sys.exit(1)
+
+        if (dhapi.is_empty(dhuser)):
+            print("--dhuser is required")
+            sys.exit(1)
+
+        if (dhapi.is_empty(dhpass)):
+            print("--dhpass is required")
+            sys.exit(1)
+
+        if (dhapi.is_empty(fromdom)):
+            print("--fromdom is required")
+            sys.exit(1)
+
+        if (dhapi.is_empty(todom)):
+            print("--todom is required")
+            sys.exit(1)
+
+        if (dhapi.is_empty(importfile)):
+            print("--importfile is required")
+            sys.exit(1)
+
+        file = open(importfile, 'r')
+        all_of_it = file.read()
+        file.close()
+        jstr = re.sub(fromdom, todom, all_of_it, flags=re.IGNORECASE)
+        allobjs = json.loads(jstr)
+
+        importdict(dhurl, cookies, "users", allobjs)
+        importdict(dhurl, cookies, "groups", allobjs)
+        importdict(dhurl, cookies, "comptypes", allobjs)
+        importdict(dhurl, cookies, "credentials", allobjs)
+        importdict(dhurl, cookies, "endpoints", allobjs)
+        importdict(dhurl, cookies, "datasources", allobjs)
+        importdict(dhurl, cookies, "buildengines", allobjs)
+        importdict(dhurl, cookies, "builjobs", allobjs)
+        importdict(dhurl, cookies, "tasks", allobjs)
+        importdict(dhurl, cookies, "engines", allobjs)
+        importdict(dhurl, cookies, "repositories", allobjs)
+        importdict(dhurl, cookies, "environments", allobjs)
+        importdict(dhurl, cookies, "components", allobjs)
+        importdict(dhurl, cookies, "applications", allobjs)
+        importdict(dhurl, cookies, "releases", allobjs)
     else:
         print("Action is not defined.  Use deploy, envscript, approve, move or updatecomp for action")
         sys.exit(1)
@@ -324,6 +415,28 @@ def envscript(envvars, envvars_sh):
     fp_script.close()
     os.chmod(envvars_sh, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
 
+def filterdict(dhurl, cookies, objtype, fromdom, allobjs):
+
+    data = dhapi.get_json(dhurl + "/dmadminweb/API/export/" + objtype, cookies)
+
+    objlist = []
+    for obj in data.get(objtype, []):
+        objname = obj.get("objname", "")
+        if (fromdom.lower() in objname.lower()):
+            objlist.append(obj)
+
+    allobjs[objtype] = objlist
+
+
+def importdict(dhurl, cookies, objtype, allobjs):
+
+    print(objtype)
+
+    for obj in allobjs.get(objtype, []):
+        pprint(obj)
+        jstr = json.dumps(obj, indent=2)
+        data = dhapi.post_json(dhurl + "/dmadminweb/API/import/", jstr, cookies)
+        pprint(data)
 
 if __name__ == '__main__':
     main()

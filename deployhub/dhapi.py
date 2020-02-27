@@ -28,6 +28,20 @@ def get_json(url, cookies):
         print(str(conn_error))
     return None
 
+def post_json(url, payload, cookies):
+    """ Post URL as json string.
+        Returns: json string"""
+
+    try:
+        res = requests.post(url, data=payload, cookies=cookies)
+        if (res is None):
+            return None
+        if (res.status_code != 200):
+            return None
+        return res.json()
+    except requests.exceptions.ConnectionError as conn_error:
+        print(str(conn_error))
+    return None
 
 def is_empty(my_string):
     """Is the string empty"""
