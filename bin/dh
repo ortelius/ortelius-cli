@@ -156,15 +156,6 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
 
         cnt = 1
         while True:
-            if (dhapi.is_not_empty(saveappver)):
-                appversion = saveappver
-
-            if (dhapi.is_empty(appversion)):
-                parts = appname.split(';')
-                if (len(parts) == 3):
-                    appname = parts[0] + ';' + parts[1]
-                    appversion = parts[2]
-
             # create component version
             print(f"Creating Component")
             compid = dhapi.new_component_version(dhurl, cookies, compname, compvariant, compversion, kind, None)
@@ -208,6 +199,16 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             print("Attribute Update Done")
 
             if (dhapi.is_not_empty(appname)):
+
+                if (dhapi.is_not_empty(saveappver)):
+                    appversion = saveappver
+
+                if (dhapi.is_empty(appversion)):
+                    parts = appname.split(';')
+                    if (len(parts) == 3):
+                        appname = parts[0] + ';' + parts[1]
+                        appversion = parts[2]
+
                 if (dhapi.is_empty(appversion)):
                     parts = appname.split(';')
                     if (len(parts) == 3):
