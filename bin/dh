@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """DeployHub's CLI using the dhapi module"""
 
-__version__ = '9.3.29'
+__version__ = '9.3.28'
 
 import json
 import os
@@ -23,12 +23,12 @@ from deployhub import dhapi
 @click.option('--dhurl', help='DeployHub Url', envvar='DHURL')
 @click.option('--dhuser', help='DeployHub User', envvar='DHUSER')
 @click.option('--dhpass', help='DeployHub Password', envvar='DHPASS')
-@click.option('--appname', help='Application Name')
+@click.option('--appname', help='Application Name', envvar='COMPONENT_APPLICATION')
 @click.option('--appversion', help='Application Version')
 @click.option('--deployenv', help='Deployment Environment')
-@click.option('--compname', help='Component Name')
+@click.option('--compname', help='Component Name', envvar='COMPONENT_NAME')
 @click.option('--compvariant', help='Component Variant')
-@click.option('--compversion', help='Component Version')
+@click.option('--compversion', help='Component Version', envvar='COMPONENT_VERSION')
 @click.option('--from_domain', help='Move from domain')
 @click.option('--task', help='Task to use for move')
 @click.option('--envvars', help='Env Variables TOML file')
@@ -226,8 +226,10 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
                 print("Assignment Done")
 
             compname = os.environ.get("COMPONENT_NAME_" + str(cnt), None)
+            compversion = os.environ.get("COMPONENT_VERSION_" + str(cnt), None)
             appname = os.environ.get("COMPONENT_APPLICATION_" + str(cnt), None)
             appversion = ""
+
             cnt = cnt + 1
 
             if (compname is None):  # leave loop if no more components defined in env
