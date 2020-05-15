@@ -275,6 +275,8 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
         if (dhapi.is_not_empty(appversion)):
             saveappver = appversion
 
+        assign_completed = []
+
         cnt = 1
         while True:
             # create component version
@@ -314,7 +316,9 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
                 appid = data[0]
                 print("Creation Done: " + dhapi.get_application_name(dhurl, cookies, appid))
 
-            dhapi.assign_app_to_env(dhurl, cookies, appname, envs)
+            if (appname not in [assign_completed]):
+                dhapi.assign_app_to_env(dhurl, cookies, appname, envs)
+                assign_completed.append(appname)
 
             print("Assigning Component Version to Application Version " + str(appid))
 
