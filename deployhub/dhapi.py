@@ -689,6 +689,18 @@ def assign_comp_to_app(dhurl, cookies, appid, compid, parent_compid, xpos, ypos)
     get_json(dhurl + "/dmadminweb/UpdateAttrs?f=acvm&a=" + str(appid) + "&c=" + str(compid) + "&xpos=" + str(xpos) + "&ypos=" + str(ypos), cookies)
     get_json(dhurl + "/dmadminweb/UpdateAttrs?f=cal&a=" + str(appid) + "&fn=" + str(parent_compid) + "&tn=" + str(compid), cookies)
 
+def assign_app_to_env(dhurl, cookies, appname, envs):
+    domain = ""
+    if ('.' in appname):
+        parts = appname.split('.')
+        if (parts):
+            parts.pop()
+        domain = '.'.join(parts)
+        domain = "domain=" + urllib.parse.quote(domain)
+        appname = appname.split('.')[-1]
+    if (envs is not None):
+        for env in envs:
+            get_json(dhurl + "/dmadminweb/API/assign/application/?name=" + urllib.parse.quote(appname) + "&env=" + urllib.parse.quote(env), cookies)
 
 def clone_repo(project):
     print("### Grabbing features.toml ###")
