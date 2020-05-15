@@ -48,12 +48,13 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
     approve: approve the application version\n
     move: move the application version using the supplied task\n
     updatecomp: create/replace the component version for the application verion
+    assign: assigns a component version to an application verion
     envscript: creates a bash file from the component toml file
     export: exports a domain including all objects to stdout
     import: imports the export file into the new domain
     """
 
-    if (action.lower() == "deploy" or action.lower() == "updatecomp" or action.lower() == "approve"  or action.lower() == "export" or action.lower() == "import"):
+    if (action.lower() == "deploy" or action.lower() == "updatecomp" or action.lower() == "approve"  or action.lower() == "export"  or action.lower() == "assign"):
         if (dhapi.is_empty(dhurl)):
             print("--dhurl is required")
             sys.exit(1)
@@ -227,6 +228,92 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
 
                 data = dhapi.add_compver_to_appver(dhurl, cookies, appid, compid)
                 print("Assignment Done")
+
+            compname = os.environ.get("COMPONENT_NAME_" + str(cnt), None)
+            compversion = os.environ.get("COMPONENT_VERSION_" + str(cnt), None)
+            appname = os.environ.get("COMPONENT_APPLICATION_" + str(cnt), None)
+            appversion = ""
+
+            cnt = cnt + 1
+
+            if (compname is None):  # leave loop if no more components defined in env
+                break
+    elif (action.lower() == "assign"):
+
+        if (dhapi.is_empty(dhurl)):
+            print("--dhurl is required")
+            sys.exit(1)
+
+        if (dhapi.is_empty(dhuser)):
+            print("--dhuser is required")
+            sys.exit(1)
+
+        if (dhapi.is_empty(dhpass)):
+            print("--dhpass is required")
+            sys.exit(1)
+
+        if (dhapi.is_empty(appname)):
+            print("--appname is required")
+            sys.exit(1)
+
+        if (dhapi.is_empty(compname)):
+            print("--compname is required")
+            sys.exit(1)
+
+        if (dhapi.is_empty(compvariant)):
+            compvariant = ""
+
+        if (dhapi.is_empty(compvariant) and "-v" in compversion):
+            compvariant = compversion.split("-v")[0]
+            compversion = "v" + compversion.split("-v")[1]
+
+        if (dhapi.is_empty(compvariant) and "-V" in compversion):
+            compvariant = compversion.split("-V")[0]
+            compversion = "v" + compversion.split("-V")[1]
+
+        saveappver = ""
+        if (dhapi.is_not_empty(appversion)):
+            saveappver = appversion
+
+        cnt = 1
+        while True:
+            # create component version
+            print(f"Getting Component")
+            [compid, name] = dhapi.get_component(dhurl, cookies, compname, compvariant, compversion)
+
+            if (compid > 0):
+                print("Found " + name)
+            else:
+                print("Skipping " + compname + ";" + compvariant + ";" + compversion)
+                continue
+
+            if (dhapi.is_not_empty(saveappver)):
+                appversion = saveappver
+
+            if (dhapi.is_empty(appversion)):
+                parts = appname.split(';')
+                if (len(parts) == 3):
+                    appname = parts[0] + ';' + parts[1]
+                    appversion = parts[2]
+
+            if (dhapi.is_empty(appversion)):
+                parts = appname.split(';')
+                if (len(parts) == 3):
+                    appname = parts[0] + ';' + parts[1]
+                    appversion = parts[2]
+
+            if (dhapi.is_empty(appversion)):
+                appversion = ""
+
+            print("Creating Application Version '" + str(appname) + "' '" + appversion + "'")
+            data = dhapi.new_application(dhurl, cookies, appname, appversion, envs)
+            appid = data[0]
+            print("Creation Done: " + dhapi.get_application_name(dhurl, cookies, appid))
+
+            print("Assigning Component Version to Application Version " + str(appid))
+
+            data = dhapi.add_compver_to_appver(dhurl, cookies, appid, compid)
+            print("Assignment Done")
 
             compname = os.environ.get("COMPONENT_NAME_" + str(cnt), None)
             compversion = os.environ.get("COMPONENT_VERSION_" + str(cnt), None)
