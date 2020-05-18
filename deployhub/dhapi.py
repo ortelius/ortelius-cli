@@ -594,8 +594,13 @@ def get_application(dhurl, cookies, appname, appversion, id_only):
     return [-1, "", -1]
 
 
-def get_base_component(dhurl, cookies, compid):
-    data = get_json(dhurl + "/dmadminweb/API/component/" + str(compid), cookies)
+def get_base_component(dhurl, cookies, compid, id_only):
+
+    param = ""
+    if (id_only):
+        param = "?idonly=Y"
+
+    data = get_json(dhurl + "/dmadminweb/API/component/" + str(compid) + param, cookies)
 
     if (data is None):
         return [-1, "", -1]
@@ -603,7 +608,7 @@ def get_base_component(dhurl, cookies, compid):
     result = data.get('result', None)
 
     while (result and result.get('predecessor', None)):
-        data2 = get_json(dhurl + "/dmadminweb/API/component/" + str(result['predecessor']['id']), cookies)
+        data2 = get_json(dhurl + "/dmadminweb/API/component/" + str(result['predecessor']['id']) + param, cookies)
 
         if (data2 is None):
             break
@@ -664,7 +669,7 @@ def new_application(dhurl, cookies, appname, appversion, envs):
 
 def add_compver_to_appver(dhurl, cookies, appid, compid):
     replace_compid = -1
-    basecompid = get_base_component(dhurl, cookies, compid)
+    basecompid = get_base_component(dhurl, cookies, compid, True)
     lastcompid = 0
     xpos = 100
     ypos = 100
@@ -682,7 +687,7 @@ def add_compver_to_appver(dhurl, cookies, appid, compid):
             lastcompid = result.get('lastcompver', -1)
 
             for comp in complist:
-                app_basecompid = get_base_component(dhurl, cookies, comp['id'])
+                app_basecompid = get_base_component(dhurl, cookies, comp['id'], True)
                 if (app_basecompid == basecompid):
                     replace_compid = comp['id']
 
