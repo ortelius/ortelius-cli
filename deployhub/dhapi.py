@@ -74,7 +74,7 @@ def login(dhurl, user, password, errors):
 def deploy_application(dhurl, cookies, appname, appversion, env):
     """Deploy the application to the environment
     Returns: deployment_id"""
-    data = get_application(dhurl, cookies, appname, appversion)
+    data = get_application(dhurl, cookies, appname, appversion, True)
     appid = data[0]
 
     data = get_json(dhurl + "/dmadminweb/API/deploy?app=" + str(appid) + "&env=" + urllib.parse.quote(env), cookies)
@@ -90,7 +90,7 @@ def deploy_application(dhurl, cookies, appname, appversion, env):
 
 def move_application(dhurl, cookies, appname, appversion, from_domain, task):
     """Move an application from the from_domain using the task"""
-    data = get_application(dhurl, cookies, appname, appversion)
+    data = get_application(dhurl, cookies, appname, appversion, True)
     appid = data[0]
 
     # Get from domainid
@@ -119,7 +119,7 @@ def move_application(dhurl, cookies, appname, appversion, from_domain, task):
 
 def approve_application(dhurl, cookies, appname, appversion):
     """Approve the application for the current domain that it is in."""
-    data = get_application(dhurl, cookies, appname, appversion)
+    data = get_application(dhurl, cookies, appname, appversion, True)
     appid = data[0]
 
     data = get_json(dhurl + "/dmadminweb/API/approve/" + appid, cookies)
@@ -324,9 +324,14 @@ def get_component_name(dhurl, cookies, compid):
     return name
 
 
-def get_application_name(dhurl, cookies, appid):
+def get_application_name(dhurl, cookies, appid, id_only):
     name = ""
-    data = get_json(dhurl + "/dmadminweb/API/application/" + str(appid), cookies)
+
+    param = ""
+    if (id_only):
+        param = "&idonly=Y"
+
+    data = get_json(dhurl + "/dmadminweb/API/application/" + str(appid) + param, cookies)
 
     if (data is None):
         return name
@@ -620,14 +625,14 @@ def new_application(dhurl, cookies, appname, appversion, envs):
         appname = appname.split('.')[-1]
 
     # Get Base Version
-    data = get_application(dhurl, cookies, appname, "")
+    data = get_application(dhurl, cookies, appname, "", True)
     parent_appid = data[0]
 
     # Create base version
     if (parent_appid < 0):
         data = get_json(dhurl + "/dmadminweb/API/new/application/?name=" + urllib.parse.quote(appname) + "&" + domain, cookies)
         if (data.get('success', False)):
-            data = get_application(dhurl, cookies, appname, "")
+            data = get_application(dhurl, cookies, appname, "", True)
             parent_appid = data[0]
 
         if (envs is not None):
@@ -635,11 +640,11 @@ def new_application(dhurl, cookies, appname, appversion, envs):
                 data = get_json(dhurl + "/dmadminweb/API/assign/application/?name=" + urllib.parse.quote(appname) + "&env=" + urllib.parse.quote(env), cookies)
 
     # Refetch parent to get version list
-    data = get_application(dhurl, cookies, appname, "")
+    data = get_application(dhurl, cookies, appname, "", True)
     latest_appid = data[2]
 
     # Refetch the current app version to see if we need to create it or not
-    data = get_application(dhurl, cookies, appname, appversion)
+    data = get_application(dhurl, cookies, appname, appversion, True)
     appid = data[0]
 
     if (appid < 0):
