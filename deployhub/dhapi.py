@@ -596,24 +596,15 @@ def get_application(dhurl, cookies, appname, appversion, id_only):
 
 def get_base_component(dhurl, cookies, compid, id_only):
 
-    param = ""
-    if (id_only):
-        param = "?idonly=Y"
-
-    data = get_json(dhurl + "/dmadminweb/API/component/" + str(compid) + param, cookies)
+    data = get_json(dhurl + "/dmadminweb/API/basecomponent/" + str(compid), cookies)
 
     if (data is None):
         return [-1, "", -1]
 
     result = data.get('result', None)
 
-    while (result and result.get('predecessor', None)):
-        data2 = get_json(dhurl + "/dmadminweb/API/component/" + str(result['predecessor']['id']) + param, cookies)
-
-        if (data2 is None):
-            break
-
-        result = data2.get('result', None)
+    if (result is None):
+        return [-1, "", -1]
 
     return result['id']
 
