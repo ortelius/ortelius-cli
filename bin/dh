@@ -286,6 +286,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             if (compid > 0):
                 print("Found " + name)
             else:
+                cnt = cnt + 1
                 print("Skipping " + compname + ";" + compvariant + ";" + compversion)
                 continue
 

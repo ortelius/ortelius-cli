@@ -550,7 +550,7 @@ def update_component_attrs(dhurl, cookies, compname, compvariant, compversion, a
     return [False, "No attributes to update on '" + compname + "'"]
 
 
-def get_application(dhurl, cookies, appname, appversion):
+def get_application(dhurl, cookies, appname, appversion, id_only):
     appversion = clean_name(appversion)
 
     application = ""
@@ -560,7 +560,11 @@ def get_application(dhurl, cookies, appname, appversion):
     else:
         application = appname
 
-    data = get_json(dhurl + "/dmadminweb/API/application/?name=" + urllib.parse.quote(application), cookies)
+    param = ""
+    if (id_only):
+        param = "&idonly=Y"
+
+    data = get_json(dhurl + "/dmadminweb/API/application/?name=" + urllib.parse.quote(application) + param, cookies)
 
     if (data is None):
         return [-1, "", -1]
