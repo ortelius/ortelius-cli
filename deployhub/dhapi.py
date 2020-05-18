@@ -260,7 +260,7 @@ def clean_name(name):
     return name
 
 
-def get_component(dhurl, cookies, compname, compvariant, compversion):
+def get_component(dhurl, cookies, compname, compvariant, compversion, id_only):
     compvariant = clean_name(compvariant)
     compversion = clean_name(compversion)
 
@@ -290,7 +290,11 @@ def get_component(dhurl, cookies, compname, compvariant, compversion):
     else:
         check_compname = short_compname
 
-    data = get_json(dhurl + "/dmadminweb/API/component/?name=" + urllib.parse.quote(component), cookies)
+    param = ""
+    if (id_only):
+        param = "&idonly=Y"
+
+    data = get_json(dhurl + "/dmadminweb/API/component/?name=" + urllib.parse.quote(component) + param, cookies)
 
     if (data is None):
         return [-1, ""]
@@ -314,7 +318,7 @@ def get_component(dhurl, cookies, compname, compvariant, compversion):
 
 def get_component_name(dhurl, cookies, compid):
     name = ""
-    data = get_json(dhurl + "/dmadminweb/API/component/" + str(compid), cookies)
+    data = get_json(dhurl + "/dmadminweb/API/component/" + str(compid) + "?idonly=Y", cookies)
 
     if (data is None):
         return name
@@ -350,11 +354,11 @@ def new_component_version(dhurl, cookies, compname, compvariant, compversion, ki
         compversion = None
 
     # Get latest version of compnent variant
-    data = get_component(dhurl, cookies, compname, compvariant, compversion)
+    data = get_component(dhurl, cookies, compname, compvariant, compversion, False)
     if (data[0] == -1):
-        data = get_component(dhurl, cookies, compname, compvariant, None)
+        data = get_component(dhurl, cookies, compname, compvariant, None, False)
         if (data[0] == -1):
-            data = get_component(dhurl, cookies, compname, "", None)
+            data = get_component(dhurl, cookies, compname, "", None, False)
 
     compid = data[0]
     found_compname = data[1]
@@ -524,7 +528,7 @@ def new_component(dhurl, cookies, compname, compvariant, compversion, kind, pare
 
 def update_component_attrs(dhurl, cookies, compname, compvariant, compversion, attrs):
     # Get latest version of compnent variant
-    data = get_component(dhurl, cookies, compname, compvariant, compversion)
+    data = get_component(dhurl, cookies, compname, compvariant, compversion, True)
     compid = data[0]
 
     if (compid < 0):
