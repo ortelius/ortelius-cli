@@ -160,7 +160,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             # create component version
             print(f"Creating Component")
             compid = dhapi.new_component_version(dhurl, cookies, compname, compvariant, compversion, kind, None)
-            print("Creation Done: " + dhapi.get_component_name(dhurl, cookies, compid, True))
+            print("Creation Done: " + dhapi.get_component_name(dhurl, cookies, compid))
 
             attrs = {}
             print("Updating Component Attributes\n")
