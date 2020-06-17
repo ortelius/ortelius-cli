@@ -24,7 +24,7 @@ from deployhub import dhapi
 @click.option('--dhuser', help='DeployHub User', envvar='DHUSER')
 @click.option('--dhpass', help='DeployHub Password', envvar='DHPASS')
 @click.option('--appname', help='Application Name', envvar='COMPONENT_APPLICATION')
-@click.option('--appversion', help='Application Version')
+@click.option('--appversion', help='Application Version', envvar='COMPONENT_APPLICATION_VERSION')
 @click.option('--deployenv', help='Deployment Environment')
 @click.option('--compname', help='Component Name', envvar='COMPONENT_NAME')
 @click.option('--compvariant', help='Component Variant')
@@ -232,7 +232,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             compname = os.environ.get("COMPONENT_NAME_" + str(cnt), None)
             compversion = os.environ.get("COMPONENT_VERSION_" + str(cnt), None)
             appname = os.environ.get("COMPONENT_APPLICATION_" + str(cnt), None)
-            appversion = ""
+            appversion = os.environ.get("COMPONENT_APPLICATION_VERSION_" + str(cnt), None)
 
             cnt = cnt + 1
 
@@ -280,7 +280,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
         cnt = 1
         while True:
             # create component version
-            print(f"Getting Component")
+            print(f"Getting Component:" + )
             [compid, name] = dhapi.get_component(dhurl, cookies, compname, compvariant, compversion, True)
 
             if (compid > 0):
@@ -325,7 +325,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
             compname = os.environ.get("COMPONENT_NAME_" + str(cnt), None)
             compversion = os.environ.get("COMPONENT_VERSION_" + str(cnt), None)
             appname = os.environ.get("COMPONENT_APPLICATION_" + str(cnt), None)
-            appversion = ""
+            appversion = os.environ.get("COMPONENT_APPLICATION_VERSION_" + str(cnt), None)
 
             cnt = cnt + 1
 
@@ -499,10 +499,12 @@ def envscript(envvars, envvars_sh):
                     fp_script.write("export COMPONENT_NAME=\"" + compapp.get("Name", "") + "\"\n")
                     fp_script.write("export COMPONENT_VERSION=\"" + vardict.get("Version", "") + "\"\n")
                     fp_script.write("export COMPONENT_APPLICATION=\"" + compapp.get("Application", "") + "\"\n")
+                    fp_script.write("export COMPONENT_APPLICATION_VERSION=\"" + compapp.get("AppVersion", "") + "\"\n")
                 else:
                     fp_script.write("export COMPONENT_NAME_" + str(cnt) + "=\"" + compapp.get("Name", "") + "\"\n")
                     fp_script.write("export COMPONENT_VERSION_" + str(cnt) + "=\"" + vardict.get("Version", "") + "\"\n")
                     fp_script.write("export COMPONENT_APPLICATION_" + str(cnt) + "=\"" + compapp.get("Application", "") + "\"\n")
+                    fp_script.write("export COMPONENT_APPLICATION_VERSION_" + str(cnt) + "=\"" + compapp.get("AppVersion", "") + "\"\n")
 
                 cnt = cnt + 1
         else:
