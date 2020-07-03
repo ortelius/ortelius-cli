@@ -54,7 +54,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
     import: imports the export file into the new domain
     """
 
-    if (action.lower() == "deploy" or action.lower() == "updatecomp" or action.lower() == "approve"  or action.lower() == "export"  or action.lower() == "assign"):
+    if (action.lower() == "deploy" or action.lower() == "updatecomp" or action.lower() == "approve"  or action.lower() == "export"  or action.lower() == "import" or action.lower() == "assign"):
         if (dhapi.is_empty(dhurl)):
             print("--dhurl is required")
             sys.exit(1)
