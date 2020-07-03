@@ -459,8 +459,6 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
         importdict(dhurl, cookies, "credentials", allobjs)
         importdict(dhurl, cookies, "endpoints", allobjs)
         importdict(dhurl, cookies, "datasources", allobjs)
-        importdict(dhurl, cookies, "buildengines", allobjs)
-        importdict(dhurl, cookies, "builjobs", allobjs)
         importdict(dhurl, cookies, "tasks", allobjs)
         importdict(dhurl, cookies, "engines", allobjs)
         importdict(dhurl, cookies, "repositories", allobjs)
