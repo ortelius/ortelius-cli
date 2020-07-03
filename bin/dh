@@ -410,8 +410,6 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
         filterdict(dhurl, cookies, "credentials", fromdom, allobjs)
         filterdict(dhurl, cookies, "endpoints", fromdom, allobjs)
         filterdict(dhurl, cookies, "datasources", fromdom, allobjs)
-        filterdict(dhurl, cookies, "buildengines", fromdom, allobjs)
-        filterdict(dhurl, cookies, "builjobs", fromdom, allobjs)
         filterdict(dhurl, cookies, "tasks", fromdom, allobjs)
         filterdict(dhurl, cookies, "engines", fromdom, allobjs)
         filterdict(dhurl, cookies, "repositories", fromdom, allobjs)
