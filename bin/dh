@@ -280,7 +280,6 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
         cnt = 1
         while True:
             # create component version
-            print(f"Getting Component:" + )
             [compid, name] = dhapi.get_component(dhurl, cookies, compname, compvariant, compversion, True)
 
             if (compid > 0):
