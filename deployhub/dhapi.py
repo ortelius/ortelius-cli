@@ -333,7 +333,7 @@ def get_application_name(dhurl, cookies, appid, id_only):
 
     param = ""
     if (id_only):
-        param = "&idonly=Y"
+        param = "?idonly=Y"
 
     data = get_json(dhurl + "/dmadminweb/API/application/" + str(appid) + param, cookies)
 
@@ -676,7 +676,7 @@ def new_application(dhurl, cookies, appname, appversion, appautoinc, envs):
 
         appid = data['result']['id']
 
-    return [appid, ""]
+    return [appid, appname + ";" + appversion]
 
 
 def add_compver_to_appver(dhurl, cookies, appid, compid):
