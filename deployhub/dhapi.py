@@ -609,7 +609,7 @@ def get_base_component(dhurl, cookies, compid, id_only):
     return result['id']
 
 
-def new_application(dhurl, cookies, appname, appversion, envs):
+def new_application(dhurl, cookies, appname, appversion, appautoinc, envs):
     appversion = clean_name(appversion)
 
     appid = 0
@@ -646,6 +646,27 @@ def new_application(dhurl, cookies, appname, appversion, envs):
     # Refetch the current app version to see if we need to create it or not
     data = get_application(dhurl, cookies, appname, appversion, True)
     appid = data[0]
+
+    # inc schemantic version & loop until we don't have an exisiting version
+    while (appautoinc is not None and appid >= 0):
+        parts = appversion.split(';')
+        ver = parts.pop()
+        if ('_' in ver):
+            parts = ver.split('_')
+            incnum = parts.pop()
+            incnum = incnum + 1
+            parts.push(incnum)
+            ver = '_'.join(parts)
+        elif (ver.isdigit()):
+            ver = ver + 1
+        else:
+            ver = ver + ";1"
+        parts.push(ver)
+        appversion = ';'.join(parts)
+
+        data = get_application(dhurl, cookies, appname, appversion, True)
+        appid = data[0]
+
 
     if (appid < 0):
         data = get_json(dhurl + "/dmadminweb/API/newappver/" + str(latest_appid) + "/?name=" + urllib.parse.quote(appname + ";" + appversion) + "&" + domain, cookies)
