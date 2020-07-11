@@ -655,13 +655,13 @@ def new_application(dhurl, cookies, appname, appversion, appautoinc, envs):
             schema_parts = ver.split('_')
             incnum = schema_parts.pop()
             incnum = str(int(incnum) + 1)
-            schema_parts.push(incnum)
+            schema_parts.append(incnum)
             ver = '_'.join(schema_parts)
         elif (ver.isdigit()):
             ver = str(int(ver) + 1)
         else:
             ver = ver + ";1"
-        parts.push(ver)
+        parts.append(ver)
         appversion = ';'.join(parts)
 
         data = get_application(dhurl, cookies, appname, appversion, True)
