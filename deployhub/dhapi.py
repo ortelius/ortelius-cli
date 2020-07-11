@@ -654,7 +654,7 @@ def new_application(dhurl, cookies, appname, appversion, appautoinc, envs):
         if ('_' in ver):
             schema_parts = ver.split('_')
             incnum = schema_parts.pop()
-            incnum = incnum + 1
+            incnum = str(int(incnum) + 1)
             schema_parts.push(incnum)
             ver = '_'.join(schema_parts)
         elif (ver.isdigit()):
