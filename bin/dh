@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """DeployHub's CLI using the dhapi module"""
 
-__version__ = '9.3.46'
+__version__ = '9.3.45'
 
 import json
 import os
@@ -25,6 +25,7 @@ from deployhub import dhapi
 @click.option('--dhpass', help='DeployHub Password', envvar='DHPASS')
 @click.option('--appname', help='Application Name', envvar='COMPONENT_APPLICATION')
 @click.option('--appversion', help='Application Version', envvar='COMPONENT_APPLICATION_VERSION')
+@click.option('--appautoinc', help='Application Auto Increment Version', envvar='COMPONENT_APPLICATION_AUTOINC')
 @click.option('--deployenv', help='Deployment Environment')
 @click.option('--compname', help='Component Name', envvar='COMPONENT_NAME')
 @click.option('--compvariant', help='Component Variant')
@@ -40,7 +41,7 @@ from deployhub import dhapi
 @click.option('--importfile', help='File to Import')
 @click.option('--fromdom', help='From Domain')
 @click.option('--todom', help='To Domain')
-def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvariant, compversion, kind, deployenv, envs, compattr, from_domain, task, envvars, envvars_sh, importfile, fromdom, todom):
+def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compname, compvariant, compversion, kind, deployenv, envs, compattr, from_domain, task, envvars, envvars_sh, importfile, fromdom, todom):
     """
     ACTION is (deploy, updatecomp, approve, move, envscript, export, import) for the type of action to perform.
 
@@ -220,7 +221,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, compname, compvaria
                     appversion = ""
 
                 print("Creating Application Version '" + str(appname) + "' '" + appversion + "'")
-                data = dhapi.new_application(dhurl, cookies, appname, appversion, envs)
+                data = dhapi.new_application(dhurl, cookies, appname, appversion, appautoinc, envs)
                 appid = data[0]
                 print("Creation Done: " + dhapi.get_application_name(dhurl, cookies, appid, True))
 
