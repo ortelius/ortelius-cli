@@ -652,11 +652,11 @@ def new_application(dhurl, cookies, appname, appversion, appautoinc, envs):
         parts = appversion.split(';')
         ver = parts.pop()
         if ('_' in ver):
-            parts = ver.split('_')
-            incnum = parts.pop()
+            schema_parts = ver.split('_')
+            incnum = schema_parts.pop()
             incnum = incnum + 1
-            parts.push(incnum)
-            ver = '_'.join(parts)
+            schema_parts.push(incnum)
+            ver = '_'.join(schema_parts)
         elif (ver.isdigit()):
             ver = ver + 1
         else:
