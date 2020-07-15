@@ -382,9 +382,15 @@ def new_component_version(dhurl, cookies, compname, compvariant, compversion, ki
 
     if (compid < 0):
         if (compversion is None or compversion == ""):
-            compid = new_file_component(dhurl, cookies, compname, "", "", -1, None)
+            if (kind.lower() == "docker"):
+                compid = new_docker_component(dhurl, cookies, compname, "", "", -1)
+            else:    
+                compid = new_file_component(dhurl, cookies, compname, "", "", -1, None)
         else:
-            compid = new_file_component(dhurl, cookies, compname, compvariant, "", -1, None)
+            if (kind.lower() == "docker"):
+                compid = new_docker_component(dhurl, cookies, compname, compvariant, "", -1)
+            else:
+                compid = new_file_component(dhurl, cookies, compname, compvariant, "", -1, None)
 
     # Create component items for the component
     if (found_compname == "" or found_compname != check_compname):
