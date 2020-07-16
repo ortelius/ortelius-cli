@@ -77,7 +77,7 @@ def deploy_application(dhurl, cookies, appname, appversion, env):
     data = get_application(dhurl, cookies, appname, appversion, True)
     appid = data[0]
 
-    data = get_json(dhurl + "/dmadminweb/API/deploy?app=" + str(appid) + "&env=" + urllib.parse.quote(env), cookies)
+    data = get_json(dhurl + "/dmadminweb/API/deploy?app=" + str(appid) + "&env=" + urllib.parse.quote(env) + "&wait=N", cookies)
 
     if (data is None):
         return [-1, "Deployment Failed"]
