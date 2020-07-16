@@ -105,8 +105,11 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 appname = parts[0] + ';' + parts[1]
                 appversion = parts[2]
            
-        print(f'Deploying {appname} {appversion} to {deployenv}')
-        data = dhapi.deploy_application(dhurl, cookies, appname, appversion, deployenv)
+        data = dhapi.get_application(dhurl, cookies, appname, appversion, True)
+        appid = data[0]
+        appname = data[1]
+        print(f'Deploying {appname} to {deployenv}')
+        data = dhapi.deploy_application(dhurl, cookies, appname, "", deployenv)
 
         deployid = data[0]
         if (deployid < 0):
