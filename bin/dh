@@ -112,7 +112,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             appversion = ""
             
         print(f'Deploying {appname} {appversion} to {deployenv}')
-        data = dhapi.deploy_application(dhurl, cookies, appname, deployenv)
+        data = dhapi.deploy_application(dhurl, cookies, appname, appversion, deployenv)
 
         deployid = data[0]
         if (deployid < 0):
