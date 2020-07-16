@@ -239,26 +239,6 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
             if (compname is None):  # leave loop if no more components defined in env
                 break
-
-            if (deployenv is not None):
-                print(f'Deploying {appname} {appversion} to {deployenv}')
-                data = dhapi.deploy_application(dhurl, cookies, str(appid), "", deployenv)
-
-                deployid = data[0]
-                if (deployid < 0):
-                    print(data[1])
-                    sys.exit(1)
-
-                print(f"Fetching Logs for {deployid}")
-                data = dhapi.get_logs(dhurl, cookies, deployid)
-
-                print(data[1])
-                if (data[0]):
-                    print("Successful")
-                    sys.exit(0)
-                else:
-                    print("Failed")
-                    sys.exit(1)
     elif (action.lower() == "assign"):
 
         if (dhapi.is_empty(dhurl)):
