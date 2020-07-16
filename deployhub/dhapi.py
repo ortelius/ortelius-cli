@@ -580,7 +580,8 @@ def get_application(dhurl, cookies, appname, appversion, id_only):
         param = "&idonly=Y"
 
     if (appversion.lower() == "latest"):
-        param = param + "&latest=Y"    
+        param = param + "&latest=Y"
+        appversion = ""    
 
     data = get_json(dhurl + "/dmadminweb/API/application/?name=" + urllib.parse.quote(application) + param, cookies)
 
