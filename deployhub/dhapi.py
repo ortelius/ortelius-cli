@@ -650,8 +650,8 @@ def new_application(dhurl, cookies, appname, appversion, appautoinc, envs):
                 data = get_json(dhurl + "/dmadminweb/API/assign/application/?name=" + urllib.parse.quote(appname) + "&env=" + urllib.parse.quote(env), cookies)
 
     # Refetch parent to get version list
-    data = get_application(dhurl, cookies, appname, "", False)
-    latest_appid = data[2]
+    data = get_application(dhurl, cookies, appname, "latest", False)
+    latest_appid = data[0]
 
     # Refetch the current app version to see if we need to create it or not
     data = get_application(dhurl, cookies, appname, appversion, True)
