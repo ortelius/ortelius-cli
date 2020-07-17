@@ -626,6 +626,8 @@ def new_application(dhurl, cookies, appname, appversion, appautoinc, envs):
     parent_appid = -1
 
     domain = ""
+    full_appname = appname
+
     if ('.' in appname):
         parts = appname.split('.')
         if (parts):
@@ -635,7 +637,7 @@ def new_application(dhurl, cookies, appname, appversion, appautoinc, envs):
         appname = appname.split('.')[-1]
 
     # Get Base Version
-    data = get_application(dhurl, cookies, appname, "", True)
+    data = get_application(dhurl, cookies, full_appname, "", True)
     parent_appid = data[0]
 
     # Create base version
@@ -647,14 +649,15 @@ def new_application(dhurl, cookies, appname, appversion, appautoinc, envs):
 
         if (envs is not None):
             for env in envs:
-                data = get_json(dhurl + "/dmadminweb/API/assign/application/?name=" + urllib.parse.quote(appname) + "&env=" + urllib.parse.quote(env), cookies)
+                data = get_json(dhurl + "/dmadminweb/API/assign/application/?name=" + urllib.parse.quote(full_appname) + "&env=" + urllib.parse.quote(env), cookies)
 
     # Refetch parent to get version list
-    data = get_application(dhurl, cookies, appname, "latest", False)
+
+    data = get_application(dhurl, cookies, full_appname, "latest", False)
     latest_appid = data[0]
 
     # Refetch the current app version to see if we need to create it or not
-    data = get_application(dhurl, cookies, appname, appversion, True)
+    data = get_application(dhurl, cookies, full_appname, appversion, True)
     appid = data[0]
 
     # inc schemantic version & loop until we don't have an exisiting version
@@ -674,19 +677,19 @@ def new_application(dhurl, cookies, appname, appversion, appautoinc, envs):
         parts.append(ver)
         appversion = ';'.join(parts)
 
-        data = get_application(dhurl, cookies, appname, appversion, True)
+        data = get_application(dhurl, cookies, full_appname, appversion, True)
         appid = data[0]
 
 
     if (appid < 0):
-        data = get_json(dhurl + "/dmadminweb/API/newappver/" + str(latest_appid) + "/?name=" + urllib.parse.quote(appname + ";" + appversion) + "&" + domain, cookies)
+        data = get_json(dhurl + "/dmadminweb/API/newappver/" + str(latest_appid) + "/?name=" + urllib.parse.quote(full_appname + ";" + appversion) + "&" + domain, cookies)
 
         if (not data.get('success', False)):
             return [-1, data.get('error', "")]
 
         appid = data['result']['id']
 
-    return [appid, appname + ";" + appversion]
+    return [appid, full_appname + ";" + appversion]
 
 
 def add_compver_to_appver(dhurl, cookies, appid, compid):
