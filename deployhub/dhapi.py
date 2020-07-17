@@ -682,7 +682,7 @@ def new_application(dhurl, cookies, appname, appversion, appautoinc, envs):
 
 
     if (appid < 0):
-        data = get_json(dhurl + "/dmadminweb/API/newappver/" + str(latest_appid) + "/?name=" + urllib.parse.quote(full_appname + ";" + appversion) + "&" + domain, cookies)
+        data = get_json(dhurl + "/dmadminweb/API/newappver/" + str(latest_appid) + "/?name=" + urllib.parse.quote(appname + ";" + appversion) + "&" + domain, cookies)
 
         if (not data.get('success', False)):
             return [-1, data.get('error', "")]
