@@ -11,6 +11,7 @@ from pprint import pprint
 import qtoml
 import requests
 import yaml
+import json
 
 
 def get_json(url, cookies):
@@ -260,7 +261,7 @@ def clean_name(name):
     return name
 
 
-def get_component(dhurl, cookies, compname, compvariant, compversion, id_only):
+def get_component(dhurl, cookies, compname, compvariant, compversion, id_only, latest):
     compvariant = clean_name(compvariant)
     compversion = clean_name(compversion)
 
@@ -294,6 +295,9 @@ def get_component(dhurl, cookies, compname, compvariant, compversion, id_only):
     if (id_only):
         param = "&idonly=Y"
 
+    if (latest):
+        param = param + "&latest=Y"
+
     data = get_json(dhurl + "/dmadminweb/API/component/?name=" + urllib.parse.quote(component) + param, cookies)
 
     if (data is None):
@@ -303,7 +307,7 @@ def get_component(dhurl, cookies, compname, compvariant, compversion, id_only):
         compid = data['result']['id']
         name = data['result']['name']
 
-        if (name != check_compname):
+        if (name != check_compname and 'versions' in data['result']):
             vers = data['result']['versions']
             for ver in vers:
                 if (ver['name'] == check_compname):
@@ -327,6 +331,17 @@ def get_component_name(dhurl, cookies, compid):
         name = data['result']['name']
     return name
 
+def get_component_attrs(dhurl, cookies, compid):
+
+    data = get_json(dhurl + "/dmadminweb/API/getvar/component/" + str(compid), cookies)
+
+    if (data is None):
+        return []
+
+    if ('attributes' in data):
+        return data['attributes']
+
+    return []
 
 def get_application_name(dhurl, cookies, appid, id_only):
     name = ""
@@ -345,7 +360,7 @@ def get_application_name(dhurl, cookies, appid, id_only):
     return name
 
 
-def new_component_version(dhurl, cookies, compname, compvariant, compversion, kind, component_items):
+def new_component_version(dhurl, cookies, compname, compvariant, compversion, kind, component_items, compautoinc):
     compvariant = clean_name(compvariant)
     compversion = clean_name(compversion)
 
@@ -353,14 +368,22 @@ def new_component_version(dhurl, cookies, compname, compvariant, compversion, ki
         compvariant = compversion
         compversion = None
 
-    # Get latest version of compnent variant
-    data = get_component(dhurl, cookies, compname, compvariant, compversion, False)
-    if (data[0] == -1):
-        data = get_component(dhurl, cookies, compname, compvariant, None, False)
-        if (data[0] == -1):
-            data = get_component(dhurl, cookies, compname, "", None, False)
+    domain = ""
 
-    compid = data[0]
+    if ('.' in compname):
+        parts = compname.split('.')
+        if (parts):
+            parts.pop()
+        domain = '.'.join(parts) + "."
+
+    # Get latest version of compnent variant
+    data = get_component(dhurl, cookies, compname, compvariant, compversion, False, True)
+    if (data[0] == -1):
+        data = get_component(dhurl, cookies, compname, compvariant, None, False, True)
+        if (data[0] == -1):
+            data = get_component(dhurl, cookies, compname, "", None, False, True)
+
+    latest_compid = data[0]
     found_compname = data[1]
     check_compname = ""
 
@@ -380,29 +403,75 @@ def new_component_version(dhurl, cookies, compname, compvariant, compversion, ki
     # if one is not found
     # Get the new compid of the new component variant
 
-    if (compid < 0):
+    if (latest_compid < 0):
         if (compversion is None or compversion == ""):
             if (kind.lower() == "docker"):
                 compid = new_docker_component(dhurl, cookies, compname, "", "", -1)
-            else:    
+            else:
                 compid = new_file_component(dhurl, cookies, compname, "", "", -1, None)
         else:
             if (kind.lower() == "docker"):
                 compid = new_docker_component(dhurl, cookies, compname, compvariant, "", -1)
             else:
                 compid = new_file_component(dhurl, cookies, compname, compvariant, "", -1, None)
+    else:
+        # Create component items for the component
+        if (compautoinc is None):
+            if (found_compname == "" or found_compname != check_compname):
+                if (kind.lower() == "docker"):
+                    compid = new_docker_component(dhurl, cookies, compname, compvariant, compversion, compid)
+                else:
+                    compid = new_file_component(dhurl, cookies, compname, compvariant, compversion, compid, component_items)
+            elif (compid > 0):
+                if (kind.lower() == "docker"):
+                    new_component_item(dhurl, cookies, compid, "docker", None)
+                else:
+                    new_component_item(dhurl, cookies, compid, "file", component_items)
+        else:
+            parts = found_compname.split(';')
+            if (len(parts) >= 3):  # hipster-store;master;v1_3_334-gabc635
+                compname = parts[0]
+                compvariant = parts[1]
+                compversion = parts[2]
+            elif (len(parts) == 2):
+                compname = parts[0]
+                compvariant = ""
+                compversion = parts[1]
+            else:
+                compname = found_compname
+                compvariant = ""
+                compversion = ""
 
-    # Create component items for the component
-    if (found_compname == "" or found_compname != check_compname):
-        if (kind.lower() == "docker"):
-            compid = new_docker_component(dhurl, cookies, compname, compvariant, compversion, compid)
-        else:
-            compid = new_file_component(dhurl, cookies, compname, compvariant, compversion, compid, component_items)
-    elif (compid > 0):
-        if (kind.lower() == "docker"):
-            new_component_item(dhurl, cookies, compid, "docker", None)
-        else:
-            new_component_item(dhurl, cookies, compid, "file", component_items)
+            if ("-g" in compversion):  # git commit
+                verschema = compversion.split('-g')[0]
+                gitcommit = compversion.split('-g')[1]
+            else:
+                verschema = compversion
+                gitcommit = ""
+
+            compid = latest_compid
+            # inc schemantic version & loop until we don't have an exisiting version
+            while (compid >= 0):
+                if ('_' in verschema):
+                    schema_parts = verschema.split('_')
+                    incnum = schema_parts.pop()
+                    incnum = str(int(incnum) + 1)
+                    schema_parts.append(incnum)
+                    verschema = '_'.join(schema_parts) + gitcommit
+                elif (verschema.isdigit()):
+                    verschema = str(int(verschema) + 1) + gitcommit
+                else:
+                    verschema = "1" + gitcommit
+
+                compversion = verschema
+
+                data = get_component(dhurl, cookies, domain + compname, compvariant, compversion, True, False)
+                compid = data[0]
+
+            if (kind.lower() == "docker"):
+                compid = new_docker_component(dhurl, cookies, compname, compvariant, compversion, latest_compid)
+            else:
+                compid = new_file_component(dhurl, cookies, compname, compvariant, compversion, latest_compid, None)
 
     return compid
 
@@ -442,7 +511,6 @@ def new_file_component(dhurl, cookies, compname, compvariant, compversion, paren
     compid = 0
 
     # Create base version
-    pprint(parent_compid)
     if (parent_compid < 0):
         data = get_json(dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname + ";" + compvariant), cookies)
         compid = data['result']['id']
@@ -534,35 +602,27 @@ def new_component(dhurl, cookies, compname, compvariant, compversion, kind, pare
 
 def update_component_attrs(dhurl, cookies, compname, compvariant, compversion, attrs):
     # Get latest version of compnent variant
-    data = get_component(dhurl, cookies, compname, compvariant, compversion, True)
+    data = get_component(dhurl, cookies, compname, compvariant, compversion, True, False)
     compid = data[0]
 
     if (compid < 0):
         return
 
-    count = 0
-    attr_str = ""
+    payload = json.dumps(attrs)
 
-    for key in attrs.keys():
-        value = attrs.get(key, "")
-        if (value is None):
-            value = ""
+    data = post_json(dhurl + "/dmadminweb/API/setvar/component/" + str(compid), payload, cookies)
+    if (not data):
+        return [False, "Could not update attributes on '" + compname + "'"]
+    return [True, data, dhurl + "/dmadminweb/API/setvar/component/" + str(compid)]
 
-        if (count == 0):
-            attr_str = attr_str + "name=" + urllib.parse.quote(key) + "&value=" + urllib.parse.quote(value)
-        else:
-            attr_str = attr_str + "&name" + str(count) + "=" + urllib.parse.quote(key) + "&value" + str(count) + "=" + urllib.parse.quote(value)
+def update_compid_attrs(dhurl, cookies, compid, attrs):
 
-        count = count + 1
+    payload = json.dumps(attrs)
 
-    if (attr_str):
-        # Update Attrs for component
-        data = get_json(dhurl + "/dmadminweb/API/setvar/component/" + str(compid) + "?" + attr_str, cookies)
-        if (not data):
-            return [False, "Could not update attributes on '" + compname + "'"]
-        return [True, data, dhurl + "/dmadminweb/API/setvar/component/" + str(compid) + "?" + attr_str]
-
-    return [False, "No attributes to update on '" + compname + "'"]
+    data = post_json(dhurl + "/dmadminweb/API/setvar/component/" + str(compid), payload, cookies)
+    if (not data):
+        return [False, "Could not update attributes on '" + str(compid) + "'"]
+    return [True, data, dhurl + "/dmadminweb/API/setvar/component/" + str(compid)]
 
 
 def get_application(dhurl, cookies, appname, appversion, id_only):
@@ -576,12 +636,12 @@ def get_application(dhurl, cookies, appname, appversion, id_only):
 
     if (appversion.lower() == "latest"):
         param = param + "&latest=Y"
-        appversion = ""  
+        appversion = ""
 
     if (appversion is not None and appversion != ""):
         application = appname + ";" + appversion
     else:
-        application = appname  
+        application = appname
 
     data = get_json(dhurl + "/dmadminweb/API/application/?name=" + urllib.parse.quote(application) + param, cookies)
 
