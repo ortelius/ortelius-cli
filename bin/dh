@@ -49,17 +49,17 @@ from deployhub import dhapi
 @click.option('--todom', help='To Domain')
 def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, deployenv, envs, compattr, kvconfig, from_domain, task, envvars, envvars_sh, importfile, fromdom, todom):
     """
-    ACTION is (deploy, updatecomp, approve, move, envscript, export, import) for the type of action to perform.
+    ACTION is (deploy, updatecomp, approve, move, envscript, kv, export, import) for the type of action to perform.
 
     deploy: deploy the application to the evironment\n
     approve: approve the application version\n
     move: move the application version using the supplied task\n
-    updatecomp: create/replace the component version for the application verion
-    assign: assigns a component version to an application verion
-    kv: assigns the key/values pairs to the component verion
-    envscript: creates a bash file from the component toml file
-    export: exports a domain including all objects to stdout
-    import: imports the export file into the new domain
+    updatecomp: create/replace the component version for the application verion\n
+    assign: assigns a component version to an application verion\n
+    kv: assigns the key/values pairs to the component verion\n
+    envscript: creates a bash file from the component toml file\n
+    export: exports a domain including all objects to stdout\n
+    import: imports the export file into the new domain\n
     """
 
     if (action.lower() == "kv" or action.lower() == "deploy" or action.lower() == "updatecomp" or action.lower() == "approve"  or action.lower() == "export"  or action.lower() == "import" or action.lower() == "assign"):
@@ -343,35 +343,35 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
             print("Attribute Update Done")
 
-        if (dhapi.is_not_empty(appname)):
+            if (dhapi.is_not_empty(appname)):
 
-            if (dhapi.is_not_empty(saveappver)):
-                appversion = saveappver
+                if (dhapi.is_not_empty(saveappver)):
+                    appversion = saveappver
 
-            if (dhapi.is_empty(appversion)):
-                parts = appname.split(';')
-                if (len(parts) == 3):
-                    appname = parts[0] + ';' + parts[1]
-                    appversion = parts[2]
+                if (dhapi.is_empty(appversion)):
+                    parts = appname.split(';')
+                    if (len(parts) == 3):
+                        appname = parts[0] + ';' + parts[1]
+                        appversion = parts[2]
 
-            if (dhapi.is_empty(appversion)):
-                parts = appname.split(';')
-                if (len(parts) == 3):
-                    appname = parts[0] + ';' + parts[1]
-                    appversion = parts[2]
+                if (dhapi.is_empty(appversion)):
+                    parts = appname.split(';')
+                    if (len(parts) == 3):
+                        appname = parts[0] + ';' + parts[1]
+                        appversion = parts[2]
 
-            if (dhapi.is_empty(appversion)):
-                appversion = ""
+                if (dhapi.is_empty(appversion)):
+                    appversion = ""
 
-            print("Creating Application Version '" + str(appname) + "' '" + appversion + "'")
-            data = dhapi.new_application(dhurl, cookies, appname, appversion, appautoinc, envs)
-            appid = data[0]
-            print("Creation Done: " + dhapi.get_application_name(dhurl, cookies, appid, True))
+                print("Creating Application Version '" + str(appname) + "' '" + appversion + "'")
+                data = dhapi.new_application(dhurl, cookies, appname, appversion, appautoinc, envs)
+                appid = data[0]
+                print("Creation Done: " + dhapi.get_application_name(dhurl, cookies, appid, True))
 
-            print("Assigning Component Version to Application Version " + str(appid))
+                print("Assigning Component Version to Application Version " + str(appid))
 
-            data = dhapi.add_compver_to_appver(dhurl, cookies, appid, compid)
-            print("Assignment Done")
+                data = dhapi.add_compver_to_appver(dhurl, cookies, appid, compid)
+                print("Assignment Done")
 
     elif (action.lower() == "assign"):
 
