@@ -402,18 +402,17 @@ def new_component_version(dhurl, cookies, compname, compvariant, compversion, ki
     # Create base component variant
     # if one is not found
     # Get the new compid of the new component variant
+    if (compvariant is None):
+        compvariant = ""
+
+    if (compversion is None):
+        compversion = ""
 
     if (latest_compid < 0):
-        if (compversion is None or compversion == ""):
-            if (kind.lower() == "docker"):
-                compid = new_docker_component(dhurl, cookies, compname, "", "", -1)
-            else:
-                compid = new_file_component(dhurl, cookies, compname, "", "", -1, None)
+        if (kind.lower() == "docker"):
+            compid = new_docker_component(dhurl, cookies, compname, compvariant, compversion, -1)
         else:
-            if (kind.lower() == "docker"):
-                compid = new_docker_component(dhurl, cookies, compname, compvariant, "", -1)
-            else:
-                compid = new_file_component(dhurl, cookies, compname, compvariant, "", -1, None)
+            compid = new_file_component(dhurl, cookies, compname, compvariant, compversion, -1, None)
     else:
         # Create component items for the component
         if (compautoinc is None):
@@ -430,26 +429,30 @@ def new_component_version(dhurl, cookies, compname, compvariant, compversion, ki
         else:
             parts = found_compname.split(';')
             if (len(parts) >= 3):  # hipster-store;master;v1_3_334-gabc635
-                compname = parts[0]
-                compvariant = parts[1]
-                compversion = parts[2]
+                latest_compname = parts[0]
+                latest_compvariant = parts[1]
+                latest_compversion = parts[2]
             elif (len(parts) == 2):
-                compname = parts[0]
-                compvariant = ""
-                compversion = parts[1]
+                latest_compname = parts[0]
+                latest_compvariant = ""
+                latest_compversion = parts[1]
             else:
-                compname = found_compname
-                compvariant = ""
-                compversion = ""
+                latest_compname = found_compname
+                latest_compvariant = ""
+                latest_compversion = ""
 
-            if ("-g" in compversion):  # git commit
-                verschema = compversion.split('-g')[0]
-                gitcommit = compversion.split('-g')[1]
+            if ("-g" in latest_compversion):  # git commit
+                verschema = latest_compversion.split('-g')[0]
+                gitcommit = latest_compversion.split('-g')[1]
             else:
-                verschema = compversion
+                verschema = latest_compversion
                 gitcommit = ""
 
             compid = latest_compid
+
+            if (compvariant == verschema):
+                verschema = "";
+
             # inc schemantic version & loop until we don't have an exisiting version
             while (compid >= 0):
                 if ('_' in verschema):
@@ -686,6 +689,12 @@ def new_application(dhurl, cookies, appname, appversion, appautoinc, envs):
     parent_appid = -1
 
     domain = ""
+
+    if (is_empty(appversion) and ';' in appname):
+        parts = appname.split(';')
+        appversion = parts.pop()
+        appname = ';'.join(parts)
+
     full_appname = appname
 
     if ('.' in appname):
@@ -722,8 +731,7 @@ def new_application(dhurl, cookies, appname, appversion, appautoinc, envs):
 
     # inc schemantic version & loop until we don't have an exisiting version
     while (appautoinc is not None and appid >= 0):
-        parts = appversion.split(';')
-        ver = parts.pop()
+        ver = appversion
         if ('_' in ver):
             schema_parts = ver.split('_')
             incnum = schema_parts.pop()
@@ -733,13 +741,12 @@ def new_application(dhurl, cookies, appname, appversion, appautoinc, envs):
         elif (ver.isdigit()):
             ver = str(int(ver) + 1)
         else:
-            ver = ver + ";1"
-        parts.append(ver)
-        appversion = ';'.join(parts)
+            ver = "1"
+
+        appversion = ver
 
         data = get_application(dhurl, cookies, full_appname, appversion, True)
         appid = data[0]
-
 
     if (appid < 0):
         data = get_json(dhurl + "/dmadminweb/API/newappver/" + str(latest_appid) + "/?name=" + urllib.parse.quote(appname + ";" + appversion) + "&" + domain, cookies)
@@ -788,7 +795,7 @@ def add_compver_to_appver(dhurl, cookies, appid, compid):
 
 def assign_comp_to_app(dhurl, cookies, appid, compid, parent_compid, xpos, ypos):
     get_json(dhurl + "/dmadminweb/UpdateAttrs?f=acd&a=" + str(appid) + "&c=" + str(compid), cookies)
-    print(dhurl + "/dmadminweb/UpdateAttrs?f=acvm&a=" + str(appid) + "&c=" + str(compid) + "&xpos=" + str(xpos) + "&ypos=" + str(ypos))
+  #  print(dhurl + "/dmadminweb/UpdateAttrs?f=acvm&a=" + str(appid) + "&c=" + str(compid) + "&xpos=" + str(xpos) + "&ypos=" + str(ypos))
     get_json(dhurl + "/dmadminweb/UpdateAttrs?f=acvm&a=" + str(appid) + "&c=" + str(compid) + "&xpos=" + str(xpos) + "&ypos=" + str(ypos), cookies)
     get_json(dhurl + "/dmadminweb/UpdateAttrs?f=cal&a=" + str(appid) + "&fn=" + str(parent_compid) + "&tn=" + str(compid), cookies)
 

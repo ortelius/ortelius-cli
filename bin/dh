@@ -315,6 +315,10 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
         data = dhapi.get_component(dhurl, cookies, compname, compvariant, compversion, False, True)
         latest_compid = data[0]
 
+        if (latest_compid < 0):
+            data = dhapi.get_component(dhurl, cookies, compname, "", "", False, True)
+            latest_compid = data[0]
+
         old_attrs = []
         if (latest_compid > 0):
             comp_attrs = dhapi.get_component_attrs(dhurl, cookies, latest_compid)
