@@ -17,6 +17,8 @@ setup(
         'click',
         'qtoml',
         'PyYAML',
-        'requests'
+        'requests',
+        'configobj',
+        'flatten_dict'
         ],
 )
