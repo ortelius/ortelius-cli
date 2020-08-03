@@ -289,7 +289,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
         normal_dict = {}
         for file_path in Path(kvconfig).glob('**/*.properties'):
-            filename = os.fspath(file_path)
+            filename = dhapi.fspath(file_path)
 
             try:
                 print(filename)

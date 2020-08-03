@@ -1,1 +1,0 @@
-export FOO=\xxx:/Users/steve/git/compupdate:123\
