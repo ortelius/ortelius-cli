@@ -6,12 +6,16 @@ import subprocess
 import tempfile
 import time
 import urllib
+from pathlib import Path
 from pprint import pprint
 
 import qtoml
 import requests
 import yaml
 import json
+import configobj
+from configobj import ConfigObj
+from flatten_dict import flatten
 
 def fspath(path):
     '''https://www.python.org/dev/peps/pep-0519/#os'''
@@ -411,6 +415,7 @@ def new_component_version(dhurl, cookies, compname, compvariant, compversion, ki
     latest_compid = data[0]
     found_compname = data[1]
     check_compname = ""
+    compid = latest_compid
 
     short_compname = ""
 
@@ -900,6 +905,126 @@ def import_cluster(dhurl, cookies, kubeyaml, defaultdomain):
 
     return complist
 
+def log_deploy_application(dhurl, cookies, deploydata):
+    url = dhurl + "/dmadminweb/API/deploy"
+
+    payload = ""
+    with open(deploydata, "r") as fin_data:
+        payload = fin_data.read()
+
+    data = None
+    if (is_not_empty(payload)):
+        data = json.loads(payload)
+        if (data.get('application', None) is not None and data.get('environment', None) is not None):
+            post_json(url, payload, cookies)
+    return data
+
+def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind):
+    if (is_empty(compvariant)):
+        compvariant = ""
+
+    if (is_empty(compvariant) and "-v" in compversion):
+        compvariant = compversion.split("-v")[0]
+        compversion = "v" + compversion.split("-v")[1]
+
+    if (is_empty(compvariant) and "-V" in compversion):
+        compvariant = compversion.split("-V")[0]
+        compversion = "v" + compversion.split("-V")[1]
+
+    saveappver = ""
+    if (is_not_empty(appversion)):
+        saveappver = appversion
+
+    normal_dict = {}
+    for file_path in Path(kvconfig).glob('**/*.properties'):
+        filename = fspath(file_path)
+
+        try:
+            print(filename)
+            config = ConfigObj(filename, encoding='iso-8859-1')
+            filename = filename[len(kvconfig)+1:]
+            normal_dict[filename] = config.dict()
+        except configobj.ConfigObjError as error:
+            print(error)
+
+    flat_dict = flatten(normal_dict, reducer='path')
+
+    attrs = {}
+    for key, value in flat_dict.items():
+        if (isinstance(value, list)):
+            value = ' '.join(value)
+
+        attrs[key] = value
+
+    print("")
+
+    # create component version
+    print("Getting Latest Component")
+    data = get_component(dhurl, cookies, compname, compvariant, compversion, False, True)
+    latest_compid = data[0]
+
+    if (latest_compid < 0):
+        data = get_component(dhurl, cookies, compname, "", "", False, True)
+        latest_compid = data[0]
+
+    old_attrs = []
+    if (latest_compid > 0):
+        comp_attrs = get_component_attrs(dhurl, cookies, latest_compid)
+
+        for attr in comp_attrs:
+            key = list(attr.keys())[0]
+            value = attr[key]
+            old_attrs.append(key + "=" + value)
+
+    new_attrs = []
+    for key, value in attrs.items():
+        new_attrs.append(key + "=" + value)
+
+    diffs = set(new_attrs) ^ set(old_attrs)
+
+    print(f"Comparing KV: %d Changes" %(len(diffs)))
+
+    if (len(diffs) > 0):
+        pprint(list(diffs))
+        compid = new_component_version(dhurl, cookies, compname, compvariant, compversion, kind, None, compautoinc)
+        print("Creation Done: " + get_component_name(dhurl, cookies, compid))
+
+        print("Updating Component Attributes\n")
+
+        data = update_compid_attrs(dhurl, cookies, compid, attrs)
+
+        print("Attribute Update Done")
+
+        if (is_not_empty(appname)):
+
+            if (is_not_empty(saveappver)):
+                appversion = saveappver
+
+            if (is_empty(appversion)):
+                parts = appname.split(';')
+                if (len(parts) == 3):
+                    appname = parts[0] + ';' + parts[1]
+                    appversion = parts[2]
+
+            if (is_empty(appversion)):
+                parts = appname.split(';')
+                if (len(parts) == 3):
+                    appname = parts[0] + ';' + parts[1]
+                    appversion = parts[2]
+
+            if (is_empty(appversion)):
+                appversion = ""
+
+            print("Creating Application Version '" + str(appname) + "' '" + appversion + "'")
+            data = new_application(dhurl, cookies, appname, appversion, appautoinc, None)
+            appid = data[0]
+            print("Creation Done: " + get_application_name(dhurl, cookies, appid, True))
+
+            print("Assigning Component Version to Application Version " + str(appid))
+
+            data = add_compver_to_appver(dhurl, cookies, appid, compid)
+            print("Assignment Done")
+    return
 
 # def update_versions(project, compname, compvariant, compversion):
 #    # Clone apprepo

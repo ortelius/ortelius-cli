@@ -10,14 +10,10 @@ import stat
 import subprocess
 import sys
 import time
-from pathlib import Path
-from pprint import pprint
 
+from pprint import pprint
 import click
-import configobj
 import qtoml
-from configobj import ConfigObj
-from flatten_dict import flatten
 from deployhub import dhapi
 
 
@@ -36,6 +32,7 @@ from deployhub import dhapi
 @click.option('--compversion', help='Component Version', envvar='COMPONENT_VERSION')
 @click.option('--compautoinc', help='Component Auto Increment Version', envvar='COMPONENT_AUTOINC')
 @click.option('--kvconfig', help='Directory containing the json and properties file', envvar='KVCONFIG')
+@click.option('--deploydata', help='The json file that contains the application, environment and log details', envvar='DEPLOY_DATA')
 @click.option('--from_domain', help='Move from domain')
 @click.option('--task', help='Task to use for move')
 @click.option('--envvars', help='Env Variables TOML file')
@@ -47,7 +44,7 @@ from deployhub import dhapi
 @click.option('--importfile', help='File to Import')
 @click.option('--fromdom', help='From Domain')
 @click.option('--todom', help='To Domain')
-def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, deployenv, envs, compattr, kvconfig, from_domain, task, envvars, envvars_sh, importfile, fromdom, todom):
+def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, deployenv, envs, compattr, kvconfig, deploydata, from_domain, task, envvars, envvars_sh, importfile, fromdom, todom):
     """
     ACTION is (deploy, updatecomp, approve, move, envscript, kv, export, import) for the type of action to perform.
 
@@ -98,41 +95,64 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             print("--dhpass is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(appname)):
-            print("--appname is required")
-            sys.exit(1)
+        if (dhapi.is_empty(deploydata)):
+            if (dhapi.is_empty(appname)):
+                print("--appname is required")
+                sys.exit(1)
 
-        if (dhapi.is_empty(deployenv)):
-            print("--deployenv is required")
-            sys.exit(1)
+            if (dhapi.is_empty(deployenv)):
+                print("--deployenv is required")
+                sys.exit(1)
 
-        if (dhapi.is_empty(appversion)):
-            parts = appname.split(';')
-            if (len(parts) == 3):
-                appname = parts[0] + ';' + parts[1]
-                appversion = parts[2]
+            if (dhapi.is_empty(appversion)):
+                parts = appname.split(';')
+                if (len(parts) == 3):
+                    appname = parts[0] + ';' + parts[1]
+                    appversion = parts[2]
 
-        data = dhapi.get_application(dhurl, cookies, appname, appversion, True)
-        appid = data[0]
-        appname = data[1]
-        print(f'Deploying {appname} to {deployenv}')
-        data = dhapi.deploy_application(dhurl, cookies, appname, "", deployenv)
+            data = dhapi.get_application(dhurl, cookies, appname, appversion, True)
+            appid = data[0]
+            appname = data[1]
+            print(f'Deploying {appname} to {deployenv}')
+            data = dhapi.deploy_application(dhurl, cookies, appname, "", deployenv)
 
-        deployid = data[0]
-        if (deployid < 0):
+            deployid = data[0]
+            if (deployid < 0):
+                print(data[1])
+                sys.exit(1)
+
+            print(f"Fetching Logs for {deployid}")
+            data = dhapi.get_logs(dhurl, cookies, deployid)
+
             print(data[1])
-            sys.exit(1)
-
-        print(f"Fetching Logs for {deployid}")
-        data = dhapi.get_logs(dhurl, cookies, deployid)
-
-        print(data[1])
-        if (data[0]):
-            print("Successful")
-            sys.exit(0)
+            if (data[0]):
+                print("Successful")
+                sys.exit(0)
+            else:
+                print("Failed")
+                sys.exit(1)
         else:
-            print("Failed")
-            sys.exit(1)
+            data = dhapi.log_deploy_application(dhurl, cookies, deploydata)
+            appname = data.get('application', '')
+            appversion = data.get('appversion', '')
+            compname = data.get('config_component', None)
+            compvariant = data.get('environment', '')
+            compversion = ''
+        
+            print(f'Logged Deployment for {appname} to {compvariant}')
+
+            if ('.' in compvariant):
+                compvariant = compvariant.split('.')[-1]
+
+            if (kvconfig is None):
+                kvconfig = data.get('kvconfig', '')
+
+            if (compautoinc is None):
+                compautoinc = "Y"
+
+            if (compname is not None):
+                print(f'Load config from {kvconfig}')
+                dhapi.set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind)
     elif (action.lower() == "updatecomp"):
 
         if (dhapi.is_empty(dhurl)):
@@ -272,110 +292,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             print("--kvconfig is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(compvariant)):
-            compvariant = ""
-
-        if (dhapi.is_empty(compvariant) and "-v" in compversion):
-            compvariant = compversion.split("-v")[0]
-            compversion = "v" + compversion.split("-v")[1]
-
-        if (dhapi.is_empty(compvariant) and "-V" in compversion):
-            compvariant = compversion.split("-V")[0]
-            compversion = "v" + compversion.split("-V")[1]
-
-        saveappver = ""
-        if (dhapi.is_not_empty(appversion)):
-            saveappver = appversion
-
-        normal_dict = {}
-        for file_path in Path(kvconfig).glob('**/*.properties'):
-            filename = dhapi.fspath(file_path)
-
-            try:
-                print(filename)
-                config = ConfigObj(filename, encoding='iso-8859-1')
-                filename = filename[len(kvconfig)+1:]
-                normal_dict[filename] = config.dict()
-            except configobj.ConfigObjError as error:
-                print(error)
-
-        flat_dict = flatten(normal_dict, reducer='path')
-
-        attrs = {}
-        for key, value in flat_dict.items():
-            if (isinstance(value, list)):
-                value = ' '.join(value)
-
-            attrs[key] = value
-
-        print("")
-
-        # create component version
-        print("Getting Latest Component")
-        data = dhapi.get_component(dhurl, cookies, compname, compvariant, compversion, False, True)
-        latest_compid = data[0]
-
-        if (latest_compid < 0):
-            data = dhapi.get_component(dhurl, cookies, compname, "", "", False, True)
-            latest_compid = data[0]
-
-        old_attrs = []
-        if (latest_compid > 0):
-            comp_attrs = dhapi.get_component_attrs(dhurl, cookies, latest_compid)
-
-            for attr in comp_attrs:
-                key = list(attr.keys())[0]
-                value = attr[key]
-                old_attrs.append(key + "=" + value)
-
-        new_attrs = []
-        for key, value in attrs.items():
-            new_attrs.append(key + "=" + value)
-
-        diffs = set(new_attrs) ^ set(old_attrs)
-
-        print(f"Comparing KV: %d Changes" %(len(diffs)))
-
-        if (len(diffs) > 0):
-            pprint(list(diffs))
-            compid = dhapi.new_component_version(dhurl, cookies, compname, compvariant, compversion, kind, None, compautoinc)
-            print("Creation Done: " + dhapi.get_component_name(dhurl, cookies, compid))
-
-            print("Updating Component Attributes\n")
-
-            data = dhapi.update_compid_attrs(dhurl, cookies, compid, attrs)
-
-            print("Attribute Update Done")
-
-            if (dhapi.is_not_empty(appname)):
-
-                if (dhapi.is_not_empty(saveappver)):
-                    appversion = saveappver
-
-                if (dhapi.is_empty(appversion)):
-                    parts = appname.split(';')
-                    if (len(parts) == 3):
-                        appname = parts[0] + ';' + parts[1]
-                        appversion = parts[2]
-
-                if (dhapi.is_empty(appversion)):
-                    parts = appname.split(';')
-                    if (len(parts) == 3):
-                        appname = parts[0] + ';' + parts[1]
-                        appversion = parts[2]
-
-                if (dhapi.is_empty(appversion)):
-                    appversion = ""
-
-                print("Creating Application Version '" + str(appname) + "' '" + appversion + "'")
-                data = dhapi.new_application(dhurl, cookies, appname, appversion, appautoinc, envs)
-                appid = data[0]
-                print("Creation Done: " + dhapi.get_application_name(dhurl, cookies, appid, True))
-
-                print("Assigning Component Version to Application Version " + str(appid))
-
-                data = dhapi.add_compver_to_appver(dhurl, cookies, appid, compid)
-                print("Assignment Done")
+        dhapi.set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind)
 
     elif (action.lower() == "assign"):
 
