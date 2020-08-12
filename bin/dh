@@ -284,13 +284,38 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             print("--dhpass is required")
             sys.exit(1)
 
+        if (dhapi.is_empty(kvconfig) and dhapi.is_empty(deploydata)):
+            print("--kvconfig is required")
+            sys.exit(1)
+
+        if (dhapi.is_not_empty(deploydata)):
+            with open(deploydata, "r") as fin_data:
+                payload = fin_data.read()
+
+            data = None
+            if (dhapi.is_not_empty(payload)):
+                data = json.loads(payload)
+            
+            appname = data.get('application', '')
+            appversion = data.get('appversion', '')
+            compname = data.get('config_component', None)
+            compvariant = data.get('environment', '')
+            compversion = ''
+
+            if (kvconfig is None):
+                kvconfig = data.get('kvconfig', '')
+        
+            print(f'Config for {appname} to {compvariant}')
+
         if (dhapi.is_empty(compname)):
             print("--compname is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(kvconfig)):
-            print("--kvconfig is required")
-            sys.exit(1)
+        if ('.' in compvariant):
+            compvariant = compvariant.split('.')[-1]
+
+        if (compautoinc is None):
+            compautoinc = "Y"
 
         dhapi.set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind)
 
