@@ -138,7 +138,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             compname = data.get('config_component', None)
             compvariant = data.get('environment', '')
             compversion = ''
-        
+
             print(f'Logged Deployment for {appname} to {compvariant}')
 
             if ('.' in compvariant):
@@ -295,7 +295,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             data = None
             if (dhapi.is_not_empty(payload)):
                 data = json.loads(payload)
-            
+
             appname = data.get('application', '')
             appversion = data.get('appversion', '')
             compname = data.get('config_component', None)
@@ -304,7 +304,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
             if (kvconfig is None):
                 kvconfig = data.get('kvconfig', '')
-        
+
             print(f'Config for {appname} to {compvariant}')
 
         if (dhapi.is_empty(compname)):
@@ -389,7 +389,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
                 if (appid < 0):
                     print("Creating Application Version '" + str(appname) + "' '" + appversion + "'")
-                    data = dhapi.new_application(dhurl, cookies, appname, appversion, envs)
+                    data = dhapi.new_application(dhurl, cookies, appname, appversion, appautoinc, envs)
                     appid = data[0]
                     print("Creation Done: " + dhapi.get_application_name(dhurl, cookies, appid, True))
 
