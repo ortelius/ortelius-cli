@@ -9,10 +9,10 @@ import urllib
 from pathlib import Path
 from pprint import pprint
 
+import json
 import qtoml
 import requests
 import yaml
-import json
 import configobj
 from configobj import ConfigObj
 from flatten_dict import flatten
@@ -481,7 +481,7 @@ def new_component_version(dhurl, cookies, compname, compvariant, compversion, ki
             compid = latest_compid
 
             if (compvariant == verschema):
-                verschema = "";
+                verschema = ""
 
             # inc schemantic version & loop until we don't have an exisiting version
             while (compid >= 0):
