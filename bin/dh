@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """DeployHub's CLI using the dhapi module"""
 
-__version__ = '9.3.75'
+__version__ = '9.3.74'
 
 import json
 import os
@@ -140,6 +140,30 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             compversion = ''
 
             print(f'Logged Deployment for {appname} to {compvariant}')
+
+
+            hotfixcomps = data.get("hotfix_component", None)
+
+            if (hotfixcomps is not None):
+                lastcompid = -1
+                ret = dhapi.get_application(dhurl, cookies, appname, appversion, True)
+                appid = ret[0]
+                ret = dhapi.get_json(dhurl + "/dmadminweb/API/application/" + str(appid), cookies)
+
+                if (ret.get('success', False)):
+                    result = ret.get('result', None)
+                    if (result):
+                        lastcompid = result.get('lastcompver', -1)
+
+                ypos = 150
+                for hfcompname in hotfixcomps:
+                    hfcompvariant = "" # ret.get("environment", "")
+                    hfcompversion = ""
+                    ret = dhapi.get_component(dhurl, cookies, hfcompname, hfcompvariant, hfcompversion, True, True)
+                    compid = ret[0]
+
+                    dhapi.assign_comp_to_app(dhurl, cookies, appid, compid, lastcompid, 150, ypos)
+                    ypos = ypos + 100
 
             if ('.' in compvariant):
                 compvariant = compvariant.split('.')[-1]
