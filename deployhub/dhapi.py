@@ -912,11 +912,27 @@ def log_deploy_application(dhurl, cookies, deploydata):
     with open(deploydata, "r") as fin_data:
         payload = fin_data.read()
 
-    data = None
+    data = {}
     if (is_not_empty(payload)):
         data = json.loads(payload)
-        if (data.get('application', None) is not None and data.get('environment', None) is not None):
-            post_json(url, payload, cookies)
+
+        appname = data.get('appname', '')
+        compversion = data.get('compversion', None)
+        environment = data.get('environment', '')
+
+        if (is_empty(appname) and compversion is not None):
+            print(f'Recording hot fix {compversion} for {environment}')
+            url = dhurl + "/dmadminweb/API/deploy"
+
+            payload = {}
+            payload['environment'] = environment
+            payload['compversion'] = compversion
+            payload['rc'] = 0
+
+            post_json(url, json.dumps(payload), cookies)
+        else:
+            if (data.get('application', None) is not None and data.get('environment', None) is not None):
+                post_json(url, payload, cookies)
     return data
 
 def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind):
@@ -978,11 +994,13 @@ def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, comp
 
     new_attrs = []
     for key, value in attrs.items():
+        key = key.replace("\\", "\\\\")
+        value = value.replace("\\", "\\\\")
         new_attrs.append(key + "=" + value)
 
     diffs = set(new_attrs) ^ set(old_attrs)
 
-    print(f"Comparing KV: %d Changes" %(len(diffs)))
+    print("Comparing KV: %d Changes" % len(diffs))
 
     if (len(diffs) > 0):
         pprint(list(diffs))
