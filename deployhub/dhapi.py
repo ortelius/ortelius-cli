@@ -916,11 +916,13 @@ def log_deploy_application(dhurl, cookies, deploydata):
     if (is_not_empty(payload)):
         data = json.loads(payload)
 
-        appname = data.get('appname', '')
         compversion = data.get('compversion', None)
         environment = data.get('environment', '')
 
-        if (is_empty(appname) and compversion is not None):
+        if (data.get('application', None) is not None and data.get('environment', None) is not None):
+            post_json(url, payload, cookies)
+
+        if (compversion is not None):
             print(f'Recording hot fix {compversion} for {environment}')
             url = dhurl + "/dmadminweb/API/deploy"
 
@@ -930,9 +932,7 @@ def log_deploy_application(dhurl, cookies, deploydata):
             payload['rc'] = 0
 
             post_json(url, json.dumps(payload), cookies)
-        else:
-            if (data.get('application', None) is not None and data.get('environment', None) is not None):
-                post_json(url, payload, cookies)
+
     return data
 
 def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind):
