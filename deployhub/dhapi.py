@@ -918,20 +918,17 @@ def log_deploy_application(dhurl, cookies, deploydata):
 
         compversion = data.get('compversion', None)
         environment = data.get('environment', '')
+        application = data.get('application', '')
 
-        if (data.get('application', None) is not None and data.get('environment', None) is not None):
-            post_json(url, payload, cookies)
+        if (is_not_empty(application) and is_not_empty(environment)):
+            print(f'Recording deployment of {application} for {environment}')
 
-        if (compversion is not None):
-            print(f'Recording hot fix {compversion} for {environment}')
-            url = dhurl + "/dmadminweb/API/deploy"
+            if (compversion is not None and len(compversion) > 0):
+                print(f'Recording hot fix {compversion} for {application}')
+            result = post_json(url, payload, cookies)
 
-            payload = {}
-            payload['environment'] = environment
-            payload['compversion'] = compversion
-            payload['rc'] = 0
-
-            post_json(url, json.dumps(payload), cookies)
+            if (result.get('errormsg', None) is not None):
+                print(result.get('errormsg', None))
 
     return data
 
