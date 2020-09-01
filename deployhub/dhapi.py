@@ -986,12 +986,15 @@ def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, comp
 
         for attr in comp_attrs:
             key = list(attr.keys())[0]
+            key = key.replace("\\\\", "/")
+            key = key.replace("\\", "/")
             value = attr[key]
             old_attrs.append(key + "=" + value)
 
     new_attrs = []
     for key, value in attrs.items():
-        key = key.replace("\\", "\\\\")
+        key = key.replace("\\\\", "/")
+        key = key.replace("\\", "/")
         value = value.replace("\\", "\\\\")
         new_attrs.append(key + "=" + value)
 
