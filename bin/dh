@@ -143,6 +143,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             appversion = data.get('appversion', '')
             compname = data.get('config_component', None)
             compvariant = data.get('environment', '')
+            environment = data.get('environment', '')
             compversion = ""
 
             dhapi.log_deploy_application(dhurl, cookies, deploydata)
@@ -160,7 +161,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
             if (compname is not None):
                 print(f'Load config from {kvconfig}')
-                dhapi.set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind)
+                dhapi.set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, environment)
     elif (action.lower() == "updatecomp"):
 
         if (dhapi.is_empty(dhurl)):

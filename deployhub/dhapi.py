@@ -349,6 +349,21 @@ def get_component(dhurl, cookies, compname, compvariant, compversion, id_only, l
     return [-1, ""]
 
 
+def get_environment(dhurl, cookies, env):
+    name = ""
+    data = get_json(dhurl + "/dmadminweb/API/environment/?name=" + urllib.parse.quote(env), cookies)
+
+    if (data is None):
+        return [-1, ""]
+
+    if (data['success']):
+        envid = data['result']['id']
+        name = data['result']['name']
+
+        return [envid, name]
+
+    return [-1, ""]
+
 def get_component_name(dhurl, cookies, compid):
     name = ""
     data = get_json(dhurl + "/dmadminweb/API/component/" + str(compid) + "?idonly=Y", cookies)
@@ -357,7 +372,7 @@ def get_component_name(dhurl, cookies, compid):
         return name
 
     if (data['success']):
-        name = data['result']['name']
+        name = data['result']['domain'] + "." + data['result']['name']
     return name
 
 def get_component_attrs(dhurl, cookies, compid):
@@ -657,6 +672,13 @@ def update_compid_attrs(dhurl, cookies, compid, attrs):
         return [False, "Could not update attributes on '" + str(compid) + "'"]
     return [True, data, dhurl + "/dmadminweb/API/setvar/component/" + str(compid)]
 
+def update_envid_attrs(dhurl, cookies, envid, attrs):
+    payload = json.dumps(attrs)
+
+    data = post_json(dhurl + "/dmadminweb/API/setvar/environment/" + str(envid), payload, cookies)
+    if (not data):
+        return [False, "Could not update attributes on '" + str(envid) + "'"]
+    return [True, data, dhurl + "/dmadminweb/API/setvar/environment/" + str(envid)]
 
 def get_application(dhurl, cookies, appname, appversion, id_only):
     appversion = clean_name(appversion)
@@ -932,7 +954,7 @@ def log_deploy_application(dhurl, cookies, deploydata):
 
     return data
 
-def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind):
+def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, env):
     if (is_empty(compvariant)):
         compvariant = ""
 
@@ -1033,15 +1055,32 @@ def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, comp
             if (is_empty(appversion)):
                 appversion = ""
 
-            print("Creating Application Version '" + str(appname) + "' '" + appversion + "'")
-            data = new_application(dhurl, cookies, appname, appversion, appautoinc, None)
-            appid = data[0]
-            print("Creation Done: " + get_application_name(dhurl, cookies, appid, True))
+#            print("Creating Application Version '" + str(appname) + "' '" + appversion + "'")
+#            data = new_application(dhurl, cookies, appname, appversion, appautoinc, None)
+#            appid = data[0]
+#            print("Creation Done: " + get_application_name(dhurl, cookies, appid, True))
+#
+#            print("Assigning Component Version to Application Version " + str(appid))
+#
+#            data = add_compver_to_appver(dhurl, cookies, appid, compid)
+#            print("Assignment Done")
 
-            print("Assigning Component Version to Application Version " + str(appid))
+            if (is_not_empty(env)):
+                data = get_environment(dhurl, cookies, env)
+                envid = data[0]
 
-            data = add_compver_to_appver(dhurl, cookies, appid, compid)
-            print("Assignment Done")
+                data = get_application(dhurl, cookies, appname, appversion, False)
+                
+                appid = data[0]
+                appname = data[1]
+
+                config_component = get_component_name(dhurl, cookies, compid)
+
+                attrs = {}
+                attrs["Config Component"] = "<a href='javascript:void(0);' onclick=\"chgsel({t: 'components_tab', id: 'cv" + str(compid) + "', odl: '', tm: 'application_menu', name: '" + config_component + "'})\" >" + config_component + "</a>"
+                attrs["Last Deployed Application"] = "<a href='javascript:void(0);' onclick=\"chgsel({t: 'applications_tab', id: 'av" + str(appid) + "', odl: '', tm: 'application_menu', name: '" + appname + "'})\" >" + appname + "</a>"
+
+                update_envid_attrs(dhurl, cookies, envid, attrs)
     return
 
 # def update_versions(project, compname, compvariant, compversion):
