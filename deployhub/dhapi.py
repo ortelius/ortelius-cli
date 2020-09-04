@@ -1008,9 +1008,9 @@ def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, comp
 
         for attr in comp_attrs:
             key = list(attr.keys())[0]
+            value = attr[key]
             key = key.replace("\\\\", "/")
             key = key.replace("\\", "/")
-            value = attr[key]
             old_attrs.append(key + "=" + value)
 
     new_attrs = []
@@ -1034,26 +1034,29 @@ def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, comp
         data = update_compid_attrs(dhurl, cookies, compid, attrs)
 
         print("Attribute Update Done")
+    else:
+        data = get_component(dhurl, cookies, compname, compvariant, compversion, True, True)
+        compid = data[0]
 
-        if (is_not_empty(appname)):
+    if (is_not_empty(appname)):
 
-            if (is_not_empty(saveappver)):
-                appversion = saveappver
+        if (is_not_empty(saveappver)):
+            appversion = saveappver
 
-            if (is_empty(appversion)):
-                parts = appname.split(';')
-                if (len(parts) == 3):
-                    appname = parts[0] + ';' + parts[1]
-                    appversion = parts[2]
+        if (is_empty(appversion)):
+            parts = appname.split(';')
+            if (len(parts) == 3):
+                appname = parts[0] + ';' + parts[1]
+                appversion = parts[2]
 
-            if (is_empty(appversion)):
-                parts = appname.split(';')
-                if (len(parts) == 3):
-                    appname = parts[0] + ';' + parts[1]
-                    appversion = parts[2]
+        if (is_empty(appversion)):
+            parts = appname.split(';')
+            if (len(parts) == 3):
+                appname = parts[0] + ';' + parts[1]
+                appversion = parts[2]
 
-            if (is_empty(appversion)):
-                appversion = ""
+        if (is_empty(appversion)):
+            appversion = ""
 
 #            print("Creating Application Version '" + str(appname) + "' '" + appversion + "'")
 #            data = new_application(dhurl, cookies, appname, appversion, appautoinc, None)
@@ -1065,22 +1068,26 @@ def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, comp
 #            data = add_compver_to_appver(dhurl, cookies, appid, compid)
 #            print("Assignment Done")
 
-            if (is_not_empty(env)):
-                data = get_environment(dhurl, cookies, env)
-                envid = data[0]
+        if (is_not_empty(env)):
+            data = get_environment(dhurl, cookies, env)
+            envid = data[0]
 
-                data = get_application(dhurl, cookies, appname, appversion, False)
-                
-                appid = data[0]
-                appname = data[1]
+            data = get_application(dhurl, cookies, appname, appversion, False)
+            
+            appid = data[0]
+            appname = data[1]
 
-                config_component = get_component_name(dhurl, cookies, compid)
+            config_component = get_component_name(dhurl, cookies, compid)
+            if ('.' in config_component):
+                config_component = config_component.split('.')[-1]
 
-                attrs = {}
-                attrs["Config Component"] = "<a href='javascript:void(0);' onclick=\"chgsel({t: 'components_tab', id: 'cv" + str(compid) + "', odl: '', tm: 'application_menu', name: '" + config_component + "'})\" >" + config_component + "</a>"
-                attrs["Last Deployed Application"] = "<a href='javascript:void(0);' onclick=\"chgsel({t: 'applications_tab', id: 'av" + str(appid) + "', odl: '', tm: 'application_menu', name: '" + appname + "'})\" >" + appname + "</a>"
+            print(f'Updating environment {env} with config component {config_component}')
 
-                update_envid_attrs(dhurl, cookies, envid, attrs)
+            attrs = {}
+            attrs["Config Component"] = "<a href='javascript:void(0);' onclick=\"chgsel({t: 'components_tab', id: 'cv" + str(compid) + "', odl: '', tm: 'application_menu', name: '" + config_component + "'})\" >" + config_component + "</a>"
+            attrs["Last Deployed Application"] = "<a href='javascript:void(0);' onclick=\"chgsel({t: 'applications_tab', id: 'av" + str(appid) + "', odl: '', tm: 'application_menu', name: '" + appname + "'})\" >" + appname + "</a>"
+
+            update_envid_attrs(dhurl, cookies, envid, attrs)
     return
 
 # def update_versions(project, compname, compvariant, compversion):
