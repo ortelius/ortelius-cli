@@ -100,6 +100,19 @@ def login(dhurl, user, password, errors):
         errors.append(str(conn_error))
     return None
 
+def deploy_application_by_appid(dhurl, cookies, appid, env):
+    """Deploy the application to the environment
+    Returns: deployment_id"""
+
+    data = get_json(dhurl + "/dmadminweb/API/deploy?app=" + str(appid) + "&env=" + urllib.parse.quote(env) + "&wait=N", cookies)
+
+    if (data is None):
+        return [-1, "Deployment Failed"]
+
+    if (data.get('success', False)):
+        return [data.get('deploymentid', -1), ""]
+
+    return [-1, data.get('error', "")]
 
 def deploy_application(dhurl, cookies, appname, appversion, env):
     """Deploy the application to the environment
@@ -264,6 +277,10 @@ def get_attrs(dhurl, cookies, app, comp, env, srv):
 
     return result
 
+def get_application_attrs(dhurl, cookies, appid):
+    data = get_json(dhurl + "/dmadminweb/API/getvar/application/" + str(appid), cookies)
+    app_attrs = data['attributes']
+    return app_attrs
 
 def find_domain(dhurl, cookies, findname):
     """Get the domain name and id that matches best with the passed in name"""
@@ -375,6 +392,10 @@ def get_component_name(dhurl, cookies, compid):
         name = data['result']['domain'] + "." + data['result']['name']
     return name
 
+def get_component_fromid(dhurl, cookies, compid):
+    data = get_json(dhurl + "/dmadminweb/API/component/" + str(compid), cookies)
+    return data
+
 def get_component_attrs(dhurl, cookies, compid):
 
     data = get_json(dhurl + "/dmadminweb/API/getvar/component/" + str(compid), cookies)
@@ -387,20 +408,16 @@ def get_component_attrs(dhurl, cookies, compid):
 
     return []
 
-def get_application_name(dhurl, cookies, appid, id_only):
+def get_application_name(dhurl, cookies, appid):
     name = ""
 
-    param = ""
-    if (id_only):
-        param = "?idonly=Y"
-
-    data = get_json(dhurl + "/dmadminweb/API/application/" + str(appid) + param, cookies)
+    data = get_json(dhurl + "/dmadminweb/API/application/" + str(appid), cookies)
 
     if (data is None):
         return name
 
     if (data['success']):
-        name = data['result']['name']
+        name = data['result']['domain'] + '.' + data['result']['name']
     return name
 
 
@@ -1061,7 +1078,7 @@ def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, comp
 #            print("Creating Application Version '" + str(appname) + "' '" + appversion + "'")
 #            data = new_application(dhurl, cookies, appname, appversion, appautoinc, None)
 #            appid = data[0]
-#            print("Creation Done: " + get_application_name(dhurl, cookies, appid, True))
+#            print("Creation Done: " + get_application_name(dhurl, cookies, appid))
 #
 #            print("Assigning Component Version to Application Version " + str(appid))
 #
