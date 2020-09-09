@@ -8,6 +8,7 @@ import time
 import urllib
 from pathlib import Path
 from pprint import pprint
+from shutil import rmtree
 
 import json
 import qtoml
@@ -987,6 +988,36 @@ def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, comp
     if (is_not_empty(appversion)):
         saveappver = appversion
 
+    pwd = ""
+    tempdir = ""
+
+    if ('git@' in kvconfig):
+        print("### Grabbing Config from Git ###")
+        
+        if ('#' in kvconfig):
+            gitbranch = kvconfig.split('#')[1]
+            kvconfig = kvconfig.split('#')[0]
+        else:
+            gitbranch = "master"
+
+        repo = '/'.join(kvconfig.split('/')[:2])
+        kvconfig = '/'.join(kvconfig.split('/')[1:])
+        gitdir = kvconfig.split('/')[0]
+
+        pwd = os.getcwd()
+        tempdir = tempfile.mkdtemp()
+        os.chdir(tempdir)
+    #    print(tempdir)
+
+        lines = subprocess.run(['git', 'clone', '-q', repo], check=False, stdout=subprocess.PIPE).stdout.decode('utf-8').split("\n")
+        for line in lines:
+            print(line)
+
+        os.chdir(gitdir)
+        lines = subprocess.run(['git', 'checkout', gitbranch], check=False, stdout=subprocess.PIPE).stdout.decode('utf-8').split("\n")
+        for line in lines:
+            print(line)
+
     normal_dict = {}
     for file_path in Path(kvconfig).glob('**/*.properties'):
         filename = fspath(file_path)
@@ -1000,6 +1031,10 @@ def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, comp
             print(error)
 
     flat_dict = flatten(normal_dict, reducer='path')
+
+    if (is_not_empty(tempdir) and is_not_empty(pwd)):
+        os.chdir(pwd)
+        rmtree(tempdir)
 
     attrs = {}
     for key, value in flat_dict.items():
