@@ -79,8 +79,9 @@ def post_json_with_header(url, payload, headers):
         Returns: json string"""
 
     try:
-
+        pprint(headers)
         res = requests.post(url, data=payload, headers=headers)
+        pprint(res)
         if (res is None):
             return None
         if (res.status_code != 200 and res.status_code != 201):
