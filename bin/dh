@@ -111,7 +111,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 data = dhapi.get_application(dhurl, cookies, appname, appversion, True)
                 appid = data[0]
                 appname = data[1]
-                applist.append({"appid": appid, "appname" : appname, "deployenv": deployenv})
+                applist.append({"appid": appid, "appname" : appname, "deployenv": deployenv, "circleci_pipeline": ""})
 
                 if (dhapi.is_empty(deployenv)):
                     print("--deployenv is required")
@@ -136,17 +136,21 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                                 app_attrs = dhapi.get_application_attrs(dhurl, cookies, appid)
 
                                 deployenv = ""
+                                pipeline = ""
                                 for entry in app_attrs:
                                     if ('DeployEnv' in entry):
                                         deployenv = entry['DeployEnv']
+                                    if ('CircleCI_Pipeline' in entry):
+                                        pipeline = entry['CircleCI_Pipeline']
 
                                 if (dhapi.is_not_empty(deployenv)):
-                                    applist.append({"appid": appid, "appname" : appname, "deployenv": deployenv})
+                                    applist.append({"appid": appid, "appname" : appname, "deployenv": deployenv, "circleci_pipeline": pipeline})
            
             for entry in applist:
                 appid = entry['appid']
                 appname = entry['appname']
                 deployenv = entry['deployenv']
+                pipeline = entry['circleci_pipeline']
 
                 print(f'Deploying {appname} to {deployenv}')
                 data = dhapi.deploy_application_by_appid(dhurl, cookies, appid, deployenv)
@@ -162,6 +166,9 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 print(data[1])
                 if (data[0]):
                     print("Successful")
+                    if (dhapi.is_not_empty(pipeline)):
+                        data = dhapi.run_circleci_pipeline(pipeline)
+                        pprint(data)
                 else:
                     print("Failed")
                     retcode = retcode +1
