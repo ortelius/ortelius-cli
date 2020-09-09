@@ -83,7 +83,7 @@ def post_json_with_header(url, payload, headers):
         res = requests.post(url, data=payload, headers=headers)
         if (res is None):
             return None
-        if (res.status_code != 200):
+        if (res.status_code != 200 and res.status_code != 201):
             return None
         return res.json()
     except requests.exceptions.ConnectionError as conn_error:
@@ -989,9 +989,9 @@ def log_deploy_application(dhurl, cookies, deploydata):
     return data
 
 def run_circleci_pipeline(pipeline):
-    headers = {"Circle-Token": os.getenv('CI_TOKEN','')}
-    url = "https://circleci.com/api/v2/project/" + pipeline + "pipeline"
-    data = post_json_with_header(url,'', headers) 
+    headers = {"Circle-Token": os.getenv('CI_TOKEN', ''), "Accept": "application/json"}
+    url = "https://circleci.com/api/v2/project/" + pipeline + "/pipeline"
+    data = post_json_with_header(url, '', headers) 
     return data
 
 def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, env):
