@@ -74,6 +74,22 @@ def post_json(url, payload, cookies):
         print(str(conn_error))
     return None
 
+def post_json_with_header(url, payload, headers):
+    """ Post URL as json string.
+        Returns: json string"""
+
+    try:
+
+        res = requests.post(url, data=payload, headers=headers)
+        if (res is None):
+            return None
+        if (res.status_code != 200):
+            return None
+        return res.json()
+    except requests.exceptions.ConnectionError as conn_error:
+        print(str(conn_error))
+    return None
+
 def is_empty(my_string):
     """Is the string empty"""
     return not (my_string and my_string.strip())
@@ -970,6 +986,12 @@ def log_deploy_application(dhurl, cookies, deploydata):
             if (result.get('errormsg', None) is not None):
                 print(result.get('errormsg', None))
 
+    return data
+
+def run_circleci_pipeline(pipeline):
+    headers = {"Circle-Token": os.getenv('CI_TOKEN','')}
+    url = "https://circleci.com/api/v2/project/" + pipeline + "pipeline"
+    data = post_json_with_header(url,'', headers) 
     return data
 
 def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, env):
