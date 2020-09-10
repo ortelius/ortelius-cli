@@ -991,7 +991,7 @@ def log_deploy_application(dhurl, cookies, deploydata):
     return data
 
 def run_circleci_pipeline(pipeline):
-    headers = {"Circle-Token": os.getenv('CI_TOKEN', ''), "Accept": "application/json"}
+    headers = {"Circle-Token": "***REMOVED***", "Accept": "application/json"}
     url = "https://circleci.com/api/v2/project/" + pipeline + "/pipeline"
     data = post_json_with_header(url, '', headers) 
     return data
