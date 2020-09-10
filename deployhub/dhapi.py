@@ -81,6 +81,10 @@ def post_json_with_header(url, payload, headers):
     try:
         pprint(url)
         pprint(headers)
+        lines = subprocess.run(["curl", "-X", "POST", "https://circleci.com/api/v2/project/github/ortelius/store-hipster-app-qa3-windows/pipeline", "-H", 'Accept: application/json', "-H", 'Circle-Token:***REMOVED***', "-v" ], check=False, stdout=subprocess.PIPE).stdout.decode('utf-8').split("\n")
+        for line in lines:
+            print(line)
+
         res = requests.post(url, data=payload, headers=headers)
         pprint(res)
         if (res is None):
