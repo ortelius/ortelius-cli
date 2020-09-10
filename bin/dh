@@ -145,7 +145,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
                                 if (dhapi.is_not_empty(deployenv)):
                                     applist.append({"appid": appid, "appname" : appname, "deployenv": deployenv, "circleci_pipeline": pipeline})
-           
+
             for entry in applist:
                 appid = entry['appid']
                 appname = entry['appname']
