@@ -74,13 +74,12 @@ def post_json(url, payload, cookies):
         print(str(conn_error))
     return None
 
-def post_json_with_header(url, payload, headers):
+def post_json_with_header(url, token):
     """ Post URL as json string.
         Returns: json string"""
 
     pprint(url)
-    pprint(headers)
-    lines = subprocess.run(["curl", "-X", "POST", "https://circleci.com/api/v2/project/github/ortelius/store-hipster-app-qa3-windows/pipeline", "-H", 'Accept: application/json', "-H", 'Circle-Token:***REMOVED***', "-v" ], check=False, stdout=subprocess.PIPE).stdout.decode('utf-8').split("\n")
+    lines = subprocess.run(["curl", "-X", "POST", url, "-H", 'Accept: application/json', "-H", 'Circle-Token:' + token, "-v" ], check=False, stdout=subprocess.PIPE).stdout.decode('utf-8').split("\n")
     for line in lines:
         print(line)
     return lines
@@ -984,9 +983,8 @@ def log_deploy_application(dhurl, cookies, deploydata):
     return data
 
 def run_circleci_pipeline(pipeline):
-    headers = {"Circle-Token": "***REMOVED***", "Accept": "application/json"}
     url = "https://circleci.com/api/v2/project/" + pipeline + "/pipeline"
-    data = post_json_with_header(url, '', headers) 
+    data = post_json_with_header(url, os.environ.get("CI_TOKEN", "")) 
     return data
 
 def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, env):
