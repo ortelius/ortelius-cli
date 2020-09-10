@@ -79,6 +79,7 @@ def post_json_with_header(url, payload, headers):
         Returns: json string"""
 
     try:
+        pprint(url)
         pprint(headers)
         res = requests.post(url, data=payload, headers=headers)
         pprint(res)
