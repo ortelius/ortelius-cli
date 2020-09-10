@@ -79,9 +79,7 @@ def post_json_with_header(url, token):
         Returns: json string"""
 
     pprint(url)
-    lines = subprocess.run(["curl", "-X", "POST", url, "-H", 'Accept: application/json', "-H", 'Circle-Token:' + token, "-v" ], check=False, stdout=subprocess.PIPE).stdout.decode('utf-8').split("\n")
-    for line in lines:
-        print(line)
+    lines = subprocess.run(["curl", "-X", "POST", url, "-H", 'Accept: application/json', "-H", 'Circle-Token:' + token, "-q" ], check=False, stdout=subprocess.PIPE).stdout.decode('utf-8').split("\n")
     return lines
 
 def is_empty(my_string):
