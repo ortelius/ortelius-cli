@@ -1016,6 +1016,7 @@ def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, comp
         repo = '/'.join(kvconfig.split('/')[:2])
         kvconfig = '/'.join(kvconfig.split('/')[1:])
         gitdir = kvconfig.split('/')[0]
+        kvconfig = '/'.join(kvconfig.split('/')[1:])
 
         pwd = os.getcwd()
         tempdir = tempfile.mkdtemp()
