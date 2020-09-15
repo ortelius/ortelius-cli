@@ -693,7 +693,7 @@ def update_compid_attrs(dhurl, cookies, compid, attrs):
 
     payload = json.dumps(attrs)
 
-    data = post_json(dhurl + "/dmadminweb/API/setvar/component/" + str(compid), payload, cookies)
+    data = post_json(dhurl + "/dmadminweb/API/setvar/component/" + str(compid) + "?delattrs=y", payload, cookies)
     if (not data):
         return [False, "Could not update attributes on '" + str(compid) + "'"]
     return [True, data, dhurl + "/dmadminweb/API/setvar/component/" + str(compid)]
@@ -982,7 +982,7 @@ def log_deploy_application(dhurl, cookies, deploydata):
 
 def run_circleci_pipeline(pipeline):
     url = "https://circleci.com/api/v2/project/" + pipeline + "/pipeline"
-    data = post_json_with_header(url, os.environ.get("CI_TOKEN", "")) 
+    data = post_json_with_header(url, os.environ.get("CI_TOKEN", ""))
     return data
 
 def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, env):
@@ -1006,7 +1006,7 @@ def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, comp
 
     if ('git@' in kvconfig):
         print("### Grabbing Config from Git ###")
-        
+
         if ('#' in kvconfig):
             gitbranch = kvconfig.split('#')[1]
             kvconfig = kvconfig.split('#')[0]
@@ -1139,7 +1139,7 @@ def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, comp
             envid = data[0]
 
             data = get_application(dhurl, cookies, appname, appversion, False)
-            
+
             appid = data[0]
             appname = data[1]
 
