@@ -308,7 +308,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                                 applist.append(appname)
             else:
                 applist.append(appname)
-            
+
             pprint(applist)
 
             for appname in applist:
