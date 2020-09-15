@@ -1021,7 +1021,7 @@ def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, comp
         pwd = os.getcwd()
         tempdir = tempfile.mkdtemp()
         os.chdir(tempdir)
-    #    print(tempdir)
+        print(tempdir)
 
         lines = subprocess.run(['git', 'clone', '-q', repo], check=False, stdout=subprocess.PIPE).stdout.decode('utf-8').split("\n")
         for line in lines:
@@ -1048,7 +1048,7 @@ def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, comp
 
     if (is_not_empty(tempdir) and is_not_empty(pwd)):
         os.chdir(pwd)
-        rmtree(tempdir)
+    #    rmtree(tempdir)
 
     attrs = {}
     for key, value in flat_dict.items():
