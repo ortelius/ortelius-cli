@@ -79,7 +79,7 @@ def post_json_with_header(url, token):
         Returns: json string"""
 
     pprint(url)
-    lines = subprocess.run(["curl", "-X", "POST", url, "-H", 'Accept: application/json', "-H", 'Circle-Token:' + token, "-q" ], check=False, stdout=subprocess.PIPE).stdout.decode('utf-8').split("\n")
+    lines = subprocess.run(["curl", "-X", "POST", url, "-H", 'Accept: application/json', "-H", 'Circle-Token:' + token, "-q"], check=False, stdout=subprocess.PIPE).stdout.decode('utf-8').split("\n")
     return lines
 
 def is_empty(my_string):
@@ -674,7 +674,7 @@ def new_component(dhurl, cookies, compname, compvariant, compversion, kind, pare
     return compid
 
 
-def update_component_attrs(dhurl, cookies, compname, compvariant, compversion, attrs):
+def update_component_attrs(dhurl, cookies, compname, compvariant, compversion, attrs, crdatasource, crlist):
     # Get latest version of compnent variant
     data = get_component(dhurl, cookies, compname, compvariant, compversion, True, False)
     compid = data[0]
@@ -687,15 +687,25 @@ def update_component_attrs(dhurl, cookies, compname, compvariant, compversion, a
     data = post_json(dhurl + "/dmadminweb/API/setvar/component/" + str(compid), payload, cookies)
     if (not data):
         return [False, "Could not update attributes on '" + compname + "'"]
+
+    if (is_not_empty(crdatasource)):
+        for bugid in crlist:
+            get_json(dhurl + "/dmadminweb/API2/assign/defect/" + str(compid) + "?ds=" + crdatasource + "&bugid=" + str(bugid))
+
     return [True, data, dhurl + "/dmadminweb/API/setvar/component/" + str(compid)]
 
-def update_compid_attrs(dhurl, cookies, compid, attrs):
+def update_compid_attrs(dhurl, cookies, compid, attrs, crdatasource, crlist):
 
     payload = json.dumps(attrs)
 
     data = post_json(dhurl + "/dmadminweb/API/setvar/component/" + str(compid) + "?delattrs=y", payload, cookies)
     if (not data):
         return [False, "Could not update attributes on '" + str(compid) + "'"]
+
+    if (is_not_empty(crdatasource)):
+        for bugid in crlist:
+            get_json(dhurl + "/dmadminweb/API2/assign/defect/" + str(compid) + "?ds=" + crdatasource + "&bugid=" + str(bugid))
+
     return [True, data, dhurl + "/dmadminweb/API/setvar/component/" + str(compid)]
 
 def update_envid_attrs(dhurl, cookies, envid, attrs):
@@ -985,7 +995,7 @@ def run_circleci_pipeline(pipeline):
     data = post_json_with_header(url, os.environ.get("CI_TOKEN", ""))
     return data
 
-def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, env):
+def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, env, crdatasource, crlist):
     if (is_empty(compvariant)):
         compvariant = ""
 
@@ -1097,7 +1107,7 @@ def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, comp
 
         print("Updating Component Attributes\n")
 
-        data = update_compid_attrs(dhurl, cookies, compid, attrs)
+        data = update_compid_attrs(dhurl, cookies, compid, attrs, crdatasource, crlist)
 
         print("Attribute Update Done")
     else:
