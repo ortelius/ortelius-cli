@@ -37,7 +37,7 @@ from deployhub import dhapi
 @click.option('--deploydata', help='The json file that contains the application, environment and log details', envvar='DEPLOY_DATA')
 @click.option('--from_domain', help='Move from domain')
 @click.option('--task', help='Task to use for move')
-@click.option('--envvars_jenkins', 'jenkins', help='Load attributes from Jenkins job')
+@click.option('--citool', type=click.Choice(['jenkins', 'cloudbuild'], case_sensitive=False))
 @click.option('--envvars', help='Env Variables TOML file')
 @click.option('--envvars_sh', help='Env Variables Output sh file')
 @click.option('--docker', 'kind', flag_value='docker', default=True, help='Component Item Type')
@@ -47,7 +47,7 @@ from deployhub import dhapi
 @click.option('--importfile', help='File to Import')
 @click.option('--fromdom', help='From Domain')
 @click.option('--todom', help='To Domain')
-def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, deployenv, envs, compattr, kvconfig, deploydata, from_domain, task, envvars, envvars_sh, importfile, fromdom, todom, crdatasource, changerequest, jenkins):
+def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, deployenv, envs, compattr, kvconfig, deploydata, from_domain, task, envvars, envvars_sh, importfile, fromdom, todom, crdatasource, changerequest, citool):
     """
     ACTION is (deploy, updatecomp, approve, move, envscript, kv, export, import) for the type of action to perform.
 
@@ -271,7 +271,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
         if (dhapi.is_not_empty(appversion)):
             saveappver = appversion
 
-        if (jenkins):
+        if (citool == 'jenkins'):
             compattr['BuildUrl'] = compattr.get('BuildUrl', os.getenv('BUILD_URL', ''))
             compattr['BuildId'] = compattr.get('BuildId', os.getenv('BUILD_ID', ''))
             compattr['BuildNumber'] = compattr.get('BuildNumber', os.getenv('BUILD_NUMBER', ''))
