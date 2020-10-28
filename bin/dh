@@ -311,7 +311,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 attrs['GitTag'] = attrs.get('GitBranch', '')
 
             now = datetime.now()
-            date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
+            date_time = now.strftime("%c")
 
             attrs['BuildUrl'] = attrs.get('BuildUrl', os.getenv('BUILD_URL', ''))
             attrs['BuildId'] = attrs.get('BuildId', os.getenv('BUILD_ID', ''))
@@ -323,7 +323,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             attrs['GitUrl'] = attrs.get('GitRepo', os.getenv('GIT_URL', ''))
             if (attrs.get('GitRepo', None) is None):
                 if ('/' in os.getenv('GIT_URL', '')):
-                    attrs['GitRepo'] = os.getenv('GIT_URL', '').split('/')[0]
+                    attrs['GitRepo'] = "/".join(os.getenv('GIT_URL', '').split('/')[-2:]).replace(".git", "")
             # comptype = attrs.get("CompType", None)
             # if (dhapi.is_empty(comptype)):
             #     if (kind == "file"):
