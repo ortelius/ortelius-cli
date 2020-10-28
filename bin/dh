@@ -10,9 +10,9 @@ import stat
 import subprocess
 import sys
 import time
-import datetime
-
+from datetime import datetime
 from pprint import pprint
+
 import click
 import qtoml
 from deployhub import dhapi
@@ -310,10 +310,13 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             if (dhapi.is_empty(gittag) and attrs.get('GitBranch', None) is not None):
                 attrs['GitTag'] = attrs.get('GitBranch', '')
 
+            now = datetime.now()
+            date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
+
             attrs['BuildUrl'] = attrs.get('BuildUrl', os.getenv('BUILD_URL', ''))
             attrs['BuildId'] = attrs.get('BuildId', os.getenv('BUILD_ID', ''))
             attrs['BuildNumber'] = attrs.get('BuildNumber', os.getenv('BUILD_NUMBER', ''))
-            attrs['DockerBuildDate'] = attrs.get('DockerBuildDate', datetime.datetime.now())
+            attrs['DockerBuildDate'] = attrs.get('DockerBuildDate', date_time)
             attrs['GitCommit'] = attrs.get('GitCommit', os.getenv('GIT_COMMIT', ''))
             attrs['GitBranch'] = attrs.get('GitBranch', os.getenv('GIT_BRANCH', ''))
             attrs['GitTag'] = attrs.get('GitTag', os.getenv('GIT_BRANCH', ''))
