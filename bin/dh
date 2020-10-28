@@ -37,7 +37,6 @@ from deployhub import dhapi
 @click.option('--deploydata', help='The json file that contains the application, environment and log details', envvar='DEPLOY_DATA')
 @click.option('--from_domain', help='Move from domain')
 @click.option('--task', help='Task to use for move')
-@click.option('--citool', type=click.Choice(['jenkins', 'cloudbuild'], case_sensitive=False))
 @click.option('--envvars', help='Env Variables TOML file')
 @click.option('--envvars_sh', help='Env Variables Output sh file')
 @click.option('--docker', 'kind', flag_value='docker', default=True, help='Component Item Type')
@@ -47,7 +46,7 @@ from deployhub import dhapi
 @click.option('--importfile', help='File to Import')
 @click.option('--fromdom', help='From Domain')
 @click.option('--todom', help='To Domain')
-def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, deployenv, envs, compattr, kvconfig, deploydata, from_domain, task, envvars, envvars_sh, importfile, fromdom, todom, crdatasource, changerequest, citool):
+def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, deployenv, envs, compattr, kvconfig, deploydata, from_domain, task, envvars, envvars_sh, importfile, fromdom, todom, crdatasource, changerequest):
     """
     ACTION is (deploy, updatecomp, approve, move, envscript, kv, export, import) for the type of action to perform.
 
@@ -271,19 +270,6 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
         if (dhapi.is_not_empty(appversion)):
             saveappver = appversion
 
-        if (citool == 'jenkins'):
-            compattr['BuildUrl'] = compattr.get('BuildUrl', os.getenv('BUILD_URL', ''))
-            compattr['BuildId'] = compattr.get('BuildId', os.getenv('BUILD_ID', ''))
-            compattr['BuildNumber'] = compattr.get('BuildNumber', os.getenv('BUILD_NUMBER', ''))
-            compattr['DockerBuildDate'] = compattr.get('DockerBuildDate', datetime.datetime.now())
-            compattr['GitCommit'] = compattr.get('GitCommit', os.getenv('GIT_COMMIT', ''))
-            compattr['GitBranch'] = compattr.get('GitBranch', os.getenv('GIT_BRANCH', ''))
-            compattr['GitTag'] = compattr.get('GitTag', os.getenv('GIT_BRANCH', ''))
-            compattr['GitUrl'] = compattr.get('GitRepo', os.getenv('GIT_URL', ''))
-            if (compattr.get('GitRepo', None) is None):
-                if ('/' in os.getenv('GIT_URL', '')):
-                    compattr['GitRepo'] = os.getenv('GIT_URL', '').split('/')[0]
-
         cnt = 1
         while True:
             data = dhapi.get_component(
@@ -324,6 +310,17 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             if (dhapi.is_empty(gittag) and attrs.get('GitBranch', None) is not None):
                 attrs['GitTag'] = attrs.get('GitBranch', '')
 
+            attrs['BuildUrl'] = attrs.get('BuildUrl', os.getenv('BUILD_URL', ''))
+            attrs['BuildId'] = attrs.get('BuildId', os.getenv('BUILD_ID', ''))
+            attrs['BuildNumber'] = attrs.get('BuildNumber', os.getenv('BUILD_NUMBER', ''))
+            attrs['DockerBuildDate'] = attrs.get('DockerBuildDate', datetime.datetime.now())
+            attrs['GitCommit'] = attrs.get('GitCommit', os.getenv('GIT_COMMIT', ''))
+            attrs['GitBranch'] = attrs.get('GitBranch', os.getenv('GIT_BRANCH', ''))
+            attrs['GitTag'] = attrs.get('GitTag', os.getenv('GIT_BRANCH', ''))
+            attrs['GitUrl'] = attrs.get('GitRepo', os.getenv('GIT_URL', ''))
+            if (attrs.get('GitRepo', None) is None):
+                if ('/' in os.getenv('GIT_URL', '')):
+                    attrs['GitRepo'] = os.getenv('GIT_URL', '').split('/')[0]
             # comptype = attrs.get("CompType", None)
             # if (dhapi.is_empty(comptype)):
             #     if (kind == "file"):
