@@ -131,16 +131,14 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                     dhurl, cookies, appname, appversion, True)
                 appid = data[0]
                 appname = data[1]
-                applist.append({"appid": appid, "appname": appname,
-                                "deployenv": deployenv, "circleci_pipeline": ""})
+                applist.append({"appid": appid, "appname": appname, "deployenv": deployenv, "circleci_pipeline": ""})
 
                 if (dhapi.is_empty(deployenv)):
                     print("--deployenv is required")
                     sys.exit(1)
 
             if (dhapi.is_empty(appname) and dhapi.is_not_empty(compname)):
-                data = dhapi.get_component(
-                    dhurl, cookies, compname, "", "", True, True)
+                data = dhapi.get_component(dhurl, cookies, compname, "", "", True, True)
                 parent_compid = data[0]
                 data = dhapi.get_component_fromid(
                     dhurl, cookies, parent_compid)
@@ -152,13 +150,11 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                         for app in data:
                             appname = app.get('name', '')
                             appid = app.get('id', '')
-                            appdata = dhapi.get_application(
-                                dhurl, cookies, appname, "latest", True)
+                            appdata = dhapi.get_application(dhurl, cookies, appname, "latest", True)
                             latest_appid = appdata[0]
 
                             if (appid == latest_appid):
-                                app_attrs = dhapi.get_application_attrs(
-                                    dhurl, cookies, appid)
+                                app_attrs = dhapi.get_application_attrs(dhurl, cookies, appid)
 
                                 deployenv = ""
                                 pipeline = ""
@@ -169,8 +165,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                                         pipeline = entry['CircleCI_Pipeline']
 
                                 if (dhapi.is_not_empty(deployenv)):
-                                    applist.append(
-                                        {"appid": appid, "appname": appname, "deployenv": deployenv, "circleci_pipeline": pipeline})
+                                    applist.append({"appid": appid, "appname": appname, "deployenv": deployenv, "circleci_pipeline": pipeline})
 
             for entry in applist:
                 appid = entry['appid']
@@ -179,8 +174,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 pipeline = entry['circleci_pipeline']
 
                 print(f'Deploying {appname} to {deployenv}')
-                data = dhapi.deploy_application_by_appid(
-                    dhurl, cookies, appid, deployenv)
+                data = dhapi.deploy_application_by_appid(dhurl, cookies, appid, deployenv)
 
                 deployid = data[0]
                 if (deployid < 0):
@@ -235,8 +229,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
             if (compname is not None):
                 print(f'Load config from {kvconfig}')
-                dhapi.set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname,
-                                   compvariant, compversion, compautoinc, kind, environment, crdatasource, changerequest)
+                dhapi.set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, environment, crdatasource, changerequest)
     elif (action.lower() == "updatecomp"):
 
         if (dhapi.is_empty(dhurl)):
@@ -272,16 +265,13 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
         cnt = 1
         while True:
-            data = dhapi.get_component(
-                dhurl, cookies, compname, "", "", True, True)
+            data = dhapi.get_component(dhurl, cookies, compname, "", "", True, True)
             parent_compid = data[0]
 
             # create component version
             print("Creating Component")
-            compid = dhapi.new_component_version(
-                dhurl, cookies, compname, compvariant, compversion, kind, None, compautoinc)
-            print("Creation Done: " +
-                  dhapi.get_component_name(dhurl, cookies, compid))
+            compid = dhapi.new_component_version(dhurl, cookies, compname, compvariant, compversion, kind, None, compautoinc)
+            print("Creation Done: " + dhapi.get_component_name(dhurl, cookies, compid))
 
             attrs = {}
             print("Updating Component Attributes\n")
@@ -336,25 +326,22 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
             print("Updating Change Requests\n")
 
-            data = dhapi.update_component_attrs(
-                dhurl, cookies, compname, compvariant, compversion, attrs, crdatasource, changerequest)
+            data = dhapi.update_component_attrs(dhurl, cookies, compname, compvariant, compversion, attrs, crdatasource, changerequest)
             print("Attribute Update Done")
 
             applist = []
 
             if (dhapi.is_empty(appname) and dhapi.is_not_empty(appautoinc)):  # derive appname and inc
-                data = dhapi.get_component_fromid(
-                    dhurl, cookies, parent_compid)
+                data = dhapi.get_component_fromid(dhurl, cookies, parent_compid)
 
                 if (data is not None and 'result' in data):
                     result = data['result']
                     if (result.get('applications', None) is not None):
                         data = result.get('applications', None)
                         for app in data:
-                            appname = app.get('name', '')
+                            appname = app.get('domain', '') + "." + app.get('name', '')
                             appid = app.get('id', '')
-                            appdata = dhapi.get_application(
-                                dhurl, cookies, appname, "latest", True)
+                            appdata = dhapi.get_application_fromid(dhurl, cookies, appid, "latest")
                             latest_appid = appdata[0]
                             # latest_appname = appdata[1]
                             if (appid == latest_appid):
@@ -386,25 +373,21 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 if (dhapi.is_empty(appversion)):
                     appversion = ""
 
-                print("Creating Application Version '" +
-                      str(appname) + "' '" + appversion + "'")
-                data = dhapi.new_application(
-                    dhurl, cookies, appname, appversion, appautoinc, envs)
+                print("Creating Application Version '" + str(appname) + "' '" + appversion + "'")
+                data = dhapi.new_application(dhurl, cookies, appname, appversion, appautoinc, envs)
                 appid = data[0]
                 appname = dhapi.get_application_name(dhurl, cookies, appid)
                 print("Creation Done: " + appname)
 
                 print("Assigning Component Version to Application Version " + appname)
 
-                data = dhapi.add_compver_to_appver(
-                    dhurl, cookies, appid, compid)
+                data = dhapi.add_compver_to_appver(dhurl, cookies, appid, compid)
                 print("Assignment Done")
 
             compname = os.environ.get("COMPONENT_NAME_" + str(cnt), None)
             compversion = os.environ.get("COMPONENT_VERSION_" + str(cnt), None)
             appname = os.environ.get("COMPONENT_APPLICATION_" + str(cnt), None)
-            appversion = os.environ.get(
-                "COMPONENT_APPLICATION_VERSION_" + str(cnt), None)
+            appversion = os.environ.get("COMPONENT_APPLICATION_VERSION_" + str(cnt), None)
 
             cnt = cnt + 1
 
@@ -458,8 +441,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
         if (compautoinc is None):
             compautoinc = "Y"
 
-        dhapi.set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname,
-                           compvariant, compversion, compautoinc, kind, crdatasource, changerequest)
+        dhapi.set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, crdatasource, changerequest)
 
     elif (action.lower() == "assign"):
 
@@ -503,8 +485,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
         cnt = 1
         while True:
             # create component version
-            [compid, name] = dhapi.get_component(
-                dhurl, cookies, compname, compvariant, compversion, True, False)
+            [compid, name] = dhapi.get_component(dhurl, cookies, compname, compvariant, compversion, True, False)
 
             if (compid > 0):
                 print("Found " + name)
@@ -527,15 +508,13 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 if (dhapi.is_empty(appversion)):
                     appversion = ""
 
-                data = dhapi.get_application(
-                    dhurl, cookies, appname, appversion, True)
+                data = dhapi.get_application(dhurl, cookies, appname, appversion, True)
                 appid = data[0]
 
                 if (appid < 0):
                     print("Creating Application Version '" +
                           str(appname) + "' '" + appversion + "'")
-                    data = dhapi.new_application(
-                        dhurl, cookies, appname, appversion, appautoinc, envs)
+                    data = dhapi.new_application(dhurl, cookies, appname, appversion, appautoinc, envs)
                     appid = data[0]
                     appname = dhapi.get_application_name(dhurl, cookies, appid)
                     print("Creation Done: " + appname)
@@ -546,15 +525,13 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
                 print("Assigning Component Version to Application Version " + str(appid))
 
-                data = dhapi.add_compver_to_appver(
-                    dhurl, cookies, appid, compid)
+                data = dhapi.add_compver_to_appver(dhurl, cookies, appid, compid)
                 print("Assignment Done")
 
             compname = os.environ.get("COMPONENT_NAME_" + str(cnt), None)
             compversion = os.environ.get("COMPONENT_VERSION_" + str(cnt), None)
             appname = os.environ.get("COMPONENT_APPLICATION_" + str(cnt), None)
-            appversion = os.environ.get(
-                "COMPONENT_APPLICATION_VERSION_" + str(cnt), None)
+            appversion = os.environ.get("COMPONENT_APPLICATION_VERSION_" + str(cnt), None)
 
             cnt = cnt + 1
 
@@ -607,8 +584,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 appversion = parts[2]
 
         print(f'Moving {appname} {appversion} from {from_domain}')
-        data = dhapi.move_application(
-            dhurl, cookies, appname, appversion, from_domain, task)
+        data = dhapi.move_application(dhurl, cookies, appname, appversion, from_domain, task)
         print(data[1])
     elif (action.lower() == "envscript"):
         if (dhapi.is_empty(envvars)):
@@ -702,8 +678,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
 def envscript(envvars, envvars_sh):
 
-    lines = subprocess.run(['cat', envvars], check=False,
-                           stdout=subprocess.PIPE).stdout.decode('utf-8')
+    lines = subprocess.run(['cat', envvars], check=False, stdout=subprocess.PIPE).stdout.decode('utf-8')
 
     vardict = qtoml.loads(lines)
 
@@ -724,28 +699,19 @@ def envscript(envvars, envvars_sh):
             cnt = 0
             for compapp in comp_to_app:
                 if (cnt == 0):
-                    fp_script.write("export COMPONENT_NAME=\"" +
-                                    compapp.get("Name", "") + "\"\n")
-                    fp_script.write("export COMPONENT_VERSION=\"" +
-                                    vardict.get("Version", "") + "\"\n")
-                    fp_script.write(
-                        "export COMPONENT_APPLICATION=\"" + compapp.get("Application", "") + "\"\n")
-                    fp_script.write(
-                        "export COMPONENT_APPLICATION_VERSION=\"" + compapp.get("AppVersion", "") + "\"\n")
+                    fp_script.write("export COMPONENT_NAME=\"" + compapp.get("Name", "") + "\"\n")
+                    fp_script.write("export COMPONENT_VERSION=\"" + vardict.get("Version", "") + "\"\n")
+                    fp_script.write("export COMPONENT_APPLICATION=\"" + compapp.get("Application", "") + "\"\n")
+                    fp_script.write("export COMPONENT_APPLICATION_VERSION=\"" + compapp.get("AppVersion", "") + "\"\n")
                 else:
-                    fp_script.write(
-                        "export COMPONENT_NAME_" + str(cnt) + "=\"" + compapp.get("Name", "") + "\"\n")
-                    fp_script.write("export COMPONENT_VERSION_" + str(cnt) +
-                                    "=\"" + vardict.get("Version", "") + "\"\n")
-                    fp_script.write("export COMPONENT_APPLICATION_" + str(cnt) +
-                                    "=\"" + compapp.get("Application", "") + "\"\n")
-                    fp_script.write("export COMPONENT_APPLICATION_VERSION_" +
-                                    str(cnt) + "=\"" + compapp.get("AppVersion", "") + "\"\n")
+                    fp_script.write("export COMPONENT_NAME_" + str(cnt) + "=\"" + compapp.get("Name", "") + "\"\n")
+                    fp_script.write("export COMPONENT_VERSION_" + str(cnt) + "=\"" + vardict.get("Version", "") + "\"\n")
+                    fp_script.write("export COMPONENT_APPLICATION_" + str(cnt) + "=\"" + compapp.get("Application", "") + "\"\n")
+                    fp_script.write("export COMPONENT_APPLICATION_VERSION_" + str(cnt) + "=\"" + compapp.get("AppVersion", "") + "\"\n")
 
                 cnt = cnt + 1
         else:
-            fp_script.write("export COMPONENT_" + key.upper() +
-                            '="' + str(vardict[key]) + "\"\n")
+            fp_script.write("export COMPONENT_" + key.upper() + '="' + str(vardict[key]) + "\"\n")
 
     fp_script.close()
     os.chmod(envvars_sh, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
@@ -771,8 +737,7 @@ def importdict(dhurl, cookies, objtype, allobjs):
     for obj in allobjs.get(objtype, []):
         pprint(obj)
         jstr = json.dumps(obj, indent=2)
-        data = dhapi.post_json(
-            dhurl + "/dmadminweb/API/import/", jstr, cookies)
+        data = dhapi.post_json(dhurl + "/dmadminweb/API/import/", jstr, cookies)
         pprint(data)
 
 

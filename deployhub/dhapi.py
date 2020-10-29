@@ -685,12 +685,18 @@ def update_component_attrs(dhurl, cookies, compname, compvariant, compversion, a
     payload = json.dumps(attrs)
 
     data = post_json(dhurl + "/dmadminweb/API/setvar/component/" + str(compid), payload, cookies)
-    if (not data):
+    if (data is None):
         return [False, "Could not update attributes on '" + compname + "'"]
 
     if (is_not_empty(crdatasource)):
+        get_json(dhurl + "/dmadminweb/API2/assign/defect/cv" + str(compid) + "?del=y", cookies)
+
+        allcrs = ",".join(crlist)
+        crlist = allcrs.split(',')
+
         for bugid in crlist:
-            get_json(dhurl + "/dmadminweb/API2/assign/defect/" + str(compid) + "?ds=" + crdatasource + "&bugid=" + str(bugid))
+            bugid = bugid.strip()
+            get_json(dhurl + "/dmadminweb/API2/assign/defect/cv" + str(compid) + "?ds=" + urllib.parse.quote(crdatasource) + "&bugid=" + str(bugid), cookies)
 
     return [True, data, dhurl + "/dmadminweb/API/setvar/component/" + str(compid)]
 
@@ -753,6 +759,36 @@ def get_application(dhurl, cookies, appname, appversion, id_only):
         return [appid, name, appid]
 
     return [-1, "", -1]
+
+
+def get_application_fromid(dhurl, cookies, appid, appversion):
+    appversion = clean_name(appversion)
+    param = ""
+
+    if (appversion.lower() == "latest"):
+        param = "?latest=Y"
+        appversion = ""
+
+    data = get_json(dhurl + "/dmadminweb/API/application/" + str(appid) + param, cookies)
+
+    if (data is None):
+        return [-1, "", -1]
+
+    if (data.get('success', False)):
+        result = data.get('result', None)
+        if (result):
+            appid = result.get('id', -1)
+            name = result.get('name', "")
+            vlist = result.get('versions', None)
+            latest = -1
+
+        if (vlist):
+            latest = vlist[-1]['id']
+            return [appid, name, latest]
+        return [appid, name, appid]
+
+    return [-1, "", -1]
+
 
 
 def get_base_component(dhurl, cookies, compid, id_only):
