@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """DeployHub's CLI using the dhapi module"""
 
-__version__ = '9.3.104'
+__version__ = '9.3.105'
 
 import json
 import os
