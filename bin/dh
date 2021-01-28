@@ -127,8 +127,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                         appname = parts[0] + ';' + parts[1]
                         appversion = parts[2]
 
-                data = dhapi.get_application(
-                    dhurl, cookies, appname, appversion, True)
+                data = dhapi.get_application(dhurl, cookies, appname, appversion, True)
                 appid = data[0]
                 appname = data[1]
                 applist.append({"appid": appid, "appname": appname, "deployenv": deployenv, "circleci_pipeline": ""})
@@ -310,7 +309,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             attrs['GitCommit'] = attrs.get('GitCommit', os.getenv('GIT_COMMIT', ''))
             attrs['GitBranch'] = attrs.get('GitBranch', os.getenv('GIT_BRANCH', ''))
             attrs['GitTag'] = attrs.get('GitTag', os.getenv('GIT_BRANCH', ''))
-            attrs['GitUrl'] = attrs.get('GitRepo', os.getenv('GIT_URL', ''))
+            attrs['GitUrl'] = attrs.get('GitUrl', os.getenv('GIT_URL', ''))
             if (attrs.get('GitRepo', None) is None):
                 if ('/' in os.getenv('GIT_URL', '')):
                     attrs['GitRepo'] = "/".join(os.getenv('GIT_URL', '').split('/')[-2:]).replace(".git", "")
