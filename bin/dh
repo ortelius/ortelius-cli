@@ -140,8 +140,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             if (dhapi.is_empty(appname) and dhapi.is_not_empty(compname)):
                 data = dhapi.get_component(dhurl, cookies, compname, "", "", True, True)
                 parent_compid = data[0]
-                data = dhapi.get_component_fromid(
-                    dhurl, cookies, parent_compid)
+                data = dhapi.get_component_fromid(dhurl, cookies, parent_compid)
 
                 if (data is not None and 'result' in data):
                     result = data['result']
@@ -263,6 +262,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
         if (dhapi.is_not_empty(appversion)):
             saveappver = appversion
 
+        retcode = 0
         cnt = 1
         while True:
             data = dhapi.get_component(dhurl, cookies, compname, "", "", True, True)
@@ -384,6 +384,28 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 data = dhapi.add_compver_to_appver(dhurl, cookies, appid, compid)
                 print("Assignment Done")
 
+                if (dhapi.is_not_empty(deployenv)):
+                    print(f'Deploying {appname} to {deployenv}')
+                    data = dhapi.deploy_application_by_appid(dhurl, cookies, appid, deployenv)
+
+                    deployid = data[0]
+                    if (deployid < 0):
+                        print(data[1])
+                        sys.exit(1)
+
+                    print(f"Fetching Logs for {deployid}")
+                    data = dhapi.get_logs(dhurl, cookies, deployid)
+
+                    print(data[1])
+                    if (data[0]):
+                        print("Successful")
+                        if (dhapi.is_not_empty(pipeline)):
+                            data = dhapi.run_circleci_pipeline(pipeline)
+                            pprint(data)
+                    else:
+                        print("Failed")
+                        retcode = retcode + 1
+
             compname = os.environ.get("COMPONENT_NAME_" + str(cnt), None)
             compversion = os.environ.get("COMPONENT_VERSION_" + str(cnt), None)
             appname = os.environ.get("COMPONENT_APPLICATION_" + str(cnt), None)
@@ -394,6 +416,10 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             if (compname is None):  # leave loop if no more components defined in env
                 break
 
+        if (retcode == 0):
+            sys.exit(0)
+        else:
+            sys.exit(1)
     elif (action.lower() == "kv"):
 
         if (dhapi.is_empty(dhurl)):
