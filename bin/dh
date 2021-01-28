@@ -398,9 +398,6 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                     print(data[1])
                     if (data[0]):
                         print("Successful")
-                        if (dhapi.is_not_empty(pipeline)):
-                            data = dhapi.run_circleci_pipeline(pipeline)
-                            pprint(data)
                     else:
                         print("Failed")
                         retcode = retcode + 1
