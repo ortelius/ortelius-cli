@@ -1,5 +1,135 @@
 #!/usr/bin/env python3
-"""DeployHub's CLI using the dhapi module"""
+"""
+DeployHub's CLI using the dhapi module.
+
+Parameters:
+
+    ACTION - one of the following
+        deploy: deploy the application to the evironment
+            Parameters: 
+                --dhurl 
+                --dhuser
+                --dhpass
+                --appname
+                --appversion (optional)
+                --deployenv
+
+        approve: approve the application version
+            Parameters: 
+                --dhurl 
+                --dhuser
+                --dhpass
+                --appname
+                --appversion (optional)
+
+        move: move the application version using the supplied task
+            Parameters: 
+                --dhurl 
+                --dhuser
+                --dhpass
+                --appname
+                --appversion (optional)
+                --from_domain
+                --task
+
+        updatecomp: create/replace the component version for the application verion
+            Parameters:
+                --dhurl 
+                --dhuser
+                --dhpass
+                --compname
+                --compvariant (optional)
+                --compversion (optional)
+                --appname (optional)
+                --appversion (optional)
+                --autoappinc (optional)
+
+            Predefined Key/Values:
+                BuildUrl - url for the CI job
+                BuildId - Identifier for the CI job
+                BuildNumber - Build number for the CI job
+                Chart - Helm Chart for the component
+                ChartNamespace - Name space for the component to be deployed to
+                ChartVersion - Helm Chart version
+                DockerBuildDate - Timestamp when the image was created
+                DockerRepo - Repository which the image was pushed to
+                DockerSha - Digest for the image
+                DockerTag - Tag for the image
+                GitCommit - Git commit that triggered the CI job
+                GitRepo - Git repo that triggered the CI job
+                GitTag - Git tag in the git repo
+                GitUrl - Full url to the git repo
+                operator - Operator name
+
+        assign: assigns a component version to an application verion
+            Parameters:
+                --dhurl 
+                --dhuser
+                --dhpass
+                --compname
+                --compvariant (optional)
+                --compversion (optional)
+                --appname 
+                --appversion (optional)
+
+        kv: assigns the key/values pairs to the component verion
+            Parameters:
+                --dhurl 
+                --dhuser
+                --dhpass
+                --compname
+                --compvariant (optional)
+                --compversion (optional)
+                --kvconfig
+
+        envscript: creates a bash file from the component toml file
+            Parameters:
+                --envvars
+                --envvars_sh
+
+        export: exports a domain including all objects to stdout
+            Parameters:
+                --dhurl 
+                --dhuser
+                --dhpass
+                --from_dom
+
+        import: imports the export file into the new domain
+            Parameters:
+                --dhurl 
+                --dhuser
+                --dhpass
+                --from_dom
+                --to_dom
+    
+    Parameter Descriptions:
+        --dhurl: DeployHub Url
+        --dhuser: DeployHub User 
+        --dhpass: DeployHub Password 
+        --appname: Application Name
+        --appversion: Application Version
+        --appautoinc: Application Auto Increment Version
+        --deployenv: Deployment Environment
+        --compname: Component Name
+        --compvariant: Component Variant
+        --compversion: Component Version
+        --compautoinc: Component Auto Increment Version
+        --kvconfig: Directory containing the json and properties file
+        --crdatasource: Change Request Data Source for the Component
+        --changerequest: Change Request for Component, use multiple time for each Change Request Id
+        --deploydata: The json file that contains the application, environment and log details
+        --from_domain: Move from domain
+        --task: Task to use for move
+        --envvars: Env Variables TOML file
+        --envvars_sh: Env Variables Output sh file
+        --docker: docker Kind of the component item
+        --file: file Kind of the component item
+        --compattr: Component Attributes, use multiple time for each attr
+        --envs: Environments to Associate App to, use multiple time for each env
+        --importfile: File to Import
+        --fromdom: From Domain
+        --todom: To Domain
+"""
 
 __version__ = '9.3.108'
 
@@ -20,9 +150,9 @@ from deployhub import dhapi
 
 @click.command()
 @click.argument('action', required=True)
-@click.option('--dhurl', help='DeployHub Url', envvar='DHURL')
-@click.option('--dhuser', help='DeployHub User', envvar='DHUSER')
-@click.option('--dhpass', help='DeployHub Password', envvar='DHPASS')
+@click.option('--dhurl', help='DeployHub Url', envvar='DHURL', required=True)
+@click.option('--dhuser', help='DeployHub User', envvar='DHUSER', required=True)
+@click.option('--dhpass', help='DeployHub Password', envvar='DHPASS', required=True)
 @click.option('--appname', help='Application Name', envvar='COMPONENT_APPLICATION')
 @click.option('--appversion', help='Application Version', envvar='COMPONENT_APPLICATION_VERSION')
 @click.option('--appautoinc', help='Application Auto Increment Version', envvar='COMPONENT_APPLICATION_AUTOINC')
@@ -46,35 +176,36 @@ from deployhub import dhapi
 @click.option('--importfile', help='File to Import')
 @click.option('--fromdom', help='From Domain')
 @click.option('--todom', help='To Domain')
+
 def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, deployenv, envs, compattr, kvconfig, deploydata, from_domain, task, envvars, envvars_sh, importfile, fromdom, todom, crdatasource, changerequest):
     """
-    ACTION is (deploy, updatecomp, approve, move, envscript, kv, export, import) for the type of action to perform.
+    ACTION: deploy, updatecomp, approve, move, envscript, kv, export or import for the type of action to perform.
 
-    deploy: deploy the application to the evironment\n
-    approve: approve the application version\n
-    move: move the application version using the supplied task\n
-    updatecomp: create/replace the component version for the application verion\n
-        Predefined Key/Values:
-            BuildUrl - url for the CI job
-            BuildId - Identifier for the CI job
-            BuildNumber - Build number for the CI job
-            Chart - Helm Chart for the component
-            ChartNamespace - Name space for the component to be deployed to
-            ChartVersion - Helm Chart version
-            DockerBuildDate - Timestamp when the image was created
-            DockerRepo - Repository which the image was pushed to
-            DockerSha - Digest for the image
-            DockerTag - Tag for the image
-            GitCommit - Git commit that triggered the CI job
-            GitRepo - Git repo that triggered the CI job
-            GitTag - Git tag in the git repo
-            GitUrl - Full url to the git repo
-            operator - Operator name
-    assign: assigns a component version to an application verion\n
-    kv: assigns the key/values pairs to the component verion\n
-    envscript: creates a bash file from the component toml file\n
-    export: exports a domain including all objects to stdout\n
-    import: imports the export file into the new domain\n
+        deploy: deploy the application to the evironment\n
+        approve: approve the application version\n
+        move: move the application version using the supplied task\n
+        updatecomp: create/replace the component version for the application verion\n
+            Predefined Key/Values:\n
+                BuildUrl - url for the CI job\n
+                BuildId - Identifier for the CI job\n
+                BuildNumber - Build number for the CI job\n
+                Chart - Helm Chart for the component\n
+                ChartNamespace - Name space for the component to be deployed to\n
+                ChartVersion - Helm Chart version\n
+                DockerBuildDate - Timestamp when the image was created\n
+                DockerRepo - Repository which the image was pushed to\n
+                DockerSha - Digest for the image\n
+                DockerTag - Tag for the image\n
+                GitCommit - Git commit that triggered the CI job\n
+                GitRepo - Git repo that triggered the CI job\n
+                GitTag - Git tag in the git repo\n
+                GitUrl - Full url to the git repo\n
+                operator - Operator name\n
+        assign: assigns a component version to an application verion\n
+        kv: assigns the key/values pairs to the component verion\n
+        envscript: creates a bash file from the component toml file\n
+        export: exports a domain including all objects to stdout\n
+        import: imports the export file into the new domain\n
     """
 
     if (action.lower() == "kv" or action.lower() == "deploy" or action.lower() == "updatecomp" or action.lower() == "approve" or action.lower() == "export" or action.lower() == "import" or action.lower() == "assign"):
@@ -171,7 +302,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 deployenv = entry['deployenv']
                 pipeline = entry['circleci_pipeline']
 
-                print(f'Deploying {appname} to {deployenv}')
+                print('Deploying ' + appname + ' to ' + deployenv)
                 data = dhapi.deploy_application_by_appid(dhurl, cookies, appid, deployenv)
 
                 deployid = data[0]
@@ -179,7 +310,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                     print(data[1])
                     sys.exit(1)
 
-                print(f"Fetching Logs for {deployid}")
+                print("Fetching Logs for " + deployid)
                 data = dhapi.get_logs(dhurl, cookies, deployid)
 
                 print(data[1])
@@ -214,7 +345,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
             dhapi.log_deploy_application(dhurl, cookies, deploydata)
 
-            print(f'Logged Deployment for {appname} to {compvariant}')
+            print("Logged Deployment for " + appname + " to " + compvariant)
 
             if ('.' in compvariant):
                 compvariant = compvariant.split('.')[-1]
@@ -226,7 +357,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 compautoinc = "Y"
 
             if (compname is not None):
-                print(f'Load config from {kvconfig}')
+                print('Load config from ' + kvconfig)
                 dhapi.set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, environment, crdatasource, changerequest)
     elif (action.lower() == "updatecomp"):
 
@@ -384,7 +515,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 print("Assignment Done")
 
                 if (dhapi.is_not_empty(deployenv)):
-                    print(f'Deploying {appname} to {deployenv}')
+                    print('Deploying ' + appname + ' to ' + deployenv)
                     data = dhapi.deploy_application_by_appid(dhurl, cookies, appid, deployenv)
 
                     deployid = data[0]
@@ -392,7 +523,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                         print(data[1])
                         sys.exit(1)
 
-                    print(f"Fetching Logs for {deployid}")
+                    print('Fetching Logs for ' + deployid)
                     data = dhapi.get_logs(dhurl, cookies, deployid)
 
                     print(data[1])
@@ -451,7 +582,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             if (kvconfig is None):
                 kvconfig = data.get('kvconfig', '')
 
-            print(f'Config for {appname} to {compvariant}')
+            print('Config for ' + appname + ' to ' + compvariant)
 
         if (dhapi.is_empty(compname)):
             print("--compname is required")
@@ -583,7 +714,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 appname = parts[0] + ';' + parts[1]
                 appversion = parts[2]
 
-        print(f'Approving {appname} {appversion}')
+        print('Approving ' + appname + ' ' + appversion)
         data = dhapi.approve_application(dhurl, cookies, appname, appversion)
         print(data[1])
     elif (action.lower() == "move"):
@@ -605,7 +736,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 appname = parts[0] + ';' + parts[1]
                 appversion = parts[2]
 
-        print(f'Moving {appname} {appversion} from {from_domain}')
+        print('Moving ' + appname + ' ' + appversion + ' from ' + from_domain)
         data = dhapi.move_application(dhurl, cookies, appname, appversion, from_domain, task)
         print(data[1])
     elif (action.lower() == "envscript"):
@@ -613,7 +744,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             print("--envvars is required")
             sys.exit(1)
 
-        print(f'Creating env shell script from {envvars}')
+        print('Creating env shell script from ' + envvars)
         envscript(envvars, envvars_sh)
     elif (action.lower() == "export"):
         if (dhapi.is_empty(dhurl)):
@@ -699,7 +830,16 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
 
 def envscript(envvars, envvars_sh):
-
+    """
+    Add the variabes from the envvars toml file to the shell script.
+    
+    Args:
+        envvars (string): file name for the environment toml file
+        envvars_sh (string): the shell script to update with var from toml file
+        
+    Returns:
+        no data returned.  Output is in the shell script file.
+    """
     lines = subprocess.run(['cat', envvars], check=False, stdout=subprocess.PIPE).stdout.decode('utf-8')
 
     vardict = qtoml.loads(lines)
@@ -740,7 +880,19 @@ def envscript(envvars, envvars_sh):
 
 
 def filterdict(dhurl, cookies, objtype, fromdom, allobjs):
+    """
+    Export all the objects from the server for the from domain and filter the dictionary for the object name.
 
+    Args:
+        dhurl (string): url for the server
+        cookies (string): cookies from the login
+        objtype (sting): object type to look for in the dictionary
+        fromdom (string): name of the domain in the dictionary
+        allobjs (dict): return of the objects found
+
+    Returns:
+        data returned in allobjs
+    """
     data = dhapi.get_json(dhurl + "/dmadminweb/API/export/" + objtype, cookies)
 
     objlist = []
@@ -753,7 +905,18 @@ def filterdict(dhurl, cookies, objtype, fromdom, allobjs):
 
 
 def importdict(dhurl, cookies, objtype, allobjs):
+    """
+    Import the objects based on objtype and add them to the server.
+    
+    Args:
+        dhurl (string): url for the server
+        cookies (string): cookies from the login
+        objtype (sting): object type to look for in the dictionary
+        allobjs (dict): return of the objects found
 
+    Returns:
+        no data returned
+    """
     print(objtype)
 
     for obj in allobjs.get(objtype, []):
