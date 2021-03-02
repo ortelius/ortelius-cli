@@ -2,12 +2,13 @@
 """
 DeployHub's CLI using the dhapi module.
 
-Parameters:
+Args:
 
     ACTION - one of the following
+
         deploy: deploy the application to the evironment
-            Parameters: 
-                --dhurl 
+            Usage:
+                --dhurl
                 --dhuser
                 --dhpass
                 --appname
@@ -15,16 +16,16 @@ Parameters:
                 --deployenv
 
         approve: approve the application version
-            Parameters: 
-                --dhurl 
+            Usage:
+                --dhurl
                 --dhuser
                 --dhpass
                 --appname
                 --appversion (optional)
 
         move: move the application version using the supplied task
-            Parameters: 
-                --dhurl 
+            Usage:
+                --dhurl
                 --dhuser
                 --dhpass
                 --appname
@@ -33,8 +34,8 @@ Parameters:
                 --task
 
         updatecomp: create/replace the component version for the application verion
-            Parameters:
-                --dhurl 
+            Usage:
+                --dhurl
                 --dhuser
                 --dhpass
                 --compname
@@ -43,38 +44,39 @@ Parameters:
                 --appname (optional)
                 --appversion (optional)
                 --autoappinc (optional)
+                --compattr
 
-            Predefined Key/Values:
-                BuildUrl - url for the CI job
-                BuildId - Identifier for the CI job
-                BuildNumber - Build number for the CI job
-                Chart - Helm Chart for the component
-                ChartNamespace - Name space for the component to be deployed to
-                ChartVersion - Helm Chart version
-                DockerBuildDate - Timestamp when the image was created
-                DockerRepo - Repository which the image was pushed to
-                DockerSha - Digest for the image
-                DockerTag - Tag for the image
-                GitCommit - Git commit that triggered the CI job
-                GitRepo - Git repo that triggered the CI job
-                GitTag - Git tag in the git repo
-                GitUrl - Full url to the git repo
-                operator - Operator name
+            - Predefined Key/Values:
+                * BuildUrl: url for the CI job
+                * BuildId: Identifier for the CI job
+                * BuildNumber: Build number for the CI job
+                * Chart: Helm Chart for the component
+                * ChartNamespace: Name space for the component to be deployed to
+                * ChartVersion: Helm Chart version
+                * DockerBuildDate: Timestamp when the image was created
+                * DockerRepo: Repository which the image was pushed to
+                * DockerSha: Digest for the image
+                * DockerTag: Tag for the image
+                * GitCommit: Git commit that triggered the CI job
+                * GitRepo: Git repo that triggered the CI job
+                * GitTag: Git tag in the git repo
+                * GitUrl: Full url to the git repo
+                * operator: Operator name
 
         assign: assigns a component version to an application verion
-            Parameters:
-                --dhurl 
+            Usage:
+                --dhurl
                 --dhuser
                 --dhpass
                 --compname
                 --compvariant (optional)
                 --compversion (optional)
-                --appname 
+                --appname
                 --appversion (optional)
 
         kv: assigns the key/values pairs to the component verion
-            Parameters:
-                --dhurl 
+            Usage:
+                --dhurl
                 --dhuser
                 --dhpass
                 --compname
@@ -83,29 +85,29 @@ Parameters:
                 --kvconfig
 
         envscript: creates a bash file from the component toml file
-            Parameters:
+            Usage:
                 --envvars
                 --envvars_sh
 
         export: exports a domain including all objects to stdout
-            Parameters:
-                --dhurl 
+            Usage:
+                --dhurl
                 --dhuser
                 --dhpass
                 --from_dom
 
         import: imports the export file into the new domain
-            Parameters:
-                --dhurl 
+            Usage:
+                --dhurl
                 --dhuser
                 --dhpass
                 --from_dom
                 --to_dom
-    
+
     Parameter Descriptions:
         --dhurl: DeployHub Url
-        --dhuser: DeployHub User 
-        --dhpass: DeployHub Password 
+        --dhuser: DeployHub User
+        --dhpass: DeployHub Password
         --appname: Application Name
         --appversion: Application Version
         --appautoinc: Application Auto Increment Version
@@ -130,6 +132,9 @@ Parameters:
         --fromdom: From Domain
         --todom: To Domain
 """
+
+# To generate markdown use:
+#  pydoc-markdown -I bin | sed 's/  --/    > --/g' | sed 's/Usage:/- Usage:/g' | sed 's/- `--/  - `--/g' | sed 's/  \\* /    \\* /g' | tr '\n' '\a' | grep -o '.*dh\\.main' | tr '\a' '\n' | sed -e '$ d' > doc/dh.md
 
 __version__ = '9.3.108'
 
@@ -176,7 +181,6 @@ from deployhub import dhapi
 @click.option('--importfile', help='File to Import')
 @click.option('--fromdom', help='From Domain')
 @click.option('--todom', help='To Domain')
-
 def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, deployenv, envs, compattr, kvconfig, deploydata, from_domain, task, envvars, envvars_sh, importfile, fromdom, todom, crdatasource, changerequest):
     """
     ACTION: deploy, updatecomp, approve, move, envscript, kv, export or import for the type of action to perform.
@@ -832,11 +836,11 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 def envscript(envvars, envvars_sh):
     """
     Add the variabes from the envvars toml file to the shell script.
-    
+
     Args:
         envvars (string): file name for the environment toml file
         envvars_sh (string): the shell script to update with var from toml file
-        
+
     Returns:
         no data returned.  Output is in the shell script file.
     """
@@ -907,7 +911,7 @@ def filterdict(dhurl, cookies, objtype, fromdom, allobjs):
 def importdict(dhurl, cookies, objtype, allobjs):
     """
     Import the objects based on objtype and add them to the server.
-    
+
     Args:
         dhurl (string): url for the server
         cookies (string): cookies from the login

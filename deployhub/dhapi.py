@@ -1,4 +1,8 @@
 """DeployHub RESTapi interface for Python."""
+
+# To generate markdown use:
+# pydoc-markdown -I deployhub > doc/deployhub.md
+
 import json
 import os
 import re
@@ -72,12 +76,12 @@ def post_json(url, payload, cookies):
     """
     Post URL as json string.
 
-    Args: 
+    Args:
         url (string): url to server
         payload (string): json payload to post
         cookies (string): login cookies
 
-    Returns: 
+    Returns:
         string: The json string.
     """
     try:
@@ -144,7 +148,7 @@ def login(dhurl, user, password, errors):
         password (string): password for login
         errors (list): list to return any errors back to the caller
 
-    Returns: 
+    Returns:
         string: the cookies to be used in subsequent API calls.
     """
     try:
@@ -421,7 +425,7 @@ def get_application_attrs(dhurl, cookies, appid):
     Args:
         dhurl (string): url to the server
         cookies (string): cookies from login
-        appid (id): id of the application 
+        appid (id): id of the application
 
     Returns:
         string: json string of the key/value attributes.
@@ -438,7 +442,7 @@ def find_domain(dhurl, cookies, findname):
     Args:
         dhurl (string): url to the server
         cookies (string): cookies from login
-        findname (string): domain name to match 
+        findname (string): domain name to match
 
     Returns:
         string or None if not found: the full domain name
@@ -677,7 +681,7 @@ def new_component_version(dhurl, cookies, compname, compvariant, compversion, ki
         component_items (list): component items for the file type
         compautoinc (boolean): auto increment an existing version to the new version
     Returns:
-        int: id of the new component, -1 if an error occurred. 
+        int: id of the new component, -1 if an error occurred.
     """
     compvariant = clean_name(compvariant)
     compversion = clean_name(compversion)
@@ -810,7 +814,7 @@ def new_docker_component(dhurl, cookies, compname, compvariant, compversion, par
         compversion (string): version of the component, optional
         parent_compid (int): parent component version for the new component
     Returns:
-        int: id of the new component, -1 if an error occurred. 
+        int: id of the new component, -1 if an error occurred.
     """
     compvariant = clean_name(compvariant)
     compversion = clean_name(compversion)
@@ -848,7 +852,7 @@ def new_file_component(dhurl, cookies, compname, compvariant, compversion, paren
         parent_compid (int): parent component version for the new component
         component_items (list):  list of items for the component
     Returns:
-        int: id of the new component, -1 if an error occurred. 
+        int: id of the new component, -1 if an error occurred.
     """
     compvariant = clean_name(compvariant)
     compversion = clean_name(compversion)
@@ -886,7 +890,7 @@ def new_component_item(dhurl, cookies, compid, kind, component_items):
         compversion (string): version of the component, optional
         kind (string): docker or file for the component kind
     Returns:
-        int: id of the new component item, -1 if an error occurred. 
+        int: id of the new component item, -1 if an error occurred.
     """
     # Get compId
     if (kind.lower() == "docker" or component_items is None):
@@ -1523,7 +1527,7 @@ def run_circleci_pipeline(pipeline):
 def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, env, crdatasource, crlist):
     """
     Update the attributes for the component based on the properties files found in the cloned directory.
-    
+
     A comparision is done to see if a new component version is needed.  If a new key/values are found then
     the application version will be created for the environment.
 
