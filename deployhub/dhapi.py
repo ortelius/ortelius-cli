@@ -1,5 +1,5 @@
-"""This module interfaces with the DeployHub RestAPIs to perform login, deploy, move and approvals."""
-
+"""DeployHub RESTapi interface for Python."""
+import json
 import os
 import re
 import subprocess
@@ -8,18 +8,17 @@ import time
 import urllib
 from pathlib import Path
 from pprint import pprint
-from shutil import rmtree
 
-import json
+import configobj
 import qtoml
 import requests
 import yaml
-import configobj
 from configobj import ConfigObj
 from flatten_dict import flatten
 
+
 def fspath(path):
-    '''https://www.python.org/dev/peps/pep-0519/#os'''
+    """See https://www.python.org/dev/peps/pep-0519/#os for details."""
     if isinstance(path, (str, bytes)):
         return path
 
@@ -44,10 +43,19 @@ def fspath(path):
     raise TypeError("expected str, bytes, pathlib.Path or os.PathLike object, not "
                     + path_type.__name__)
 
-def get_json(url, cookies):
-    """ Get URL as json string.
-        Returns: json string"""
 
+def get_json(url, cookies):
+    """
+    Get URL as json string.
+
+    Args:
+        url (string): url to server
+        cookies (string) - login cookies
+
+    Returns:
+        string: The json string.
+
+    """
     try:
         res = requests.get(url, cookies=cookies)
         if (res is None):
@@ -59,10 +67,19 @@ def get_json(url, cookies):
         print(str(conn_error))
     return None
 
-def post_json(url, payload, cookies):
-    """ Post URL as json string.
-        Returns: json string"""
 
+def post_json(url, payload, cookies):
+    """
+    Post URL as json string.
+
+    Args: 
+        url (string): url to server
+        payload (string): json payload to post
+        cookies (string): login cookies
+
+    Returns: 
+        string: The json string.
+    """
     try:
         res = requests.post(url, data=payload, cookies=cookies)
         if (res is None):
@@ -74,28 +91,62 @@ def post_json(url, payload, cookies):
         print(str(conn_error))
     return None
 
-def post_json_with_header(url, token):
-    """ Post URL as json string.
-        Returns: json string"""
 
+def post_json_with_header(url, token):
+    """
+    Post URL as json string.
+
+    Args:
+        url (string): url to server
+        token (string): CircleCI token for header
+
+    Returns:
+        string: The json string
+    """
     pprint(url)
     lines = subprocess.run(["curl", "-X", "POST", url, "-H", 'Accept: application/json', "-H", 'Circle-Token:' + token, "-q"], check=False, stdout=subprocess.PIPE).stdout.decode('utf-8').split("\n")
     return lines
 
+
 def is_empty(my_string):
-    """Is the string empty"""
+    """
+    Is the string empty.
+
+    Args:
+        my_string (string): string to check emptyness on
+
+    Returns:
+        boolean: True if the string is None or blank, otherwise False.
+    """
     return not (my_string and my_string.strip())
 
 
 def is_not_empty(my_string):
-    """Is the string NOT empty"""
+    """
+    Is the string NOT empty.
+
+    Args:
+        my_string (string): string to check emptyness on
+
+    Returns:
+        boolean: False if the string is None or blank, otherwise True.
+    """
     return bool(my_string and my_string.strip())
 
 
 def login(dhurl, user, password, errors):
-    """Login to DeployHub using the DH Url, userid and password.
-    Returns: cookies to be used in subsequent API calls"""
+    """
+    Login to DeployHub using the DH Url, userid and password.
 
+    Args:
+        dhurl (string): url to server
+        user (string): username to login with
+        password (string): password for login
+        errors (list): list to return any errors back to the caller
+
+    Returns: 
+        string: the cookies to be used in subsequent API calls.
+    """
     try:
         result = requests.post(dhurl + "/dmadminweb/API/login", data={'user': user, 'pass': password})
         cookies = result.cookies
@@ -109,10 +160,20 @@ def login(dhurl, user, password, errors):
         errors.append(str(conn_error))
     return None
 
-def deploy_application_by_appid(dhurl, cookies, appid, env):
-    """Deploy the application to the environment
-    Returns: deployment_id"""
 
+def deploy_application_by_appid(dhurl, cookies, appid, env):
+    """
+    Deploy the application to the environment.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        appid (int): id to the application
+        env (string): full name of the environemt
+
+    Returns:
+        list: [deployment_id (int) -1 for error, message (string)].
+    """
     data = get_json(dhurl + "/dmadminweb/API/deploy?app=" + str(appid) + "&env=" + urllib.parse.quote(env) + "&wait=N", cookies)
 
     if (data is None):
@@ -123,9 +184,21 @@ def deploy_application_by_appid(dhurl, cookies, appid, env):
 
     return [-1, data.get('error', "")]
 
+
 def deploy_application(dhurl, cookies, appname, appversion, env):
-    """Deploy the application to the environment
-    Returns: deployment_id"""
+    """
+    Deploy the application to the environment.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        appname (string): name of the application including domain name
+        appversion (string): version of application. Should include vairiant if used.
+        env (string): full name of the environment
+
+    Returns:
+        list: [deployment_id (int) -1 for error, message (string)].
+    """
     data = get_application(dhurl, cookies, appname, appversion, True)
     appid = data[0]
 
@@ -141,7 +214,20 @@ def deploy_application(dhurl, cookies, appname, appversion, env):
 
 
 def move_application(dhurl, cookies, appname, appversion, from_domain, task):
-    """Move an application from the from_domain using the task"""
+    """
+    Move an application from the from_domain using the task.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        appname (string): name of the application including domain name
+        appversion (string): version of application. Should include vairiant if used.
+        from_domain (string): full name of the domain to move from
+        task (string): task to use to do the move
+
+    Returns:
+        list: [appid (int) -1 for error, message (string)].
+    """
     data = get_application(dhurl, cookies, appname, appversion, True)
     appid = data[0]
 
@@ -170,7 +256,18 @@ def move_application(dhurl, cookies, appname, appversion, from_domain, task):
 
 
 def approve_application(dhurl, cookies, appname, appversion):
-    """Approve the application for the current domain that it is in."""
+    """
+    Approve the application for the current domain that it is in.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        appname (string): name of the application including domain name
+        appversion (string): version of application. Should include vairiant if used.
+
+    Returns:
+        list: [appid (int) -1 for error, message (string)].
+    """
     data = get_application(dhurl, cookies, appname, appversion, True)
     appid = data[0]
 
@@ -186,7 +283,17 @@ def approve_application(dhurl, cookies, appname, appversion):
 
 
 def is_deployment_done(dhurl, cookies, deployment_id):
-    """Check to see if the deployment has completed"""
+    """
+    Check to see if the deployment has completed.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        deployment_id (int): id of the deployment to check
+
+    Returns:
+        list: [True if done, otherwise False (boolean), message (string)].
+    """
     data = get_json(dhurl + "/dmadminweb/API/log/" + str(deployment_id) + "?checkcomplete=Y", cookies)
 
     if (data is None):
@@ -199,8 +306,17 @@ def is_deployment_done(dhurl, cookies, deployment_id):
 
 
 def get_logs(dhurl, cookies, deployid):
-    """Get the logs for the deployment.
-    Returns: array successful as boolean, log as a String"""
+    """
+    Get the logs for the deployment.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        deployment_id (int): id of the deployment to check
+
+    Returns:
+        list: [True if successful fetch, otherwise False (boolean), output lines (string)].
+    """
     done = 0
 
     while (done == 0):
@@ -235,9 +351,20 @@ def get_logs(dhurl, cookies, deployid):
 
 
 def get_attrs(dhurl, cookies, app, comp, env, srv):
-    """Get the attributes for this deployment base on app version and env.
-    Returns: json of attributes"""
+    """
+    Get the attributes for this deployment base on app version and env.
 
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        appname (string): name of the application including domain name.
+        compname (string): name of the component including domain name
+        env (string): name of the environment including domain name
+        srv (string): name of the end-point including domain name
+
+    Returns:
+        dict: key/value pair of attributes.
+    """
     data = get_json(dhurl + "/dmadminweb/API/environment/" + urllib.parse.quote(env), cookies)
     envid = str(data['result']['id'])
     servers = data['result']['servers']
@@ -286,14 +413,36 @@ def get_attrs(dhurl, cookies, app, comp, env, srv):
 
     return result
 
+
 def get_application_attrs(dhurl, cookies, appid):
+    """
+    Get the attributes for an application.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        appid (id): id of the application 
+
+    Returns:
+        string: json string of the key/value attributes.
+    """
     data = get_json(dhurl + "/dmadminweb/API/getvar/application/" + str(appid), cookies)
     app_attrs = data['attributes']
     return app_attrs
 
-def find_domain(dhurl, cookies, findname):
-    """Get the domain name and id that matches best with the passed in name"""
 
+def find_domain(dhurl, cookies, findname):
+    """
+    Get the domain name and id that matches best with the passed in name.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        findname (string): domain name to match 
+
+    Returns:
+        string or None if not found: the full domain name
+    """
     data = get_json(dhurl + "/dmadminweb/GetAllDomains", cookies)
     for dom in data:
         child = dom['name'].split('.')[-1]
@@ -308,6 +457,15 @@ def find_domain(dhurl, cookies, findname):
 
 
 def clean_name(name):
+    """
+    Remove periods and dashes from the name.
+
+    Args:
+        name (string): string to clean
+
+    Returns:
+        string: the name with periods and dashes changed to userscores.
+    """
     if (name is None):
         return name
 
@@ -317,6 +475,22 @@ def clean_name(name):
 
 
 def get_component(dhurl, cookies, compname, compvariant, compversion, id_only, latest):
+    """
+    Get the component json string.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        compname (string): name of the component including domain name
+        compvariant (string): variant of the component, optional
+        compversion (string): version of the component, optional
+        id_only (boolean): return just the id and not the whole json string
+        latest (boolean): return the latest version
+
+    Returns:
+        int: if id_only = True
+        string: if id_only = False. If latest = True then latest version json is returned otherwise current version json string is returned.
+    """
     compvariant = clean_name(compvariant)
     compversion = clean_name(compversion)
 
@@ -376,6 +550,18 @@ def get_component(dhurl, cookies, compname, compvariant, compversion, id_only, l
 
 
 def get_environment(dhurl, cookies, env):
+    """
+    Get the environment json string.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        env (string): name of the environment
+
+    Returns:
+        list: [envid or -1 if not found, name (string)]
+        string: if id_only = False. If latest = True then latest version json is returned otherwise current version json string is returned.
+    """
     name = ""
     data = get_json(dhurl + "/dmadminweb/API/environment/?name=" + urllib.parse.quote(env), cookies)
 
@@ -390,7 +576,19 @@ def get_environment(dhurl, cookies, env):
 
     return [-1, ""]
 
+
 def get_component_name(dhurl, cookies, compid):
+    """
+    Get the full component name.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        compid (int): id of the component
+
+    Returns:
+        string: full name of the component
+    """
     name = ""
     data = get_json(dhurl + "/dmadminweb/API/component/" + str(compid) + "?idonly=Y", cookies)
 
@@ -401,12 +599,35 @@ def get_component_name(dhurl, cookies, compid):
         name = data['result']['domain'] + "." + data['result']['name']
     return name
 
+
 def get_component_fromid(dhurl, cookies, compid):
+    """
+    Get the component json string.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        compid (int): id of the component
+
+    Returns:
+        string: json string for the component
+    """
     data = get_json(dhurl + "/dmadminweb/API/component/" + str(compid), cookies)
     return data
 
-def get_component_attrs(dhurl, cookies, compid):
 
+def get_component_attrs(dhurl, cookies, compid):
+    """
+    Get the component attributes json string.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        compid (int): id of the component
+
+    Returns:
+        dict: json string to the attributes
+    """
     data = get_json(dhurl + "/dmadminweb/API/getvar/component/" + str(compid), cookies)
 
     if (data is None):
@@ -417,7 +638,19 @@ def get_component_attrs(dhurl, cookies, compid):
 
     return []
 
+
 def get_application_name(dhurl, cookies, appid):
+    """
+    Get the application name.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        appid (int): id of the application
+
+    Returns:
+        string: full name of the application
+    """
     name = ""
 
     data = get_json(dhurl + "/dmadminweb/API/application/" + str(appid), cookies)
@@ -431,6 +664,21 @@ def get_application_name(dhurl, cookies, appid):
 
 
 def new_component_version(dhurl, cookies, compname, compvariant, compversion, kind, component_items, compautoinc):
+    """
+    Create a new component version and base version if needed.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        compname (string): name of the component including domain
+        compvariant (string): variant of the component, optional
+        compversion (string): version of the component, optional
+        kind (string): docker or file
+        component_items (list): component items for the file type
+        compautoinc (boolean): auto increment an existing version to the new version
+    Returns:
+        int: id of the new component, -1 if an error occurred. 
+    """
     compvariant = clean_name(compvariant)
     compversion = clean_name(compversion)
 
@@ -551,6 +799,19 @@ def new_component_version(dhurl, cookies, compname, compvariant, compversion, ki
 
 
 def new_docker_component(dhurl, cookies, compname, compvariant, compversion, parent_compid):
+    """
+    Create a new docker component.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        compname (string): name of the component including domain
+        compvariant (string): variant of the component, optional
+        compversion (string): version of the component, optional
+        parent_compid (int): parent component version for the new component
+    Returns:
+        int: id of the new component, -1 if an error occurred. 
+    """
     compvariant = clean_name(compvariant)
     compversion = clean_name(compversion)
 
@@ -575,6 +836,20 @@ def new_docker_component(dhurl, cookies, compname, compvariant, compversion, par
 
 
 def new_file_component(dhurl, cookies, compname, compvariant, compversion, parent_compid, component_items):
+    """
+    Create a new file component.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        compname (string): name of the component including domain
+        compvariant (string): variant of the component, optional
+        compversion (string): version of the component, optional
+        parent_compid (int): parent component version for the new component
+        component_items (list):  list of items for the component
+    Returns:
+        int: id of the new component, -1 if an error occurred. 
+    """
     compvariant = clean_name(compvariant)
     compversion = clean_name(compversion)
 
@@ -600,6 +875,19 @@ def new_file_component(dhurl, cookies, compname, compvariant, compversion, paren
 
 
 def new_component_item(dhurl, cookies, compid, kind, component_items):
+    """
+    Create a new component item for the component.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        compname (string): name of the component including domain
+        compvariant (string): variant of the component, optional
+        compversion (string): version of the component, optional
+        kind (string): docker or file for the component kind
+    Returns:
+        int: id of the new component item, -1 if an error occurred. 
+    """
     # Get compId
     if (kind.lower() == "docker" or component_items is None):
         data = get_json(dhurl + "/dmadminweb/UpdateAttrs?f=inv&c=" + str(compid) + "&xpos=100&ypos=100&kind=" + kind + "&removeall=Y", cookies)
@@ -634,6 +922,19 @@ def new_component_item(dhurl, cookies, compid, kind, component_items):
 
 
 def update_name(dhurl, cookies, compname, compvariant, compversion, compid):
+    """
+    Update the name of the component for the compid to the new name.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        compname (string): name of the component including domain
+        compvariant (string): variant of the component, optional
+        compversion (string): version of the component, optional
+        compid (int): id to the component to update the name of
+    Returns:
+        string: json string of the component update.
+    """
     compvariant = clean_name(compvariant)
     compversion = clean_name(compversion)
 
@@ -655,9 +956,21 @@ def update_name(dhurl, cookies, compname, compvariant, compversion, compid):
 
 
 def new_component(dhurl, cookies, compname, compvariant, compversion, kind, parent_compid):
-    """Create the component object based on the component name and variant.
-    Returns: component id of the new component otherwise None"""
+    """
+    Create the component object based on the component name and variant.
 
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        compname (string): name of the component including domain
+        compvariant (string): variant of the component, optional
+        compversion (string): version of the component, optional
+        kind (string): docker or file for the kind of component
+        parent_compid: id of the parent component version
+
+    Returns:
+        int: component id of the new component otherwise None.
+    """
     # Create base version
     if (parent_compid is None):
         data = get_json(dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname + ";" + compvariant), cookies)
@@ -675,6 +988,22 @@ def new_component(dhurl, cookies, compname, compvariant, compversion, kind, pare
 
 
 def update_component_attrs(dhurl, cookies, compname, compvariant, compversion, attrs, crdatasource, crlist):
+    """
+    Update the attributes, key/value pairs, for the component and CR list.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        compname (string): name of the component including domain
+        compvariant (string): variant of the component, optional
+        compversion (string): version of the component, optional
+        attrs (dict): key/value dictionary
+        crdatasource (string): name of the CR data source
+        cdlist (list): list of CRs to assign to the component
+
+    Returns:
+        list: [True for success, otherwise False, json string of update, url for update].
+    """
     # Get latest version of compnent variant
     data = get_component(dhurl, cookies, compname, compvariant, compversion, True, False)
     compid = data[0]
@@ -700,8 +1029,22 @@ def update_component_attrs(dhurl, cookies, compname, compvariant, compversion, a
 
     return [True, data, dhurl + "/dmadminweb/API/setvar/component/" + str(compid)]
 
-def update_compid_attrs(dhurl, cookies, compid, attrs, crdatasource, crlist):
 
+def update_compid_attrs(dhurl, cookies, compid, attrs, crdatasource, crlist):
+    """
+    Update the attributes, key/value pairs, for the component and CR list.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        compid (int): id of the component to update
+        attrs (dict): key/value dictionary
+        crdatasource (string): name of the CR data source
+        cdlist (list): list of CRs to assign to the component
+
+    Returns:
+        list: [True for success, otherwise False, json string of update, url for update].
+    """
     payload = json.dumps(attrs)
 
     data = post_json(dhurl + "/dmadminweb/API/setvar/component/" + str(compid) + "?delattrs=y", payload, cookies)
@@ -714,7 +1057,20 @@ def update_compid_attrs(dhurl, cookies, compid, attrs, crdatasource, crlist):
 
     return [True, data, dhurl + "/dmadminweb/API/setvar/component/" + str(compid)]
 
+
 def update_envid_attrs(dhurl, cookies, envid, attrs):
+    """
+    Update the attributes, key/value pairs, for the environment.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        envid (int): id of the environment to update
+        attrs (dict): key/value dictionary
+
+    Returns:
+        list: [True for success, otherwise False, json string of update, url for update].
+    """
     payload = json.dumps(attrs)
 
     data = post_json(dhurl + "/dmadminweb/API/setvar/environment/" + str(envid), payload, cookies)
@@ -722,7 +1078,20 @@ def update_envid_attrs(dhurl, cookies, envid, attrs):
         return [False, "Could not update attributes on '" + str(envid) + "'"]
     return [True, data, dhurl + "/dmadminweb/API/setvar/environment/" + str(envid)]
 
+
 def get_application(dhurl, cookies, appname, appversion, id_only):
+    """
+    Get the application json string.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        appid (int): id of the application
+        id_only (boolean): True return the id only otherwise json string
+
+    Returns:
+        int: if id_only = True then return the appid otherwise return json string for the application.
+    """
     appversion = clean_name(appversion)
 
     application = ""
@@ -762,6 +1131,18 @@ def get_application(dhurl, cookies, appname, appversion, id_only):
 
 
 def get_application_fromid(dhurl, cookies, appid, appversion):
+    """
+    Get the application json string.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        appid (int): id of the application
+        appversion (string): 'latest' to get the last application version
+
+    Returns:
+        list: [id or -1 if not found, application name, latest version id].
+    """
     appversion = clean_name(appversion)
     param = ""
 
@@ -790,9 +1171,19 @@ def get_application_fromid(dhurl, cookies, appid, appversion):
     return [-1, "", -1]
 
 
-
 def get_base_component(dhurl, cookies, compid, id_only):
+    """
+    Get the base component json string.
 
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        compid (int): id of the component
+        id_only (boolean): True return the id only otherwise json string
+
+    Returns:
+        int: if id_only = True then return the appid otherwise return json string for the component.
+    """
     data = get_json(dhurl + "/dmadminweb/API/basecomponent/" + str(compid), cookies)
 
     if (data is None):
@@ -807,6 +1198,18 @@ def get_base_component(dhurl, cookies, compid, id_only):
 
 
 def new_application(dhurl, cookies, appname, appversion, appautoinc, envs):
+    """
+    Create a new application version and base version if needed.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        appname (string): name of the application including domain
+        compversion (string): version of the application, optional
+        appautoinc (boolean): auto increment an existing version to the new version
+    Returns:
+        list: [id of the new application, -1 if an error occurred, application name]
+    """
     appversion = clean_name(appversion)
 
     appid = 0
@@ -884,6 +1287,18 @@ def new_application(dhurl, cookies, appname, appversion, appautoinc, envs):
 
 
 def add_compver_to_appver(dhurl, cookies, appid, compid):
+    """
+    Add a component version to an application version.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        appid (int): id of the application
+        compid (int): id of the component to add to the application
+
+    Returns:
+        no data returned
+    """
     replace_compid = -1
     basecompid = get_base_component(dhurl, cookies, compid, True)
     lastcompid = 0
@@ -918,12 +1333,40 @@ def add_compver_to_appver(dhurl, cookies, appid, compid):
 
 
 def assign_comp_to_app(dhurl, cookies, appid, compid, parent_compid, xpos, ypos):
+    """
+    Assign component to application in the correct postion in the tree.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        appid (int): id of the application
+        compid (int): id of the component to add to the application
+        parent_compid (int): parent component in the layout panel
+        xpos (int): xpos in the layout panel
+        ypos (int): ypos in the layout panel
+
+    Returns:
+        no data returned
+    """
     get_json(dhurl + "/dmadminweb/UpdateAttrs?f=acd&a=" + str(appid) + "&c=" + str(compid), cookies)
   #  print(dhurl + "/dmadminweb/UpdateAttrs?f=acvm&a=" + str(appid) + "&c=" + str(compid) + "&xpos=" + str(xpos) + "&ypos=" + str(ypos))
     get_json(dhurl + "/dmadminweb/UpdateAttrs?f=acvm&a=" + str(appid) + "&c=" + str(compid) + "&xpos=" + str(xpos) + "&ypos=" + str(ypos), cookies)
     get_json(dhurl + "/dmadminweb/UpdateAttrs?f=cal&a=" + str(appid) + "&fn=" + str(parent_compid) + "&tn=" + str(compid), cookies)
 
+
 def assign_app_to_env(dhurl, cookies, appname, envs):
+    """
+    Assign an application to environment to enable deployments.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        appname (string): name of application
+        envs (list): list of environments to assign the application to
+
+    Returns:
+        no data returned
+    """
     domain = ""
     if ('.' in appname):
         parts = appname.split('.')
@@ -936,7 +1379,17 @@ def assign_app_to_env(dhurl, cookies, appname, envs):
         for env in envs:
             get_json(dhurl + "/dmadminweb/API/assign/application/?name=" + urllib.parse.quote(appname) + "&env=" + urllib.parse.quote(env), cookies)
 
+
 def clone_repo(project):
+    """
+    Clones a repo into the working directory and reads the features.toml file into a dictionary.
+
+    Args:
+        project (string): name of the github org/project to clone
+
+    Returns:
+        dict: dictionary of the features.toml file.  None if no features.toml is in the repo.
+    """
     print("### Grabbing features.toml ###")
 
     tempdir = tempfile.mkdtemp()
@@ -960,6 +1413,18 @@ def clone_repo(project):
 
 
 def import_cluster(dhurl, cookies, kubeyaml, defaultdomain):
+    """
+    Parse the kubernetes deployment yaml for component name and version.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        kubeyaml (string): path to the output for the deployment yaml
+        defaultdomain (string): domain name to use for the component
+
+    Returns:
+        list of dict: a list of dictionary items defining the component found.
+    """
     newvals = {}
     complist = []
 
@@ -987,7 +1452,7 @@ def import_cluster(dhurl, cookies, kubeyaml, defaultdomain):
                 version = ""
                 gitcommit = ""
 
-                if ('-g'in tag):
+                if ('-g' in tag):
                     (version, gitcommit) = re.split(r'-g', tag)
 
                 compattr = []
@@ -999,7 +1464,20 @@ def import_cluster(dhurl, cookies, kubeyaml, defaultdomain):
 
     return complist
 
+
 def log_deploy_application(dhurl, cookies, deploydata):
+    """
+    Record a deployment of an application to an environment.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        deploydata (string): path to a json file that contains
+                             the component version, application and environment to record.
+
+    Returns:
+        string: the json string from the file
+    """
     url = dhurl + "/dmadminweb/API/deploy"
 
     payload = ""
@@ -1026,12 +1504,48 @@ def log_deploy_application(dhurl, cookies, deploydata):
 
     return data
 
+
 def run_circleci_pipeline(pipeline):
+    """
+    Call the CircleCI REST api to run a pipeline.
+
+    Args:
+        pipeline (string): name of the pipeline to run
+
+    Returns:
+        string: result of the api call.
+    """
     url = "https://circleci.com/api/v2/project/" + pipeline + "/pipeline"
     data = post_json_with_header(url, os.environ.get("CI_TOKEN", ""))
     return data
 
+
 def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, env, crdatasource, crlist):
+    """
+    Update the attributes for the component based on the properties files found in the cloned directory.
+    
+    A comparision is done to see if a new component version is needed.  If a new key/values are found then
+    the application version will be created for the environment.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        kvconfig (string): a git repo or a directory to search for properties files
+        appname (string): name of the application
+        appversion (string): version of the application
+        appautoinc (boolean): automatically create a new application version
+        compname (string): name of the component
+        compvariant (string): variant of the component, optional
+        compversion (string): version of the component, optional
+        compautoinc (boolean): automatically create a new component version
+        kind (string): docker or file kind for the component
+        env (string): environment to assign the key/value component to
+        crdatasource (string): name of the CR data source
+        crlist (list): list of CR to assign to the component
+
+    Returns:
+        no data returned
+    """
     if (is_empty(compvariant)):
         compvariant = ""
 

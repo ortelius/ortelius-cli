@@ -1,3 +1,5 @@
+"""Setup config for the module."""
+
 from distutils.core import setup
 import setuptools
 
