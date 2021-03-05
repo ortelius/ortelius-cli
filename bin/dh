@@ -41,6 +41,7 @@ Args:
                 --compname
                 --compvariant (optional)
                 --compversion (optional)
+                --autocompinc (optional)
                 --appname (optional)
                 --appversion (optional)
                 --autoappinc (optional)
@@ -314,7 +315,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                     print(data[1])
                     sys.exit(1)
 
-                print("Fetching Logs for " + deployid)
+                print("Fetching Logs for " + str(deployid))
                 data = dhapi.get_logs(dhurl, cookies, deployid)
 
                 print(data[1])
@@ -527,7 +528,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                         print(data[1])
                         sys.exit(1)
 
-                    print('Fetching Logs for ' + deployid)
+                    print('Fetching Logs for ' + str(deployid))
                     data = dhapi.get_logs(dhurl, cookies, deployid)
 
                     print(data[1])
