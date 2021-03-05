@@ -41,6 +41,7 @@ Args:
                 --compname
                 --compvariant (optional)
                 --compversion (optional)
+                --autocompinc (optional)
                 --appname (optional)
                 --appversion (optional)
                 --autoappinc (optional)
@@ -136,7 +137,7 @@ Args:
 # To generate markdown use:
 #  pydoc-markdown -I bin | sed 's/  --/    > --/g' | sed 's/Usage:/- Usage:/g' | sed 's/- `--/  - `--/g' | sed 's/  \\* /    \\* /g' | tr '\n' '\a' | grep -o '.*dh\\.main' | tr '\a' '\n' | sed -e '$ d' > doc/dh.md
 
-__version__ = '9.3.109'
+__version__ = '9.3.110'
 
 import json
 import os
@@ -314,7 +315,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                     print(data[1])
                     sys.exit(1)
 
-                print("Fetching Logs for " + deployid)
+                print("Fetching Logs for " + str(deployid))
                 data = dhapi.get_logs(dhurl, cookies, deployid)
 
                 print(data[1])
@@ -527,7 +528,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                         print(data[1])
                         sys.exit(1)
 
-                    print('Fetching Logs for ' + deployid)
+                    print('Fetching Logs for ' + str(deployid))
                     data = dhapi.get_logs(dhurl, cookies, deployid)
 
                     print(data[1])
