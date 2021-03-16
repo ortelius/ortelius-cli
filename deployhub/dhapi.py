@@ -5,7 +5,6 @@
 
 import json
 import os
-import re
 import subprocess
 import tempfile
 import time
@@ -16,7 +15,6 @@ from pprint import pprint
 import configobj
 import qtoml
 import requests
-import yaml
 from configobj import ConfigObj
 from flatten_dict import flatten
 
@@ -1200,6 +1198,27 @@ def get_base_component(dhurl, cookies, compid, id_only):
 
     return result['id']
 
+def get_component_from_tag(dhurl, cookies, image_tag):
+    """
+    Get the component based on the docker tag.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        image_tag (string): image tag
+
+    Returns:
+        int: return the compid if found otherwise -1.
+    """
+    data = get_json(dhurl + "/dmadminweb/API/comp4tag?image=" + image_tag, cookies)
+
+    if (data is None):
+        return -1
+
+    id = data.get('id', -1)
+
+    return id
+
 
 def new_application(dhurl, cookies, appname, appversion, appautoinc, envs):
     """
@@ -1416,7 +1435,7 @@ def clone_repo(project):
     return data
 
 
-def import_cluster(dhurl, cookies, kubeyaml, defaultdomain):
+def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, envs, crdatasource, crlist, cluster_json):
     """
     Parse the kubernetes deployment yaml for component name and version.
 
@@ -1432,41 +1451,41 @@ def import_cluster(dhurl, cookies, kubeyaml, defaultdomain):
     newvals = {}
     complist = []
 
-    if (os.path.exists(kubeyaml)):
-        stream = open(kubeyaml, 'r')
-        values = yaml.load(stream)
+    if (appversion is None):
+        appversion = ""
+
+    if (os.path.exists(cluster_json)):
+        stream = open(cluster_json, 'r')
+        values = json.load(stream)
         newvals.update(values)
         stream.close()
 
-        for item in newvals['items']:
-            appname = item['metadata']['namespace']
-            if ('default' in appname):
-                appname = defaultdomain.split('.')[-1] + ' App'
-            compname = item['metadata']['name']
-            dom = find_domain(dhurl, cookies, compname)
-            if (dom is None):
-                compname = defaultdomain + '.' + compname
-            else:
-                compname = dom['name'] + '.' + compname
-            image_tag = item['spec']['template']['spec']['containers'][0]['image']
-            if ('@' in image_tag):
-                (image, image_sha) = image_tag.split('@')
-                image_sha = image_sha.split(':')[-1]
-                (image, tag) = image.split(':')
-                version = ""
-                gitcommit = ""
+        items = newvals['items']
 
-                if ('-g' in tag):
-                    (version, gitcommit) = re.split(r'-g', tag)
+        for item in items:
+            containers = item['spec']['template']['spec']['containers']
+            for container in containers:
+                name = domain + "." + container['name']
+                image = container['image']
+                repo = image.split(':')[0]
+                tag = image.split(':')[1]
+                image = urllib.parse.quote(image)
+                compid = get_component_from_tag(dhurl, cookies, image)
+                if (compid == -1):
+                    print("Adding missing component: " + name)
+                    compid = new_docker_component(dhurl, cookies, name, "", "", -1)
+                    if (compid > 0):
+                        update_compid_attrs(dhurl, cookies, compid, {'DockerTag': tag, 'DockerRepo': repo}, crdatasource, crlist)
 
-                compattr = []
-                compattr.append('DockerRepo=' + image)
-                compattr.append('DockerSha=' + image_sha)
-                compattr.append('GitCommit=' + gitcommit)
-                comp = {'project': appname, 'compname': compname, 'compvariant': version, 'compversion': 'g' + gitcommit, 'compattr': compattr}
-                complist.append(comp)
-
-    return complist
+                complist.append(compid)
+        data = new_application(dhurl, cookies, appname, appversion, appautoinc, envs)
+        if (data is not None):
+            appid = data[0]
+            for compid in complist:
+                print("Assigning Component Version " + str(compid) + " to Application Version " + str(appid))
+                add_compver_to_appver(dhurl, cookies, appid, compid)
+                print("Assignment Done")
+    return
 
 
 def log_deploy_application(dhurl, cookies, deploydata):
