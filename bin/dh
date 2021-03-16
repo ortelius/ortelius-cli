@@ -182,9 +182,11 @@ from deployhub import dhapi
 @click.option('--importfile', help='File to Import')
 @click.option('--fromdom', help='From Domain')
 @click.option('--todom', help='To Domain')
-def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, deployenv, envs, compattr, kvconfig, deploydata, from_domain, task, envvars, envvars_sh, importfile, fromdom, todom, crdatasource, changerequest):
+@click.option('--cluster_json', help='json from kubectl get deploy -n default -o json')
+
+def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, deployenv, envs, compattr, kvconfig, deploydata, from_domain, task, envvars, envvars_sh, importfile, fromdom, todom, crdatasource, changerequest, cluster_json):
     """
-    ACTION: deploy, updatecomp, approve, move, envscript, kv, export or import for the type of action to perform.
+    ACTION: deploy, updatecomp, approve, move, envscript, kv, cluster, export or import for the type of action to perform.
 
         deploy: deploy the application to the evironment\n
         approve: approve the application version\n
@@ -213,7 +215,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
         import: imports the export file into the new domain\n
     """
 
-    if (action.lower() == "kv" or action.lower() == "deploy" or action.lower() == "updatecomp" or action.lower() == "approve" or action.lower() == "export" or action.lower() == "import" or action.lower() == "assign"):
+    if (action.lower() == "kv" or action.lower() == "deploy" or action.lower() == "cluster" or action.lower() == "updatecomp" or action.lower() == "approve" or action.lower() == "export" or action.lower() == "import" or action.lower() == "assign"):
         if (dhapi.is_empty(dhurl)):
             print("--dhurl is required")
             sys.exit(1)
@@ -744,6 +746,28 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
         print('Moving ' + appname + ' ' + appversion + ' from ' + from_domain)
         data = dhapi.move_application(dhurl, cookies, appname, appversion, from_domain, task)
         print(data[1])
+    elif (action.lower() == "cluster"):
+        if (dhapi.is_empty(appname)):
+            print("--appname is required")
+            sys.exit(1)
+
+        if (dhapi.is_empty(appversion)):
+            parts = appname.split(';')
+            if (len(parts) == 3):
+                appname = parts[0] + ';' + parts[1]
+                appversion = parts[2]
+
+        if (dhapi.is_empty(cluster_json)):
+            print("--json is required")
+            sys.exit(1)
+
+        if (dhapi.is_empty(todom)):
+            print("--tomdom is required")
+            sys.exit(1)
+
+        print('Syncing cluster from ' + cluster_json)
+        dhapi.import_cluster(dhurl, cookies, todom, appname, appversion, appautoinc, envs, crdatasource, [], cluster_json)
+
     elif (action.lower() == "envscript"):
         if (dhapi.is_empty(envvars)):
             print("--envvars is required")
