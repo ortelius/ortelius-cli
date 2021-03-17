@@ -1478,13 +1478,14 @@ def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, envs
                         update_compid_attrs(dhurl, cookies, compid, {'DockerTag': tag, 'DockerRepo': repo}, crdatasource, crlist)
 
                 complist.append(compid)
-        data = new_application(dhurl, cookies, appname, appversion, appautoinc, envs)
-        if (data is not None):
-            appid = data[0]
-            for compid in complist:
-                print("Assigning Component Version " + str(compid) + " to Application Version " + str(appid))
-                add_compver_to_appver(dhurl, cookies, appid, compid)
-                print("Assignment Done")
+        if (len(complist) > 0):
+            data = new_application(dhurl, cookies, appname, appversion, appautoinc, envs)
+            if (data is not None):
+                appid = data[0]
+                for compid in complist:
+                    print("Assigning Component Version " + str(compid) + " to Application Version " + str(appid))
+                    add_compver_to_appver(dhurl, cookies, appid, compid)
+                    print("Assignment Done")
     return
 
 
