@@ -1435,7 +1435,7 @@ def clone_repo(project):
     return data
 
 
-def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, envs, crdatasource, crlist, cluster_json):
+def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, envs, crdatasource, crlist, cluster_json, msname, msbranch):
     """
     Parse the kubernetes deployment yaml for component name and version.
 
@@ -1461,33 +1461,132 @@ def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, envs
         stream.close()
 
         items = newvals['items']
+        branch_containers = []
+        master_containers = {}
+        deployed_ms = {}
 
         for item in items:
+            deploy_time = item['metadata']['creationTimestamp']
+            labels = item['metadata']['labels']
+            branch = labels.get('git/branch', 'main')
+            msversion = labels.get('app.kubernetes.io/version', '')
+            msdigest = labels.get('app.kubernetes.io/digest', '')
+            compid = -1
+
             containers = item['spec']['template']['spec']['containers']
             for container in containers:
-                name = domain + "." + container['name']
+                full_msname = container['name']
                 image = container['image']
                 repo = image.split(':')[0]
                 tag = image.split(':')[1]
-                image = urllib.parse.quote(image)
-                compid = get_component_from_tag(dhurl, cookies, image)
-                if (compid == -1):
-                    print("Adding missing component: " + name)
-                    compid = new_docker_component(dhurl, cookies, name, "", "", -1)
-                    if (compid > 0):
-                        update_compid_attrs(dhurl, cookies, compid, {'DockerTag': tag, 'DockerRepo': repo}, crdatasource, crlist)
+                short_msname = repo.split('/')[-1]
+                compname = domain + "." + short_msname
+                compvariant = branch
+                compversion = tag
 
-                complist.append(compid)
-        if (len(complist) > 0):
-            data = new_application(dhurl, cookies, appname, appversion, appautoinc, envs)
+                if (full_msname == msname):
+                    deployed_ms = {'compid' : compid, 'compname': compname, 'compvariant': compvariant, 'compversion': compversion, 'full_msname': full_msname, 'msname': short_msname, 'branch': branch, 'repo': repo, 'tag': tag, 'deploy_time': deploy_time}
+
+                if (branch in ('master', 'main')):   
+                    if (not msversion.startswith('1.') and msversion != "1"):
+                        continue
+
+                    latest_container = master_containers.get(short_msname, None)
+                    if (latest_container is None):
+                        master_containers[short_msname] = {'compid' : compid, 'compname': compname, 'compvariant': compvariant, 'compversion': compversion, 'full_msname': full_msname, 'msname': short_msname, 'branch': branch, 'repo': repo, 'tag': tag, 'deploy_time': deploy_time}
+                    elif (latest_container['deploy_time'] <= deploy_time):
+                        master_containers[short_msname] = {'compid' : compid, 'compname': compname, 'compvariant': compvariant, 'compversion': compversion, 'full_msname': full_msname, 'msname': short_msname, 'branch': branch, 'repo': repo, 'tag': tag, 'deploy_time': deploy_time}
+                elif (msbranch is not None and branch == msbranch):
+                    branch_containers.append({'compid' : compid, 'compname': compname, 'compvariant': compvariant, 'compversion': compversion, 'full_msname': full_msname, 'msname': short_msname, 'branch': branch, 'repo': repo, 'tag': tag, 'deploy_time': deploy_time})
+
+        if (msbranch is not None):
+            complist = []
+            if (len(deployed_ms) == 0):
+                deployed_ms = {'compid': -1, 'msname': '', 'tag': '', 'branch': ''}
+            else:
+                complist.append(deployed_ms)
+
+            for container in master_containers.values():
+                if (deployed_ms['msname'] != container['msname']):
+                    complist.append(container)
+                elif (deployed_ms['branch'] == container['branch'] and msbranch not in ('master', 'main')):
+                    complist.append(container)
+
+        compid_list = []
+        for item in complist:
+            data = get_component(dhurl, cookies, item['compname'], item['compvariant'], item['compversion'], True, False)
+            compid = -1
             if (data is not None):
-                appid = data[0]
-                for compid in complist:
-                    print("Assigning Component Version " + str(compid) + " to Application Version " + str(appid))
+                compid = data[0]
+            if (compid == -1):
+                print("Adding missing component: " + item['compname'] + ";" + item['compvariant'] + ";" + item['compversion'])
+                compid = new_docker_component(dhurl, cookies, item['compname'], item['compvariant'], item['compversion'], -1)
+                if (compid > 0):
+                    update_compid_attrs(dhurl, cookies, compid, {'DockerTag': tag, 'DockerRepo': repo}, crdatasource, crlist)
+            else:
+                print(item['compname'] + ";" + item['compvariant'] + ";" + item['compversion'])
+            compid_list.append({'compid': compid, 'name': item['compname'] + ";" + item['compvariant'] + ";" + item['compversion']})
+
+        if (len(compid_list) > 0):
+            app = appname
+            if (appversion is not None and is_not_empty(appversion)):
+                app = appname + ";" + appversion
+            data = get_json(dhurl + "/dmadminweb/API/application/?name=" + urllib.parse.quote(app) + "&latest=Y", cookies)
+            appid = -1
+            if (data is not None and data['success']):
+                appid = data['result']['id']
+
+            existing_ids = []
+
+            if (appid > 0):
+                data = get_json(dhurl + "/dmadminweb/API/application/" + str(appid), cookies)
+                existing_comps = data['result']['components']
+
+                for comp in existing_comps:
+                    existing_ids.append(comp['id'])
+
+            new_ids = []
+            for item in compid_list:
+                new_ids.append(item['compid'])
+
+            if (areEqual(existing_ids, new_ids)):
+                print("Application Version " + appname + ";" + appversion + " already exists")
+            else:
+                data = new_application(dhurl, cookies, appname, appversion, appautoinc, envs)
+                if (data is not None):
+                    appid = data[0]
+
+                for compid in existing_ids:
+                    get_json(dhurl + "/dmadminweb/UpdateAttrs?f=acd&a=" + str(appid) + "&c=" + str(compid), cookies)
+
+                for item in compid_list:
+                    compid = item['compid']
+                    name = item['name']
+                    print("Assigning Component Version " + name + " to Application Version " + appname + ";" + appversion)
                     add_compver_to_appver(dhurl, cookies, appid, compid)
-                    print("Assignment Done")
     return
 
+def areEqual(arr1, arr2):
+ 
+    n = len(arr1)
+    m = len(arr2)
+
+    # If lengths of array are not
+    # equal means array are not equal
+    if (n != m):
+        return False
+
+    # Sort both arrays
+    arr1.sort()
+    arr2.sort()
+
+    # Linearly compare elements
+    for i in range(n):
+        if (arr1[i] != arr2[i]):
+            return False
+
+    # If all elements were same.
+    return True
 
 def log_deploy_application(dhurl, cookies, deploydata):
     """

@@ -132,6 +132,9 @@ Args:
         --importfile: File to Import
         --fromdom: From Domain
         --todom: To Domain
+        --msname: New microservice being added to the cluster
+        --msbranch: New microservice branch being added to the cluster
+
 """
 
 # To generate markdown use:
@@ -183,8 +186,11 @@ from deployhub import dhapi
 @click.option('--fromdom', help='From Domain')
 @click.option('--todom', help='To Domain')
 @click.option('--cluster_json', help='json from kubectl get deploy -n default -o json')
+@click.option('--msname', help='New microservice being added to the cluster')
+@click.option('--msbranch', help='New microservice branch being added to the cluster')
 
-def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, deployenv, envs, compattr, kvconfig, deploydata, from_domain, task, envvars, envvars_sh, importfile, fromdom, todom, crdatasource, changerequest, cluster_json):
+
+def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, deployenv, envs, compattr, kvconfig, deploydata, from_domain, task, envvars, envvars_sh, importfile, fromdom, todom, crdatasource, changerequest, cluster_json, msname, msbranch):
     """
     ACTION: deploy, updatecomp, approve, move, envscript, kv, cluster, export or import for the type of action to perform.
 
@@ -766,7 +772,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             sys.exit(1)
 
         print('Syncing cluster from ' + cluster_json)
-        dhapi.import_cluster(dhurl, cookies, todom, appname, appversion, appautoinc, envs, crdatasource, [], cluster_json)
+        dhapi.import_cluster(dhurl, cookies, todom, appname, appversion, appautoinc, envs, crdatasource, [], cluster_json, msname, msbranch)
 
     elif (action.lower() == "envscript"):
         if (dhapi.is_empty(envvars)):
