@@ -1050,8 +1050,8 @@ def update_compid_attrs(dhurl, cookies, compid, attrs, crdatasource, crlist):
     payload = json.dumps(attrs)
 
     data = post_json(dhurl + "/dmadminweb/API/setvar/component/" + str(compid) + "?delattrs=y", payload, cookies)
-    if (not data):
-        return [False, "Could not update attributes on '" + str(compid) + "'"]
+    if (data is not None and data.get('error', None) is not None):
+        return [False, "Could not update attributes on '" + str(compid) + "' " + data.get('error', '')]
 
     if (is_not_empty(crdatasource)):
         for bugid in crlist:
