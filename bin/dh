@@ -221,6 +221,9 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
         import: imports the export file into the new domain\n
     """
 
+    if (dhapi.is_not_empty(compvariant)):
+        compvariant = compvariant.replace('/', '_')
+
     if (action.lower() == "kv" or action.lower() == "deploy" or action.lower() == "cluster" or action.lower() == "updatecomp" or action.lower() == "approve" or action.lower() == "export" or action.lower() == "import" or action.lower() == "assign"):
         if (dhapi.is_empty(dhurl)):
             print("--dhurl is required")
@@ -773,7 +776,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             sys.exit(1)
 
         print('Syncing cluster from ' + cluster_json)
-        dhapi.import_cluster(dhurl, cookies, todom, appname, appversion, appautoinc, envs, crdatasource, [], cluster_json, msname, msbranch)
+        dhapi.import_cluster(dhurl, cookies, todom, appname, appversion, appautoinc, deployenv, crdatasource, [], cluster_json, msname, msbranch)
 
     elif (action.lower() == "envscript"):
         if (dhapi.is_empty(envvars)):

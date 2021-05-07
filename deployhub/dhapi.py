@@ -120,6 +120,8 @@ def is_empty(my_string):
     Returns:
         boolean: True if the string is None or blank, otherwise False.
     """
+    if (isinstance(my_string, int)):
+        my_string = str(my_string)
     return not (my_string and my_string.strip())
 
 
@@ -133,6 +135,9 @@ def is_not_empty(my_string):
     Returns:
         boolean: False if the string is None or blank, otherwise True.
     """
+    if (isinstance(my_string, int)):
+        my_string = str(my_string)
+
     return bool(my_string and my_string.strip())
 
 
@@ -1435,7 +1440,7 @@ def clone_repo(project):
     return data
 
 
-def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, envs, crdatasource, crlist, cluster_json, msname, msbranch):
+def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, deployenv, crdatasource, crlist, cluster_json, msname, msbranch):
     """
     Parse the kubernetes deployment yaml for component name and version.
 
@@ -1549,6 +1554,7 @@ def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, envs
             for item in compid_list:
                 new_ids.append(item['compid'])
 
+
             if (areEqual(existing_ids, new_ids)):
                 print("Application Version " + appname + ";" + appversion + " already exists")
             else:
@@ -1564,6 +1570,17 @@ def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, envs
                     name = item['name']
                     print("Assigning Component Version " + name + " to Application Version " + appname + ";" + appversion)
                     add_compver_to_appver(dhurl, cookies, appid, compid)
+                
+            # create env and deploy to env
+            deploydata = "deploy.json"
+            deploy = {}
+            deploy['application'] = appid
+            deploy['environment'] = deployenv
+            deploy['rc'] = 0
+            with open(deploydata, 'w') as fp:
+                json.dump(deploy, fp)
+            fp.close()
+            log_deploy_application(dhurl, cookies, deploydata)
     return
 
 def areEqual(arr1, arr2):
