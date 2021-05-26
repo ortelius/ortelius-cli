@@ -1,29 +1,4 @@
 # DeployHub CLI
 The dh script interacts with the DeployHub REST APIs to perform a deployment of an application to an environment and update an application version with the component version including attributes.
 
-Attributes and properties for the component
-
-BuildId - build id from the build system such as Quay
-BuildUrl - build url for the build system
-Chart - helm chart for the component
-ChartVersion - version of the helm chart
-operator - Kubernetes operator
-DockerBuildDate - timestamp for the docker build
-DockerSha - sha for the docker image
-DockerRepo - url for the docker registry
-GitCommit - git commit that trigger the build
-GitRepo - git repo name
-GitTag - git tag such as master or v1.5.0
-GitUrl - url to the git repo
-buildnumber - build job number for Jenkins
-buildjob - build job name for Jenkins
-ComponentType - name of the component type
-ChangeRequestDS - name of the Change Request Datasource
-Category - name of the components category
-AlwaysDeploy - Y/N
-DeploySequentially - Y/N
-BaseDirectory - base directory for the component
-PreAction - name of the pre-action
-PostAction - name of the post-action
-CustomAction - name of the custom-action
-Summary - component summary
+See [CLI Documentation](doc/dh.md) and (Python API Documentation)[doc/deployhub.md]
