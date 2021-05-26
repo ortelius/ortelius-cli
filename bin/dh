@@ -132,12 +132,15 @@ Args:
         --importfile: File to Import
         --fromdom: From Domain
         --todom: To Domain
+        --msname: New microservice being added to the cluster
+        --msbranch: New microservice branch being added to the cluster
+
 """
 
 # To generate markdown use:
 #  pydoc-markdown -I bin | sed 's/  --/    > --/g' | sed 's/Usage:/- Usage:/g' | sed 's/- `--/  - `--/g' | sed 's/  \\* /    \\* /g' | tr '\n' '\a' | grep -o '.*dh\\.main' | tr '\a' '\n' | sed -e '$ d' > doc/dh.md
 
-__version__ = '9.3.110'
+__version__ = '9.3.117'
 
 import json
 import os
@@ -182,9 +185,14 @@ from deployhub import dhapi
 @click.option('--importfile', help='File to Import')
 @click.option('--fromdom', help='From Domain')
 @click.option('--todom', help='To Domain')
-def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, deployenv, envs, compattr, kvconfig, deploydata, from_domain, task, envvars, envvars_sh, importfile, fromdom, todom, crdatasource, changerequest):
+@click.option('--cluster_json', help='json from kubectl get deploy -n default -o json')
+@click.option('--msname', help='New microservice being added to the cluster')
+@click.option('--msbranch', help='New microservice branch being added to the cluster')
+
+
+def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, deployenv, envs, compattr, kvconfig, deploydata, from_domain, task, envvars, envvars_sh, importfile, fromdom, todom, crdatasource, changerequest, cluster_json, msname, msbranch):
     """
-    ACTION: deploy, updatecomp, approve, move, envscript, kv, export or import for the type of action to perform.
+    ACTION: deploy, updatecomp, approve, move, envscript, kv, cluster, export or import for the type of action to perform.
 
         deploy: deploy the application to the evironment\n
         approve: approve the application version\n
@@ -213,7 +221,10 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
         import: imports the export file into the new domain\n
     """
 
-    if (action.lower() == "kv" or action.lower() == "deploy" or action.lower() == "updatecomp" or action.lower() == "approve" or action.lower() == "export" or action.lower() == "import" or action.lower() == "assign"):
+    if (dhapi.is_not_empty(compvariant)):
+        compvariant = compvariant.replace('/', '_')
+
+    if (action.lower() == "kv" or action.lower() == "deploy" or action.lower() == "cluster" or action.lower() == "updatecomp" or action.lower() == "approve" or action.lower() == "export" or action.lower() == "import" or action.lower() == "assign"):
         if (dhapi.is_empty(dhurl)):
             print("--dhurl is required")
             sys.exit(1)
@@ -583,6 +594,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             compname = data.get('config_component', None)
             compvariant = data.get('environment', '')
             compversion = ''
+            environment = data.get('environment', '')
 
             if (kvconfig is None):
                 kvconfig = data.get('kvconfig', '')
@@ -599,7 +611,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
         if (compautoinc is None):
             compautoinc = "Y"
 
-        dhapi.set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, crdatasource, changerequest)
+        dhapi.set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, environment, crdatasource, changerequest)
 
     elif (action.lower() == "assign"):
 
@@ -744,6 +756,28 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
         print('Moving ' + appname + ' ' + appversion + ' from ' + from_domain)
         data = dhapi.move_application(dhurl, cookies, appname, appversion, from_domain, task)
         print(data[1])
+    elif (action.lower() == "cluster"):
+        if (dhapi.is_empty(appname)):
+            print("--appname is required")
+            sys.exit(1)
+
+        if (dhapi.is_empty(appversion)):
+            parts = appname.split(';')
+            if (len(parts) == 3):
+                appname = parts[0] + ';' + parts[1]
+                appversion = parts[2]
+
+        if (dhapi.is_empty(cluster_json)):
+            print("--json is required")
+            sys.exit(1)
+
+        if (dhapi.is_empty(todom)):
+            print("--tomdom is required")
+            sys.exit(1)
+
+        print('Syncing cluster from ' + cluster_json)
+        dhapi.import_cluster(dhurl, cookies, todom, appname, appversion, appautoinc, deployenv, crdatasource, [], cluster_json, msname, msbranch)
+
     elif (action.lower() == "envscript"):
         if (dhapi.is_empty(envvars)):
             print("--envvars is required")
