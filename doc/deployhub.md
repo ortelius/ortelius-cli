@@ -735,6 +735,26 @@ Get the base component json string.
 
 - `int` - if id_only = True then return the appid otherwise return json string for the component.
 
+<a name="dhapi.get_component_from_tag"></a>
+#### get\_component\_from\_tag
+
+```python
+get_component_from_tag(dhurl, cookies, image_tag)
+```
+
+Get the component based on the docker tag.
+
+**Arguments**:
+
+- `dhurl` _string_ - url to the server
+- `cookies` _string_ - cookies from login
+- `image_tag` _string_ - image tag
+  
+
+**Returns**:
+
+- `int` - return the compid if found otherwise -1.
+
 <a name="dhapi.new_application"></a>
 #### new\_application
 
@@ -844,7 +864,7 @@ Clones a repo into the working directory and reads the features.toml file into a
 #### import\_cluster
 
 ```python
-import_cluster(dhurl, cookies, kubeyaml, defaultdomain)
+import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, deployenv, crdatasource, crlist, cluster_json, msname, msbranch)
 ```
 
 Parse the kubernetes deployment yaml for component name and version.
