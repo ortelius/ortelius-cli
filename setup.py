@@ -21,6 +21,7 @@ setup(
     scripts=['bin/dh'],
     license='GNU AFFERO GENERAL PUBLIC LICENSE',
     long_description=open('doc/dh.md').read(),
+    long_description_content_type="text/markdown",
     python_requires='>=3.6',
      install_requires=[
         'click',
