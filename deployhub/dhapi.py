@@ -5,7 +5,6 @@
 
 import json
 import os
-import re
 import subprocess
 import tempfile
 import time
@@ -16,7 +15,6 @@ from pprint import pprint
 import configobj
 import qtoml
 import requests
-import yaml
 from configobj import ConfigObj
 from flatten_dict import flatten
 
@@ -122,6 +120,8 @@ def is_empty(my_string):
     Returns:
         boolean: True if the string is None or blank, otherwise False.
     """
+    if (isinstance(my_string, int)):
+        my_string = str(my_string)
     return not (my_string and my_string.strip())
 
 
@@ -135,6 +135,9 @@ def is_not_empty(my_string):
     Returns:
         boolean: False if the string is None or blank, otherwise True.
     """
+    if (isinstance(my_string, int)):
+        my_string = str(my_string)
+
     return bool(my_string and my_string.strip())
 
 
@@ -1052,8 +1055,8 @@ def update_compid_attrs(dhurl, cookies, compid, attrs, crdatasource, crlist):
     payload = json.dumps(attrs)
 
     data = post_json(dhurl + "/dmadminweb/API/setvar/component/" + str(compid) + "?delattrs=y", payload, cookies)
-    if (not data):
-        return [False, "Could not update attributes on '" + str(compid) + "'"]
+    if (data is not None and data.get('error', None) is not None):
+        return [False, "Could not update attributes on '" + str(compid) + "' " + data.get('error', '')]
 
     if (is_not_empty(crdatasource)):
         for bugid in crlist:
@@ -1199,6 +1202,27 @@ def get_base_component(dhurl, cookies, compid, id_only):
         return [-1, "", -1]
 
     return result['id']
+
+def get_component_from_tag(dhurl, cookies, image_tag):
+    """
+    Get the component based on the docker tag.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        image_tag (string): image tag
+
+    Returns:
+        int: return the compid if found otherwise -1.
+    """
+    data = get_json(dhurl + "/dmadminweb/API/comp4tag?image=" + image_tag, cookies)
+
+    if (data is None):
+        return -1
+
+    id = data.get('id', -1)
+
+    return id
 
 
 def new_application(dhurl, cookies, appname, appversion, appautoinc, envs):
@@ -1416,7 +1440,7 @@ def clone_repo(project):
     return data
 
 
-def import_cluster(dhurl, cookies, kubeyaml, defaultdomain):
+def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, deployenv, crdatasource, crlist, cluster_json, msname, msbranch):
     """
     Parse the kubernetes deployment yaml for component name and version.
 
@@ -1432,42 +1456,154 @@ def import_cluster(dhurl, cookies, kubeyaml, defaultdomain):
     newvals = {}
     complist = []
 
-    if (os.path.exists(kubeyaml)):
-        stream = open(kubeyaml, 'r')
-        values = yaml.load(stream)
+    if (appversion is None):
+        appversion = ""
+
+    if (os.path.exists(cluster_json)):
+        stream = open(cluster_json, 'r')
+        values = json.load(stream)
         newvals.update(values)
         stream.close()
 
-        for item in newvals['items']:
-            appname = item['metadata']['namespace']
-            if ('default' in appname):
-                appname = defaultdomain.split('.')[-1] + ' App'
-            compname = item['metadata']['name']
-            dom = find_domain(dhurl, cookies, compname)
-            if (dom is None):
-                compname = defaultdomain + '.' + compname
+        items = newvals['items']
+        branch_containers = []
+        master_containers = {}
+        deployed_ms = {}
+
+        for item in items:
+            deploy_time = item['metadata']['creationTimestamp']
+            labels = item['metadata']['labels']
+            branch = labels.get('git/branch', 'main')
+            msversion = labels.get('app.kubernetes.io/version', '')
+            msdigest = labels.get('app.kubernetes.io/digest', '')
+            compid = -1
+
+            containers = item['spec']['template']['spec']['containers']
+            for container in containers:
+                full_msname = container['name']
+                image = container['image']
+                repo = image.split(':')[0]
+                tag = image.split(':')[1]
+                short_msname = repo.split('/')[-1]
+                compname = domain + "." + short_msname
+                compvariant = branch
+                compversion = tag
+
+                if (full_msname == msname):
+                    deployed_ms = {'compid' : compid, 'compname': compname, 'compvariant': compvariant, 'compversion': compversion, 'full_msname': full_msname, 'msname': short_msname, 'branch': branch, 'repo': repo, 'tag': tag, 'deploy_time': deploy_time}
+
+                if (branch in ('master', 'main')):   
+                    if (not msversion.startswith('1.') and msversion != "1"):
+                        continue
+
+                    latest_container = master_containers.get(short_msname, None)
+                    if (latest_container is None):
+                        master_containers[short_msname] = {'compid' : compid, 'compname': compname, 'compvariant': compvariant, 'compversion': compversion, 'full_msname': full_msname, 'msname': short_msname, 'branch': branch, 'repo': repo, 'tag': tag, 'deploy_time': deploy_time}
+                    elif (latest_container['deploy_time'] <= deploy_time):
+                        master_containers[short_msname] = {'compid' : compid, 'compname': compname, 'compvariant': compvariant, 'compversion': compversion, 'full_msname': full_msname, 'msname': short_msname, 'branch': branch, 'repo': repo, 'tag': tag, 'deploy_time': deploy_time}
+                elif (msbranch is not None and branch == msbranch):
+                    branch_containers.append({'compid' : compid, 'compname': compname, 'compvariant': compvariant, 'compversion': compversion, 'full_msname': full_msname, 'msname': short_msname, 'branch': branch, 'repo': repo, 'tag': tag, 'deploy_time': deploy_time})
+
+        if (msbranch is not None):
+            complist = []
+            if (len(deployed_ms) == 0):
+                deployed_ms = {'compid': -1, 'msname': '', 'tag': '', 'branch': ''}
             else:
-                compname = dom['name'] + '.' + compname
-            image_tag = item['spec']['template']['spec']['containers'][0]['image']
-            if ('@' in image_tag):
-                (image, image_sha) = image_tag.split('@')
-                image_sha = image_sha.split(':')[-1]
-                (image, tag) = image.split(':')
-                version = ""
-                gitcommit = ""
+                complist.append(deployed_ms)
 
-                if ('-g' in tag):
-                    (version, gitcommit) = re.split(r'-g', tag)
+            for container in master_containers.values():
+                if (deployed_ms['msname'] != container['msname']):
+                    complist.append(container)
+                elif (deployed_ms['branch'] == container['branch'] and msbranch not in ('master', 'main')):
+                    complist.append(container)
 
-                compattr = []
-                compattr.append('DockerRepo=' + image)
-                compattr.append('DockerSha=' + image_sha)
-                compattr.append('GitCommit=' + gitcommit)
-                comp = {'project': appname, 'compname': compname, 'compvariant': version, 'compversion': 'g' + gitcommit, 'compattr': compattr}
-                complist.append(comp)
+        compid_list = []
+        for item in complist:
+            data = get_component(dhurl, cookies, item['compname'], item['compvariant'], item['compversion'], True, False)
+            compid = -1
+            if (data is not None):
+                compid = data[0]
+            if (compid == -1):
+                print("Adding missing component: " + item['compname'] + ";" + item['compvariant'] + ";" + item['compversion'])
+                compid = new_docker_component(dhurl, cookies, item['compname'], item['compvariant'], item['compversion'], -1)
+                if (compid > 0):
+                    update_compid_attrs(dhurl, cookies, compid, {'DockerTag': tag, 'DockerRepo': repo}, crdatasource, crlist)
+            else:
+                print(item['compname'] + ";" + item['compvariant'] + ";" + item['compversion'])
+            compid_list.append({'compid': compid, 'name': item['compname'] + ";" + item['compvariant'] + ";" + item['compversion']})
 
-    return complist
+        if (len(compid_list) > 0):
+            app = appname
+            if (appversion is not None and is_not_empty(appversion)):
+                app = appname + ";" + appversion
+            data = get_json(dhurl + "/dmadminweb/API/application/?name=" + urllib.parse.quote(app) + "&latest=Y", cookies)
+            appid = -1
+            if (data is not None and data['success']):
+                appid = data['result']['id']
 
+            existing_ids = []
+
+            if (appid > 0):
+                data = get_json(dhurl + "/dmadminweb/API/application/" + str(appid), cookies)
+                existing_comps = data['result']['components']
+
+                for comp in existing_comps:
+                    existing_ids.append(comp['id'])
+
+            new_ids = []
+            for item in compid_list:
+                new_ids.append(item['compid'])
+
+
+            if (areEqual(existing_ids, new_ids)):
+                print("Application Version " + appname + ";" + appversion + " already exists")
+            else:
+                data = new_application(dhurl, cookies, appname, appversion, appautoinc, envs)
+                if (data is not None):
+                    appid = data[0]
+
+                for compid in existing_ids:
+                    get_json(dhurl + "/dmadminweb/UpdateAttrs?f=acd&a=" + str(appid) + "&c=" + str(compid), cookies)
+
+                for item in compid_list:
+                    compid = item['compid']
+                    name = item['name']
+                    print("Assigning Component Version " + name + " to Application Version " + appname + ";" + appversion)
+                    add_compver_to_appver(dhurl, cookies, appid, compid)
+                
+            # create env and deploy to env
+            deploydata = "deploy.json"
+            deploy = {}
+            deploy['application'] = appid
+            deploy['environment'] = deployenv
+            deploy['rc'] = 0
+            with open(deploydata, 'w') as fp:
+                json.dump(deploy, fp)
+            fp.close()
+            log_deploy_application(dhurl, cookies, deploydata)
+    return
+
+def areEqual(arr1, arr2):
+ 
+    n = len(arr1)
+    m = len(arr2)
+
+    # If lengths of array are not
+    # equal means array are not equal
+    if (n != m):
+        return False
+
+    # Sort both arrays
+    arr1.sort()
+    arr2.sort()
+
+    # Linearly compare elements
+    for i in range(n):
+        if (arr1[i] != arr2[i]):
+            return False
+
+    # If all elements were same.
+    return True
 
 def log_deploy_application(dhurl, cookies, deploydata):
     """
