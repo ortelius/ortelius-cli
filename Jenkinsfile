@@ -12,7 +12,7 @@ node {
 		/*********************************/
 		def DHUrl="https://console.deployhub.com"
 		def DHUsername="stella99"
-		def DHPassword="123456"
+		def DHPassword="XXXXXXX"
 
 		def AppName="GLOBAL.Santa Fe Software.Online Store Company.Candy Store"
 		def AppVersion="v1.0.0"
