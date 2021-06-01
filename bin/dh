@@ -153,7 +153,7 @@ Example Jenkinsfile Snippet:
 # To generate markdown use:
 #  pydoc-markdown -I bin | sed 's/  --/    > --/g' | sed 's/Usage:/- Usage:/g' | sed 's/- `--/  - `--/g' | sed 's/  \\* /    \\* /g' | tr '\n' '\a' | grep -o '.*dh\\.main' | tr '\a' '\n' | sed -e '$ d' > doc/dh.md
 
-__version__ = '9.3.120'
+__version__ = '9.3.121'
 
 import json
 import os
