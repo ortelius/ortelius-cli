@@ -11,12 +11,13 @@ setup(
         'Project Repo': 'https://github.com/ortelius/compupdate',
         'Issues': 'https://github.com/ortelius/ortelius/issues',
         'CLI Documentation': 'https://github.com/ortelius/compupdate/blob/main/doc/dh.md',
-        'Python API Documentation': 'https://github.com/ortelius/compupdate/blob/main/doc/deployhub.md'
+        'Python API Documentation': 'https://github.com/ortelius/compupdate/blob/main/doc/deployhub.md',
+        'Jenkinsfile Example': 'https://github.com/ortelius/compupdate/blob/main/Jenkinsfile'
         }, 
     author='Steve Taylor',
     author_email='steve@deployhub.com',
     name='deployhub',
-    version='9.3.120',
+    version='9.3.121',
     packages=['deployhub',],
     scripts=['bin/dh'],
     license='GNU AFFERO GENERAL PUBLIC LICENSE',
