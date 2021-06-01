@@ -48,21 +48,29 @@ Args:
                 --compattr
 
             - Predefined Key/Values:
-                * BuildUrl: url for the CI job
-                * BuildId: Identifier for the CI job
-                * BuildNumber: Build number for the CI job
-                * Chart: Helm Chart for the component
-                * ChartNamespace: Name space for the component to be deployed to
-                * ChartVersion: Helm Chart version
-                * DockerBuildDate: Timestamp when the image was created
-                * DockerRepo: Repository which the image was pushed to
-                * DockerSha: Digest for the image
-                * DockerTag: Tag for the image
-                * GitCommit: Git commit that triggered the CI job
-                * GitRepo: Git repo that triggered the CI job
-                * GitTag: Git tag in the git repo
-                * GitUrl: Full url to the git repo
-                * operator: Operator name
+                * BuildId - Identifier for the CI job
+                * BuildNumber - Build number for the CI job
+                * BuildUrl - url for the CI job
+                * Chart - Helm Chart for the component
+                * ChartNamespace - Name space for the component to be deployed to
+                * ChartRepo - Helm Chart Repo Name
+                * ChartRepoUrl - Helm Chart Repo Url
+                * ChartVersion - Helm Chart version
+                * CustomAction - Custom Action to assign to the Component
+                * DockerBuildDate - Timestamp when the image was created
+                * DockerRepo - Registry which the image was pushed to
+                * DockerSha - Digest for the image
+                * DockerTag - Tag for the image
+                * GitBranch - Git branch in the git repo
+                * GitCommit - Git commit that triggered the CI job
+                * GitRepo - Git repo that triggered the CI job
+                * GitTag - Git tag in the git repo
+                * GitUrl - Full url to the git repo
+                * operator - Operator name
+                * Readme - Readme location in the Git Repo   
+                * ServiceOwner - Owner of the Service
+                * ServiceOwnerEmail - Email for the Owner of the Service
+                * ServiceOwnerPhone - Phone number for the Owner of the Service
 
         assign: assigns a component version to an application verion
             Usage:
@@ -135,12 +143,17 @@ Args:
         --msname: New microservice being added to the cluster
         --msbranch: New microservice branch being added to the cluster
 
+
+Example Jenkinsfile Snippet: 
+    https://github.com/ortelius/compupdate/blob/main/Jenkinsfile
+
+
 """
 
 # To generate markdown use:
 #  pydoc-markdown -I bin | sed 's/  --/    > --/g' | sed 's/Usage:/- Usage:/g' | sed 's/- `--/  - `--/g' | sed 's/  \\* /    \\* /g' | tr '\n' '\a' | grep -o '.*dh\\.main' | tr '\a' '\n' | sed -e '$ d' > doc/dh.md
 
-__version__ = '9.3.118'
+__version__ = '9.3.120'
 
 import json
 import os
@@ -199,21 +212,30 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
         move: move the application version using the supplied task\n
         updatecomp: create/replace the component version for the application verion\n
             Predefined Key/Values:\n
-                BuildUrl - url for the CI job\n
                 BuildId - Identifier for the CI job\n
                 BuildNumber - Build number for the CI job\n
+                BuildUrl - url for the CI job\n
                 Chart - Helm Chart for the component\n
                 ChartNamespace - Name space for the component to be deployed to\n
+                ChartRepo - Helm Chart Repo Name\n
+                ChartRepoUrl - Helm Chart Repo Url\n
                 ChartVersion - Helm Chart version\n
+                CustomAction - Custom Action to assign to the Component\n
                 DockerBuildDate - Timestamp when the image was created\n
-                DockerRepo - Repository which the image was pushed to\n
+                DockerRepo - Registry which the image was pushed to\n
                 DockerSha - Digest for the image\n
                 DockerTag - Tag for the image\n
+                GitBranch - Git branch in the git repo\n
                 GitCommit - Git commit that triggered the CI job\n
                 GitRepo - Git repo that triggered the CI job\n
                 GitTag - Git tag in the git repo\n
                 GitUrl - Full url to the git repo\n
                 operator - Operator name\n
+                Readme - Readme location in the Git Repo\n   
+                ServiceOwner - Owner of the Service\n
+                ServiceOwnerEmail - Email for the Owner of the Service\n
+                ServiceOwnerPhone - Phone number for the Owner of the Service\n
+
         assign: assigns a component version to an application verion\n
         kv: assigns the key/values pairs to the component verion\n
         envscript: creates a bash file from the component toml file\n
