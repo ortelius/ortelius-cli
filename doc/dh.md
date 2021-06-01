@@ -50,21 +50,29 @@ DeployHub's CLI using the dhapi module.
     > --compattr
   
   - Predefined Key/Values:
-    * BuildUrl: url for the CI job
-    * BuildId: Identifier for the CI job
-    * BuildNumber: Build number for the CI job
-    * Chart: Helm Chart for the component
-    * ChartNamespace: Name space for the component to be deployed to
-    * ChartVersion: Helm Chart version
-    * DockerBuildDate: Timestamp when the image was created
-    * DockerRepo: Repository which the image was pushed to
-    * DockerSha: Digest for the image
-    * DockerTag: Tag for the image
-    * GitCommit: Git commit that triggered the CI job
-    * GitRepo: Git repo that triggered the CI job
-    * GitTag: Git tag in the git repo
-    * GitUrl: Full url to the git repo
-    * operator: Operator name
+    * BuildId - Identifier for the CI job
+    * BuildNumber - Build number for the CI job
+    * BuildUrl - url for the CI job
+    * Chart - Helm Chart for the component
+    * ChartNamespace - Name space for the component to be deployed to
+    * ChartRepo - Helm Chart Repo Name
+    * ChartRepoUrl - Helm Chart Repo Url
+    * ChartVersion - Helm Chart version
+    * CustomAction - Custom Action to assign to the Component
+    * DockerBuildDate - Timestamp when the image was created
+    * DockerRepo - Registry which the image was pushed to
+    * DockerSha - Digest for the image
+    * DockerTag - Tag for the image
+    * GitBranch - Git branch in the git repo
+    * GitCommit - Git commit that triggered the CI job
+    * GitRepo - Git repo that triggered the CI job
+    * GitTag - Git tag in the git repo
+    * GitUrl - Full url to the git repo
+    * operator - Operator name
+    * Readme - Readme location in the Git Repo
+    * ServiceOwner - Owner of the Service
+    * ServiceOwnerEmail - Email for the Owner of the Service
+    * ServiceOwnerPhone - Phone number for the Owner of the Service
   
 - `assign` - assigns a component version to an application verion
   - Usage:
