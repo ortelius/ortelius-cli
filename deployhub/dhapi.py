@@ -770,6 +770,9 @@ def new_component_version(dhurl, cookies, compname, compvariant, compversion, ki
             if ("-g" in latest_compversion):  # git commit
                 verschema = latest_compversion.split('-g')[0]
                 gitcommit = latest_compversion.split('-g')[1]
+            elif ("_g" in latest_compversion):  # git commit
+                verschema = latest_compversion.split('_g')[0]
+                gitcommit = latest_compversion.split('_g')[1]
             else:
                 verschema = latest_compversion
                 gitcommit = ""
