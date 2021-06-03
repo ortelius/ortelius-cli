@@ -34,6 +34,8 @@ node {
 		def ServiceOwner="Abraham Ortelius"
 		def ServiceOwnerEmail="request-info@ortelius.io"
 		def ServiceOwnerPhone="505-559-4455"
+	    	def MD5=eval2var('md5sum myfile.txt').trim()
+	    	def Artifact="${myjar}"
 
 		/*********************************/
 		/*        Derived Values         */
@@ -68,7 +70,39 @@ node {
 		/*********************************************************************/
 		/* Create component version and new application version in DeployHub */
 		/*********************************************************************/
-		sh "/usr/local/bin/dh updatecomp --dhurl '${DHUrl}' --dhuser '${DHUsername}' --dhpass '${DHPassword}' --appname '${AppName}' --appversion '${AppVersion}' --appautoinc 'Y' --compname '${CompName}' --compvariant '${CompVariant}' --compversion '${CompVersionCommit}' --compattr 'GitCommit:${GitCommit}'  --compattr 'GitUrl:${GitUrl}' --compattr 'GitRepo:${GitRepo}' --compattr 'GitBranch:${GitBranch}' --compattr 'BuildId:${BuildId}' --compattr 'BuildUrl:${BuildUrl}' --compattr 'Chart:${HelmChart}' --compattr 'ChartVersion:${HelmChartVersion}' --compattr 'ChartNamespace:${HelmNamespace}' --compattr 'ChartRepo:${HelmRepo}' --compattr 'ChartRepoUrl:${HelmRepoUrl}' --compattr 'DockerBuildDate:${BuildDate}' --compattr 'DockerSha:${ImageDigest}' --compattr 'DockerRepo:${ImageRegistry}' --compattr 'DockerTag:${ImageTag}' --compattr 'CustomAction:${CustomAction}' --compattr 'ServiceOwner:${ServiceOwner}' --compattr 'ServiceOwnerEmail:${ServiceOwnerEmail}' --compattr 'ServiceOwnerPhone:${ServiceOwnerPhone}' --compattr 'Readme:${CompReadme}'"    
+		sh """
+		   /usr/local/bin/dh \
+		   updatecomp \
+		   --dhurl '${DHUrl}' \
+		   --dhuser '${DHUsername}' \
+		   --dhpass '${DHPassword}' \
+		   --appname '${AppName}' \
+		   --appversion '${AppVersion}' \
+		   --appautoinc 'Y' \
+		   --compname '${CompName}' \
+		   --compvariant '${CompVariant}' \
+		   --compversion '${CompVersionCommit}' \
+	    	   --compattr 'GitCommit:${GitCommit}'  \
+		   --compattr 'GitUrl:${GitUrl}' \
+		   --compattr 'GitRepo:${GitRepo}' \
+		   --compattr 'GitBranch:${GitBranch}' \
+		   --compattr 'BuildId:${BuildId}' \
+		   --compattr 'BuildUrl:${BuildUrl}' \
+		   --compattr 'Chart:${HelmChart}' \
+		   --compattr 'ChartVersion:${HelmChartVersion}' \
+		   --compattr 'ChartNamespace:${HelmNamespace}' \
+		   --compattr 'ChartRepo:${HelmRepo}' \
+		   --compattr 'ChartRepoUrl:${HelmRepoUrl}' \
+		   --compattr 'DockerBuildDate:${BuildDate}' \
+		   --compattr 'DockerSha:${ImageDigest}' \
+		   --compattr 'DockerRepo:${ImageRegistry}' \
+		   --compattr 'DockerTag:${ImageTag}' \
+		   --compattr 'CustomAction:${CustomAction}' \
+		   --compattr 'ServiceOwner:${ServiceOwner}' \
+		   --compattr 'ServiceOwnerEmail:${ServiceOwnerEmail}' \
+		   --compattr 'ServiceOwnerPhone:${ServiceOwnerPhone}' \
+		   --compattr 'Readme:${CompReadme}'
+		"""
     }  
 }
 
