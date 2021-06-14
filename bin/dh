@@ -401,11 +401,10 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             with open(deploydata, 'w') as fpsave:
                 json.dump(data, fpsave)
 
+            pprint(data)
             dhapi.log_deploy_application(dhurl, cookies, deploydata)
 
             print("Logged Deployment for " + appname + " to " + environment)
-
-            #os.remove(deploydata)
 
             if ('.' in compvariant):
                 compvariant = compvariant.split('.')[-1]
