@@ -163,6 +163,7 @@ import subprocess
 import sys
 import time
 from datetime import datetime
+from pathlib import Path
 from pprint import pprint
 
 import click
@@ -446,8 +447,9 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
         if (dhapi.is_not_empty(deploydatasave)):
             payload = ""
-            with open(deploydatasave, "r") as fin_data:
-                payload = fin_data.read()
+            if (Path.exists(deploydatasave)):
+                with open(deploydatasave, "r") as fin_data:
+                    payload = fin_data.read()
 
             data = {}
             if (dhapi.is_not_empty(payload)):
