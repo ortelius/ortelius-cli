@@ -163,7 +163,6 @@ import subprocess
 import sys
 import time
 from datetime import datetime
-from pathlib import Path
 from pprint import pprint
 
 import click
@@ -378,9 +377,13 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
             if (dhapi.is_empty(appname)):
                 appname = data.get('application', '')
+            else:
+                data['application'] = appname
 
             if (dhapi.is_empty(appversion)):
                 appversion = data.get('appversion', '')
+            else:
+                data['appversion'] = appversion
 
             compname = data.get('config_component', None)
             compvariant = data.get('environment', '')
@@ -390,6 +393,10 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 environment = data.get('environment', '')
             else:
                 environment = deployenv
+                data['environment'] = environment
+            
+            with open(deploydata, 'w') as fpsave:
+                json.dump(data, fpsave)
 
             dhapi.log_deploy_application(dhurl, cookies, deploydata)
 
@@ -447,7 +454,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
         if (dhapi.is_not_empty(deploydatasave)):
             payload = ""
-            if (Path.exists(deploydatasave)):
+            if (os.path.isfile(deploydatasave)):
                 with open(deploydatasave, "r") as fin_data:
                     payload = fin_data.read()
 
