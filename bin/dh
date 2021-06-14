@@ -386,6 +386,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 data['appversion'] = appversion
 
             appversion = dhapi.clean_name(appversion)
+            data['appversion'] = appversion
 
             compname = data.get('config_component', None)
             compvariant = data.get('environment', '')
@@ -402,7 +403,9 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
             dhapi.log_deploy_application(dhurl, cookies, deploydata)
 
-            print("Logged Deployment for " + appname + " to " + compvariant)
+            print("Logged Deployment for " + appname + " to " + environment)
+
+            #os.remove(deploydata)
 
             if ('.' in compvariant):
                 compvariant = compvariant.split('.')[-1]
@@ -477,7 +480,9 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             print("Creating Component")
             compid = dhapi.new_component_version(dhurl, cookies, compname, compvariant, compversion, kind, None, compautoinc)
             compname = dhapi.get_component_name(dhurl, cookies, compid)
-            deploydata_dict['compversion'].append(compname)
+            worklist = deploydata_dict['compversion']
+            worklist.append(compname)
+            deploydata_dict['compversion'] = worklist
 
             print("Creation Done: " + compname)
 
