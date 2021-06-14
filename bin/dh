@@ -375,12 +375,20 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             if (dhapi.is_not_empty(payload)):
                 data = json.loads(payload)
 
-            appname = data.get('application', '')
-            appversion = data.get('appversion', '')
+            if (dhapi.is_empty(appname)):
+                appname = data.get('application', '')
+
+            if (dhapi.is_empty(appversion)):
+                appversion = data.get('appversion', '')
+
             compname = data.get('config_component', None)
             compvariant = data.get('environment', '')
-            environment = data.get('environment', '')
             compversion = ""
+
+            if (dhapi.is_empty(deployenv)):
+                environment = data.get('environment', '')
+            else:
+                environment = deployenv
 
             dhapi.log_deploy_application(dhurl, cookies, deploydata)
 
