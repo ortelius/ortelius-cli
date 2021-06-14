@@ -466,7 +466,9 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             if (dhapi.is_not_empty(payload)):
                 data = json.loads(payload)
                 deploydata_dict['application'] = data['application']
-                deploydata_dict['compversion'].extend(data['compversion'])
+                worklist = deploydata_dict['compversion']
+                worklist.extend(data['compversion'])
+                deploydata_dict['compversion'] = worklist
                 deploydata_dict['rc'] = data['rc']
 
         retcode = 0
@@ -481,7 +483,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             compname = dhapi.get_component_name(dhurl, cookies, compid)
             compversion = ""
             compvariant = ""
-            
+
             worklist = deploydata_dict['compversion']
             worklist.append(compname)
             deploydata_dict['compversion'] = worklist
