@@ -479,6 +479,9 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             print("Creating Component")
             compid = dhapi.new_component_version(dhurl, cookies, compname, compvariant, compversion, kind, None, compautoinc)
             compname = dhapi.get_component_name(dhurl, cookies, compid)
+            compversion = ""
+            compvariant = ""
+            
             worklist = deploydata_dict['compversion']
             worklist.append(compname)
             deploydata_dict['compversion'] = worklist
