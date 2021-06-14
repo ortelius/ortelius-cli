@@ -1639,7 +1639,7 @@ def log_deploy_application(dhurl, cookies, deploydata):
             print(f'Recording deployment of {application} for {environment}')
 
             if (compversion is not None and len(compversion) > 0):
-                print(f'Recording hot fix {compversion} for {application}')
+                print(f'Assigning {compversion} to {application}')
             result = post_json(url, payload, cookies)
 
             if (result.get('errormsg', None) is not None):
