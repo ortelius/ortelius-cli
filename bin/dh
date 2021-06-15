@@ -395,8 +395,8 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             res = dhapi.get_application(dhurl, cookies, full_appname, "latest", False)
             latest_appid = res[0]
             if (latest_appid > 0):
-                appname = dhapi.get_application_name(dhurl, cookies, latest_appid)
-            data['application'] = appname
+                full_appname = dhapi.get_application_name(dhurl, cookies, latest_appid)
+            data['application'] = full_appname
             data.pop('appversion', None)
 
             compname = data.get('config_component', None)
