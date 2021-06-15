@@ -414,6 +414,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
             pprint(data)
             dhapi.log_deploy_application(dhurl, cookies, deploydata)
+            os.remove(deploydata)
 
             print("Logged Deployment for " + appname + " to " + environment)
 
