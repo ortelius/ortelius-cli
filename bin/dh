@@ -388,6 +388,15 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             appversion = dhapi.clean_name(appversion)
             data['appversion'] = appversion
 
+            full_appname = appname
+            if (dhapi.is_not_empty(appversion)):
+                full_appname = full_appname + ";" + appversion
+
+            data = dhapi.get_application(dhurl, cookies, full_appname, "latest", False)
+            latest_appid = data[0]
+            appname = dhapi.get_application_name(dhurl, cookies, latest_appid)
+            data['appname'] = appname
+
             compname = data.get('config_component', None)
             compvariant = data.get('environment', '')
             compversion = ""
