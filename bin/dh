@@ -633,6 +633,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 break
 
         if (dhapi.is_not_empty(deploydatasave)):
+            pprint(deploydata_dict)
             with open(deploydatasave, 'w') as fpsave:
                 json.dump(deploydata_dict, fpsave)
 
