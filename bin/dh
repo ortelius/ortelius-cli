@@ -489,6 +489,10 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             data = dhapi.get_component(dhurl, cookies, compname, "", "", True, True)
             parent_compid = data[0]
 
+            if (parent_compid < 0):
+                data = dhapi.get_component(dhurl, cookies, compname, compvariant, "", True, True)
+                parent_compid = data[0]
+
             # create component version
             print("Creating Component")
             compid = dhapi.new_component_version(dhurl, cookies, compname, compvariant, compversion, kind, None, compautoinc)
