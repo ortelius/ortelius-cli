@@ -837,8 +837,7 @@ def new_docker_component(dhurl, cookies, compname, compvariant, compversion, par
     else:
         data = get_json(dhurl + "/dmadminweb/API/new/compver/" + str(parent_compid), cookies)
         compid = data['result']['id']
-
-    update_name(dhurl, cookies, compname, compvariant, compversion, compid)
+        update_name(dhurl, cookies, compname, compvariant, compversion, compid)       
 
     new_component_item(dhurl, cookies, compid, "docker", None)
 
@@ -876,8 +875,7 @@ def new_file_component(dhurl, cookies, compname, compvariant, compversion, paren
     else:
         data = get_json(dhurl + "/dmadminweb/API/new/compver/" + str(parent_compid), cookies)
         compid = data['result']['id']
-
-    update_name(dhurl, cookies, compname, compvariant, compversion, compid)
+        update_name(dhurl, cookies, compname, compvariant, compversion, compid)
 
     new_component_item(dhurl, cookies, compid, "file", component_items)
 
