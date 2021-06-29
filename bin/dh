@@ -403,6 +403,13 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             compvariant = data.get('environment', '')
             compversion = ""
 
+            if (compname is None):
+                complist = data.get('compversion', [])
+                if (len(complist) > 0):
+                    compname = complist[0]
+                    compvariant = ""
+                    compversion = ""
+
             if (dhapi.is_empty(deployenv)):
                 environment = data.get('environment', '')
             else:
@@ -413,7 +420,30 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 json.dump(data, fpsave)
 
             pprint(data)
-            dhapi.log_deploy_application(dhurl, cookies, deploydata)
+            data = dhapi.log_deploy_application(dhurl, cookies, deploydata)
+            deployid = data.get('deployid', -1)
+
+            lcompattr = {}
+            for attr in (compattr):
+                key, value = attr.split(':', 1)
+                lcompattr[key.lower()] = value
+
+            helmrepo = lcompattr.get('chartrepo', '')
+            chartname = lcompattr.get('chart')
+            chartversion = lcompattr.get('chartversion', '')
+            chartvalues = lcompattr.get('chartvalues', '')
+            helmrepouser = lcompattr.get('helmrepouser', '')
+            helmrepopass = lcompattr.get('helmrepopass', '')
+            helmrepourl = lcompattr.get('chartrepourl', '')
+            dockeruser = lcompattr.get('dockeruser', lcompattr.get('helmrepouser', ''))
+            dockerpass = lcompattr.get('dockerpass', lcompattr.get('helmrepopass', ''))
+            helmtemplate = lcompattr.get('helmtemplate', '')
+            helmopts = lcompattr.get('helmopts', '')
+
+            if (deployid > 0 and dhapi.is_not_empty(helmtemplate) and dhapi.is_not_empty(helmrepo) and dhapi.is_not_empty(helmrepourl)):
+                # fetch component and get attributes
+                dhapi.upload_helm(dhurl, cookies, compname, chartname, chartversion, chartvalues, helmrepo, helmrepouser, helmrepopass, helmrepourl, helmopts, deployid, dockeruser, dockerpass, helmtemplate)
+
 #            os.remove(deploydata)
 
             print("Logged Deployment for " + appname + " to " + environment)
