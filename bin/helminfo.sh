@@ -37,7 +37,7 @@ tar -xf $chartname*.tgz
 IFS=$'\n'
 
 let cnt=0
-for line in $(cat $helmtemplate | dos2unix | grep "image:" | cut -f 2- -d ":" | tr -d '"' | tr -d " " | sort -u)
+for line in $(cat $helmtemplate | tr -d '\015' | grep "image:" | cut -f 2- -d ":" | tr -d '"' | tr -d " " | sort -u)
 do
  if [ "$cnt" -gt "0" ]; then
   echo ","
