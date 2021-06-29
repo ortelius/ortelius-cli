@@ -19,7 +19,7 @@ setup(
     name='deployhub',
     version='9.3.141',
     packages=['deployhub',],
-    scripts=['bin/dh'],
+    scripts=['bin/dh', 'bin/helminfo.sh'],
     license='GNU AFFERO GENERAL PUBLIC LICENSE',
     long_description=open('doc/dh.md').read(),
     long_description_content_type="text/markdown",
