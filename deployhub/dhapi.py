@@ -1756,7 +1756,8 @@ def upload_helm(dhurl, cookies, fullcompname, chart, chartversion, chartvalues, 
         jstr = jstr + line
 
     pid.wait()
-    # print(jstr)
+    print("# Helminfo Output")
+    pprint(jstr)
     dobj = json.loads(jstr)
     upload['chartdigest'] = dobj.get("chartdigest", "")
     upload['images'] = dobj.get("images", [])
@@ -1792,7 +1793,8 @@ def upload_helm(dhurl, cookies, fullcompname, chart, chartversion, chartvalues, 
 
     errors = []
 
-    # pprint(upload)
+    print("# Helminfo Upload")
+    pprint(upload)
     post_json(dhurl + "/dmadminweb/API/uploadhelm", json.dumps(upload), cookies)
     print("Finished Helm Capture for Deployment #" + str(deployid))
 
