@@ -776,6 +776,17 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
         assign_completed = []
 
+        deploydata_dict = {}
+
+        if (dhapi.is_not_empty(deploydatasave)):
+            payload = ""
+            if (os.path.isfile(deploydatasave)):
+                with open(deploydatasave, "r") as fin_data:
+                    payload = fin_data.read()
+
+                if (dhapi.is_not_empty(payload)):
+                    deploydata_dict = json.loads(payload)
+  
         cnt = 1
         while True:
             # create component version
@@ -817,11 +828,13 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                     dhapi.assign_app_to_env(dhurl, cookies, appname, envs)
                     assign_completed.append(appname)
 
-                print("Assigning Component Version to Application Version " + str(appid))
+                full_appname = dhapi.get_application_name(dhurl, cookies, appid)
+                print("Assigning Component Version " + name + " to Application Version " + full_appname)
+                deploydata_dict['application'] = full_appname
 
                 data = dhapi.add_compver_to_appver(dhurl, cookies, appid, compid)
                 print("Assignment Done")
-
+     
             compname = os.environ.get("COMPONENT_NAME_" + str(cnt), None)
             compversion = os.environ.get("COMPONENT_VERSION_" + str(cnt), None)
             appname = os.environ.get("COMPONENT_APPLICATION_" + str(cnt), None)
@@ -831,6 +844,11 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
             if (compname is None):  # leave loop if no more components defined in env
                 break
+
+        if (dhapi.is_not_empty(deploydatasave)):
+            pprint(deploydata_dict)
+            with open(deploydatasave, 'w') as fpsave:
+                json.dump(deploydata_dict, fpsave)
 
     elif (action.lower() == "approve"):
         if (dhapi.is_empty(dhurl)):
