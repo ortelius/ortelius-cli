@@ -153,7 +153,7 @@ Example Jenkinsfile Snippet:
 # To generate markdown use:
 #  pydoc-markdown -I bin | sed 's/  --/    > --/g' | sed 's/Usage:/- Usage:/g' | sed 's/- `--/  - `--/g' | sed 's/  \\* /    \\* /g' | tr '\n' '\a' | grep -o '.*dh\\.main' | tr '\a' '\n' | sed -e '$ d' > doc/dh.md
 
-__version__ = '9.3.151'
+__version__ = '9.3.150'
 
 import json
 import os
@@ -457,7 +457,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             if (compautoinc is None):
                 compautoinc = "Y"
 
-            if (compname is not None):
+            if (compname is not None and dhapi.is_not_empty(kvconfig)):
                 print('Load config from ' + kvconfig)
                 dhapi.set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, environment, crdatasource, changerequest)
     elif (action.lower() == "updatecomp"):
