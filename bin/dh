@@ -829,8 +829,12 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                     assign_completed.append(appname)
 
                 full_appname = dhapi.get_application_name(dhurl, cookies, appid)
+                full_compname = dhapi.get_component_name(dhurl, cookies, compid)
                 print("Assigning Component Version " + name + " to Application Version " + full_appname)
                 deploydata_dict['application'] = full_appname
+                worklist = deploydata_dict['compversion']
+                worklist.extend([full_compname])
+                deploydata_dict['compversion'] = worklist
 
                 data = dhapi.add_compver_to_appver(dhurl, cookies, appid, compid)
                 print("Assignment Done")
