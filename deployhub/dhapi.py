@@ -1640,7 +1640,9 @@ def log_deploy_application(dhurl, cookies, deploydata):
             print(f'Recording deployment of {application} for {environment}')
 
             if (compversion is not None and len(compversion) > 0):
-                print(f'Assigning {compversion} to {application}')
+                print('Assigning components to ' + application + ':')
+                print('  ' + "\n".join(compversion)
+
             result = post_json(url, payload, cookies)
             data['deployid'] = result.get('deployid', -1)
 
