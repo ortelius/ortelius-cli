@@ -832,7 +832,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 full_compname = dhapi.get_component_name(dhurl, cookies, compid)
                 print("Assigning Component Version " + name + " to Application Version " + full_appname)
                 deploydata_dict['application'] = full_appname
-                worklist = deploydata_dict['compversion']
+                worklist = deploydata_dict.get('compversion', [])
                 worklist.extend([full_compname])
                 deploydata_dict['compversion'] = worklist
 
