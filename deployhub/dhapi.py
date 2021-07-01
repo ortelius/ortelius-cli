@@ -1641,6 +1641,7 @@ def log_deploy_application(dhurl, cookies, deploydata):
             result = post_json(url, payload, cookies)
             data['deployid'] = result.get('deployid', -1)
             data['application'] = result.get('application', application)
+            application = data['application']
 
             print(f'Recorded deployment of {application} for {environment}')
 
