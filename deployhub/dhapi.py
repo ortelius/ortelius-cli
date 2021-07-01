@@ -1637,14 +1637,16 @@ def log_deploy_application(dhurl, cookies, deploydata):
         application = data.get('application', '')
 
         if (is_not_empty(application) and is_not_empty(environment)):
-            print(f'Recording deployment of {application} for {environment}')
-
-            if (compversion is not None and len(compversion) > 0):
-                print('Assigning components to ' + application + ':')
-                print('  ' + "\n".join(compversion))
 
             result = post_json(url, payload, cookies)
             data['deployid'] = result.get('deployid', -1)
+            data['application'] = result.get('application', application)
+
+            print(f'Recorded deployment of {application} for {environment}')
+
+            if (compversion is not None and len(compversion) > 0):
+                print('Assigned components to ' + application + ':')
+                print('  ' + "\n  ".join(compversion))
 
             if (result.get('errormsg', None) is not None):
                 print(result.get('errormsg', None))
