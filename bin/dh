@@ -524,6 +524,11 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 parent_compid = data[0]
 
             # create component version
+
+            if (parent_compid < 0):
+                print("Creating Parent Component")
+                parent_compid = dhapi.new_component_version(dhurl, cookies, compname, compvariant, "", kind, None, compautoinc)
+
             print("Creating Component")
             compid = dhapi.new_component_version(dhurl, cookies, compname, compvariant, compversion, kind, None, compautoinc)
             compname = dhapi.get_component_name(dhurl, cookies, compid)
