@@ -17,7 +17,7 @@ setup(
     author='Steve Taylor',
     author_email='steve@deployhub.com',
     name='deployhub',
-    version='9.3.153',
+    version='9.3.154',
     packages=['deployhub',],
     scripts=['bin/dh', 'bin/helminfo.sh'],
     license='GNU AFFERO GENERAL PUBLIC LICENSE',
