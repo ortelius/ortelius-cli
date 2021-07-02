@@ -422,6 +422,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             pprint(data)
             data = dhapi.log_deploy_application(dhurl, cookies, deploydata)
             deployid = data.get('deployid', -1)
+            appname = data.get('application', appname)
 
             lcompattr = {}
             for attr in (compattr):
