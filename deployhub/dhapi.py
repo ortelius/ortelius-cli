@@ -1800,7 +1800,8 @@ def upload_helm(dhurl, cookies, fullcompname, chart, chartversion, chartvalues, 
 
     print("# Helminfo Upload")
     pprint(upload)
-    post_json(dhurl + "/dmadminweb/API/uploadhelm", json.dumps(upload), cookies)
+    data = post_json(dhurl + "/dmadminweb/API/uploadhelm", json.dumps(upload), cookies)
+    pprint(data)
     print("Finished Helm Capture for Deployment #" + str(deployid))
 
 def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, env, crdatasource, crlist):
