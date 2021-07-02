@@ -1799,7 +1799,7 @@ def upload_helm(dhurl, cookies, fullcompname, chart, chartversion, chartvalues, 
     errors = []
 
     print("# Helminfo Upload")
-    # pprint(upload)
+    pprint(upload)
     post_json(dhurl + "/dmadminweb/API/uploadhelm", json.dumps(upload), cookies)
     print("Finished Helm Capture for Deployment #" + str(deployid))
 
