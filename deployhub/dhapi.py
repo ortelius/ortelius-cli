@@ -1996,7 +1996,6 @@ def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, comp
 
 def post_readme(dhurl, cookies, compid, filename, file_type):
     try:
-        file_extension = os.path.splitext(filename)
         file_data = open(filename, 'rb').read()
         encoded_bytes = base64.encodebytes(file_data)
         
@@ -2007,8 +2006,8 @@ def post_readme(dhurl, cookies, compid, filename, file_type):
             line_no += 1
             file.append(d)
         
-        data = {'compid': compid, 'filetype': file_type, 'file': json.dumps(file)}
-        r = post_json(url=dhurl+"/msapi/textfile/", payload=data, cookies=cookies)
+        payload = {'compid': compid, 'filetype': file_type, 'file': json.dumps(file)}
+        r = post_json(dhurl+"/msapi/textfile/", payload, cookies)
         
         if (r is None):
             return ({"message": "Could not persist '" + filename + "' with compid: '" + str(compid) + "'"})
