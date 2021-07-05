@@ -1994,6 +1994,27 @@ def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, comp
             update_envid_attrs(dhurl, cookies, envid, attrs)
     return
 
+def post_readme(dhurl, cookies, compid, filename, file_type):
+    try:
+        file_data = open(filename, 'rb').read()
+        encoded_bytes = base64.encodebytes(file_data)
+        
+        file = []
+        line_no = 1
+        for line in encoded_bytes.splitlines():
+            d = line.decode('utf-8')
+            line_no += 1
+            file.append(d)
+        
+        payload = {'compid': compid, 'filetype': file_type, 'file': json.dumps(file)}
+        r = post_json(dhurl+"/msapi/textfile/", payload, cookies)
+        
+        if (r is None):
+            return ({"message": "Could not persist '" + filename + "' with compid: '" + str(compid) + "'"})
+        return r
+    except Exception as err:
+        print(err)
+    
 # def update_versions(project, compname, compvariant, compversion):
 #    # Clone apprepo
 #    data = clone_repo(project)
