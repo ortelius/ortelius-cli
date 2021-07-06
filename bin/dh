@@ -593,6 +593,11 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             pprint(attrs)
             print("")
 
+            lcompattr = {}
+            for attr in (attrs):
+                key, value = attr.split(':', 1)
+                lcompattr[key.lower()] = value
+
             print("Updating Change Requests\n")
 
             data = dhapi.update_component_attrs(dhurl, cookies, compname, compvariant, compversion, attrs, crdatasource, changerequest)
