@@ -1647,6 +1647,7 @@ def log_deploy_application(dhurl, cookies, deploydata):
             result = post_json(url, payload, cookies)
             data['deployid'] = result.get('deployid', -1)
             data['application'] = result.get('application', application)
+            data['appid'] = result.get('appid', -1)
             application = data['application']
 
             print(f'Recorded deployment of {application} for {environment}')
@@ -2042,7 +2043,7 @@ def update_deppkgs(dhurl, cookies, compid, filename):
         payload = json.dumps(data)
 
     result = post_json(dhurl+"/msapi/deppkg?compid=" + str(compid), payload, cookies)
-    
+
     if (result is None):
         return ({"message": "Could not persist '" + filename + "' with compid: '" + str(compid) + "'"})
     return result
