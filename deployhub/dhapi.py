@@ -6,7 +6,6 @@
 import base64
 import json
 import os
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -14,6 +13,7 @@ import time
 import urllib
 from pathlib import Path
 from pprint import pprint
+from urllib.parse import urlparse
 
 import configobj
 import qtoml
@@ -21,6 +21,13 @@ import requests
 from configobj import ConfigObj
 from flatten_dict import flatten
 
+
+def url_validator(url):
+    try:
+        result = urlparse(url)
+        return True
+    except:
+        return False
 
 def fspath(path):
     """See https://www.python.org/dev/peps/pep-0519/#os for details."""
@@ -86,7 +93,7 @@ def post_json(url, payload, cookies):
         string: The json string.
     """
     try:
-        res = requests.post(url, data=payload, cookies=cookies)
+        res = requests.post(url, data=payload, cookies=cookies, headers={"Content-Type":"application/json"})
         if (res is None):
             return None
         if (res.status_code != 200):
@@ -840,7 +847,7 @@ def new_docker_component(dhurl, cookies, compname, compvariant, compversion, par
     else:
         data = get_json(dhurl + "/dmadminweb/API/new/compver/" + str(parent_compid), cookies)
         compid = data['result']['id']
-        update_name(dhurl, cookies, compname, compvariant, compversion, compid)       
+        update_name(dhurl, cookies, compname, compvariant, compversion, compid)
 
     new_component_item(dhurl, cookies, compid, "docker", None)
 
@@ -1496,7 +1503,7 @@ def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, depl
                 if (full_msname == msname):
                     deployed_ms = {'compid' : compid, 'compname': compname, 'compvariant': compvariant, 'compversion': compversion, 'full_msname': full_msname, 'msname': short_msname, 'branch': branch, 'repo': repo, 'tag': tag, 'deploy_time': deploy_time}
 
-                if (branch in ('master', 'main')):   
+                if (branch in ('master', 'main')):
                     if (not msversion.startswith('1.') and msversion != "1"):
                         continue
 
@@ -1574,7 +1581,7 @@ def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, depl
                     name = item['name']
                     print("Assigning Component Version " + name + " to Application Version " + appname + ";" + appversion)
                     add_compver_to_appver(dhurl, cookies, appid, compid)
-                
+
             # create env and deploy to env
             deploydata = "deploy.json"
             deploy = {}
@@ -1588,7 +1595,6 @@ def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, depl
     return
 
 def areEqual(arr1, arr2):
- 
     n = len(arr1)
     m = len(arr2)
 
@@ -1695,7 +1701,7 @@ def upload_helm(dhurl, cookies, fullcompname, chart, chartversion, chartvalues, 
 
     Returns:
         Void
-    """    
+    """
     my_env = os.environ.copy()
 
     if not os.path.exists('helm'):
@@ -1710,7 +1716,7 @@ def upload_helm(dhurl, cookies, fullcompname, chart, chartversion, chartvalues, 
         my_file = open("helm/" + chartvalues, "r")
         content_list = my_file.readlines()
         my_file.close()
-        
+
     content_list = list(filter(lambda x: 'pwd' not in x, content_list))
     content_list = list(filter(lambda x: 'pass' not in x, content_list))
     content_list = list(filter(lambda x: 'userid' not in x, content_list))
@@ -2000,29 +2006,43 @@ def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, comp
             update_envid_attrs(dhurl, cookies, envid, attrs)
     return
 
-def post_readme(dhurl, cookies, compid, filename, file_type):
-    try:
+def post_textfile(dhurl, cookies, compid, filename, file_type):
+
+    file_data = ''
+    if (os.path.exists(filename)):
         file_data = open(filename, 'rb').read()
-        encoded_bytes = base64.encodebytes(file_data)
-        
-        file = []
-        line_no = 1
-        for line in encoded_bytes.splitlines():
-            d = line.decode('utf-8')
-            line_no += 1
-            file.append(d)
-        
-        payload = {'compid': compid, 'filetype': file_type, 'file': json.dumps(file)}
-        r = post_json(dhurl+"/msapi/textfile/", payload, cookies)
-        
-        if (r is None):
-            return ({"message": "Could not persist '" + filename + "' with compid: '" + str(compid) + "'"})
-        return r
-    except Exception as err:
-        print(err)
+    else:
+        try:
+            res = requests.get(filename)
+            if (res.status_code == 200):
+                file_data = res.content
+        except requests.exceptions.ConnectionError as conn_error:
+            print(str(conn_error))
+
+    encoded_bytes = base64.encodebytes(file_data)
+
+    file = []
+    line_no = 1
+    for line in encoded_bytes.splitlines():
+        d = line.decode('utf-8')
+        line_no += 1
+        file.append(d)
+
+    payload = {'compid': compid, 'filetype': file_type, 'file': file}
+    result = post_json(dhurl+"/msapi/textfile/", json.dumps(payload), cookies)
+
+    if (result is None):
+        return ({"message": "Could not persist '" + filename + "' with compid: '" + str(compid) + "'"})
+    return result
+
+def update_deppkgs(dhurl, cookies, compid, filename):
+    payload = ""
+    with open(filename, "r") as fin_data:
+        data = json.load(fin_data)
+        payload = json.dumps(data)
+
+    result = post_json(dhurl+"/msapi/deppkg?compid=" + str(compid), payload, cookies)
     
-# def update_versions(project, compname, compvariant, compversion):
-#    # Clone apprepo
-#    data = clone_repo(project)
-#    if (data is not None):
-#        pprint(data)
+    if (result is None):
+        return ({"message": "Could not persist '" + filename + "' with compid: '" + str(compid) + "'"})
+    return result

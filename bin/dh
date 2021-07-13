@@ -67,7 +67,7 @@ Args:
                 * GitTag - Git tag in the git repo
                 * GitUrl - Full url to the git repo
                 * operator - Operator name
-                * Readme - Readme location in the Git Repo   
+                * Readme - Readme location in the Git Repo
                 * ServiceOwner - Owner of the Service
                 * ServiceOwnerEmail - Email for the Owner of the Service
                 * ServiceOwnerPhone - Phone number for the Owner of the Service
@@ -144,7 +144,7 @@ Args:
         --msbranch: New microservice branch being added to the cluster
 
 
-Example Jenkinsfile Snippet: 
+Example Jenkinsfile Snippet:
     https://github.com/ortelius/compupdate/blob/main/Jenkinsfile
 
 
@@ -167,6 +167,7 @@ from pprint import pprint
 
 import click
 import qtoml
+
 from deployhub import dhapi
 
 
@@ -202,9 +203,11 @@ from deployhub import dhapi
 @click.option('--cluster_json', help='json from kubectl get deploy -n default -o json')
 @click.option('--msname', help='New microservice being added to the cluster')
 @click.option('--msbranch', help='New microservice branch being added to the cluster')
+@click.option('--deppkg', help='File name for the Safety, CycloneDx json scan data, use multiple time for each file', multiple=True)
+@click.option('--logdeployment', is_flag=True, help='Records a deployment by a external program')
 
 
-def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, deployenv, envs, compattr, kvconfig, deploydata, deploydatasave, from_domain, task, envvars, envvars_sh, importfile, fromdom, todom, crdatasource, changerequest, cluster_json, msname, msbranch):
+def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, deployenv, envs, compattr, kvconfig, deploydata, deploydatasave, from_domain, task, envvars, envvars_sh, importfile, fromdom, todom, crdatasource, changerequest, cluster_json, msname, msbranch, deppkg, logdeployment):
     """
     ACTION: deploy, updatecomp, approve, move, envscript, kv, cluster, export or import for the type of action to perform.
 
@@ -232,7 +235,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 GitTag - Git tag in the git repo\n
                 GitUrl - Full url to the git repo\n
                 operator - Operator name\n
-                Readme - Readme location in the Git Repo\n   
+                Readme - Readme location in the Git Repo\n
                 ServiceOwner - Owner of the Service\n
                 ServiceOwnerEmail - Email for the Owner of the Service\n
                 ServiceOwnerPhone - Phone number for the Owner of the Service\n
@@ -283,12 +286,13 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             print("--dhpass is required")
             sys.exit(1)
 
+        retcode = 0
+
         if (dhapi.is_empty(deploydata)):
             if (dhapi.is_empty(appname) and dhapi.is_empty(compname)):
                 print("--appname is required")
                 sys.exit(1)
 
-            retcode = 0
             applist = []
             if (dhapi.is_not_empty(appname)):
                 if (dhapi.is_not_empty(appname) and dhapi.is_empty(appversion)):
@@ -415,14 +419,46 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             else:
                 environment = deployenv
                 data['environment'] = environment
-            
+
             with open(deploydata, 'w') as fpsave:
                 json.dump(data, fpsave)
 
-            pprint(data)
-            data = dhapi.log_deploy_application(dhurl, cookies, deploydata)
-            deployid = data.get('deployid', -1)
-            appname = data.get('application', appname)
+            # Check if just logging deployment
+            if (logdeployment):
+                data = dhapi.log_deploy_application(dhurl, cookies, deploydata)
+                deployid = data.get('deployid', -1)
+                appname = data.get('application', appname)
+                print("Logged Deployment for " + appname + " to " + environment)
+            else:
+                if (dhapi.is_not_empty(appname)):
+                    if (dhapi.is_not_empty(appname) and dhapi.is_empty(appversion)):
+                        parts = appname.split(';')
+                        if (len(parts) == 3):
+                            appname = parts[0] + ';' + parts[1]
+                            appversion = parts[2]
+
+                    data = dhapi.get_application(dhurl, cookies, appname, appversion, True)
+                    appid = data[0]
+                print('Deploying ' + appname + ';' + appversion + ' to ' + deployenv)
+                data = dhapi.deploy_application_by_appid(dhurl, cookies, appid, deployenv)
+
+                deployid = data[0]
+                if (deployid < 0):
+                    print(data[1])
+                    sys.exit(1)
+
+                print("Fetching Logs for " + str(deployid))
+                data = dhapi.get_logs(dhurl, cookies, deployid)
+
+                print(data[1])
+                if (data[0]):
+                    print("Successful")
+                    if (dhapi.is_not_empty(pipeline)):
+                        data = dhapi.run_circleci_pipeline(pipeline)
+                        pprint(data)
+                else:
+                    print("Failed")
+                    retcode = retcode + 1
 
             lcompattr = {}
             for attr in (compattr):
@@ -447,8 +483,6 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
 #            os.remove(deploydata)
 
-            print("Logged Deployment for " + appname + " to " + environment)
-
             if ('.' in compvariant):
                 compvariant = compvariant.split('.')[-1]
 
@@ -461,6 +495,12 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             if (compname is not None and dhapi.is_not_empty(kvconfig)):
                 print('Load config from ' + kvconfig)
                 dhapi.set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, environment, crdatasource, changerequest)
+
+            if (retcode == 0):
+                sys.exit(0)
+            else:
+                sys.exit(1)
+
     elif (action.lower() == "updatecomp"):
 
         if (dhapi.is_empty(dhurl)):
@@ -583,18 +623,18 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             if (attrs.get('GitRepo', None) is None):
                 if ('/' in os.getenv('GIT_URL', '')):
                     attrs['GitRepo'] = "/".join(os.getenv('GIT_URL', '').split('/')[-2:]).replace(".git", "")
-            # comptype = attrs.get("CompType", None)
-            # if (dhapi.is_empty(comptype)):
-            #     if (kind == "file"):
-            #         attrs['CompType'] = "Application File"
-            #     else:
-            #         attrs['CompType'] = "Container"
+
+            attrs.pop('Readme', None)
+            attrs.pop('readme', None)
+            attrs.pop('ReadMe', None)
+            attrs.pop('Swagger', None)
+            attrs.pop('swagger', None)
 
             pprint(attrs)
             print("")
 
             lcompattr = {}
-            for attr in (attrs):
+            for attr in (compattr):
                 key, value = attr.split(':', 1)
                 lcompattr[key.lower()] = value
 
@@ -602,6 +642,16 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
             data = dhapi.update_component_attrs(dhurl, cookies, compname, compvariant, compversion, attrs, crdatasource, changerequest)
             print("Attribute Update Done")
+
+            if (lcompattr.get('readme', None) is not None):
+                dhapi.post_textfile(dhurl, cookies, compid, lcompattr.get('readme', ''), 'readme')
+
+            if (lcompattr.get('swagger', None) is not None):
+                dhapi.post_textfile(dhurl, cookies, compid, lcompattr.get('swagger', ''), 'swagger')
+
+            if (deppkg):
+                for filename in (deppkg):
+                    dhapi.update_deppkgs(dhurl, cookies, compid, filename)
 
             applist = []
 
@@ -797,7 +847,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
                 if (dhapi.is_not_empty(payload)):
                     deploydata_dict = json.loads(payload)
-  
+
         cnt = 1
         while True:
             # create component version
@@ -849,7 +899,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
                 data = dhapi.add_compver_to_appver(dhurl, cookies, appid, compid)
                 print("Assignment Done")
-     
+
             compname = os.environ.get("COMPONENT_NAME_" + str(cnt), None)
             compversion = os.environ.get("COMPONENT_VERSION_" + str(cnt), None)
             appname = os.environ.get("COMPONENT_APPLICATION_" + str(cnt), None)
