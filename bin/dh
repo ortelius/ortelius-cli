@@ -420,6 +420,9 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 environment = deployenv
                 data['environment'] = environment
 
+            if (not logdeployment):
+                data['skipdeploy'] = 'Y'
+                
             with open(deploydata, 'w') as fpsave:
                 json.dump(data, fpsave)
 
@@ -430,16 +433,11 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 appname = data.get('application', appname)
                 print("Logged Deployment for " + appname + " to " + environment)
             else:
-                if (dhapi.is_not_empty(appname)):
-                    if (dhapi.is_not_empty(appname) and dhapi.is_empty(appversion)):
-                        parts = appname.split(';')
-                        if (len(parts) == 3):
-                            appname = parts[0] + ';' + parts[1]
-                            appversion = parts[2]
+                data = dhapi.log_deploy_application(dhurl, cookies, deploydata)
+                appid = data.get('appid', -1)
+                appname = data.get('application', appname)
 
-                    data = dhapi.get_application(dhurl, cookies, appname, appversion, True)
-                    appid = data[0]
-                print('Deploying ' + appname + ';' + appversion + ' to ' + deployenv)
+                print('Deploying ' + appname + ' to ' + deployenv)
                 data = dhapi.deploy_application_by_appid(dhurl, cookies, appid, deployenv)
 
                 deployid = data[0]
