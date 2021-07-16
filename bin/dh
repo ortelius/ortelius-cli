@@ -287,8 +287,6 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             sys.exit(1)
 
         retcode = 0
-        pipeline = ""
-
         if (dhapi.is_empty(deploydata)):
             if (dhapi.is_empty(appname) and dhapi.is_empty(compname)):
                 print("--appname is required")
@@ -390,6 +388,9 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             else:
                 data['appversion'] = appversion
 
+            if (kvconfig is None):
+                kvconfig = data.get('kvconfig', '')
+
             appversion = dhapi.clean_name(appversion)
             data['appversion'] = appversion
 
@@ -484,9 +485,6 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
             if ('.' in compvariant):
                 compvariant = compvariant.split('.')[-1]
-
-            if (kvconfig is None):
-                kvconfig = data.get('kvconfig', '')
 
             if (compautoinc is None):
                 compautoinc = "Y"
