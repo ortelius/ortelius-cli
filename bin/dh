@@ -391,6 +391,8 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             if (kvconfig is None):
                 kvconfig = data.get('kvconfig', '')
 
+            pipeline = data.get('circleci_pipeline', '')
+            
             appversion = dhapi.clean_name(appversion)
             data['appversion'] = appversion
 
@@ -424,7 +426,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
             if (not logdeployment):
                 data['skipdeploy'] = 'Y'
-                
+
             with open(deploydata, 'w') as fpsave:
                 json.dump(data, fpsave)
 
