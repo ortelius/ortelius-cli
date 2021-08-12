@@ -625,9 +625,14 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
             attrs.pop('Readme', None)
             attrs.pop('readme', None)
+            attrs.pop('README', None)
             attrs.pop('ReadMe', None)
             attrs.pop('Swagger', None)
             attrs.pop('swagger', None)
+            attrs.pop('SWAGGER', None)
+            attrs.pop('License', None)
+            attrs.pop('license', None)
+            attrs.pop('LICENSE', None)
 
             pprint(attrs)
             print("")
@@ -644,6 +649,9 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
             if (lcompattr.get('readme', None) is not None):
                 dhapi.post_textfile(dhurl, cookies, compid, lcompattr.get('readme', ''), 'readme')
+            
+            if (lcompattr.get('license', None) is not None):
+                dhapi.post_textfile(dhurl, cookies, compid, lcompattr.get('license', ''), 'license')
 
             if (lcompattr.get('swagger', None) is not None):
                 dhapi.post_textfile(dhurl, cookies, compid, lcompattr.get('swagger', ''), 'swagger')
