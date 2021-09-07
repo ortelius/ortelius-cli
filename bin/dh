@@ -142,7 +142,8 @@ Args:
         --todom: To Domain
         --msname: New microservice being added to the cluster
         --msbranch: New microservice branch being added to the cluster
-
+        --consumes:  json file that lists the endpoints the component consumes.  [ {"verb", "get", "path": "/weather"}]
+        --provides:  json file that lists the endpoints the component provides.  [ {"verb", "get", "path": "/checkout"}]
 
 Example Jenkinsfile Snippet:
     https://github.com/ortelius/compupdate/blob/main/Jenkinsfile
@@ -205,9 +206,10 @@ from deployhub import dhapi
 @click.option('--msbranch', help='New microservice branch being added to the cluster')
 @click.option('--deppkg', help='File name for the Safety, CycloneDx json scan data, use multiple time for each file', multiple=True)
 @click.option('--logdeployment', is_flag=True, help='Records a deployment by a external program')
+@click.option('--consumes', help='json file listing end points being consumed')
+@click.option('--provides', help='json file listing end points being provided')
 
-
-def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, deployenv, envs, compattr, kvconfig, deploydata, deploydatasave, from_domain, task, envvars, envvars_sh, importfile, fromdom, todom, crdatasource, changerequest, cluster_json, msname, msbranch, deppkg, logdeployment):
+def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, deployenv, envs, compattr, kvconfig, deploydata, deploydatasave, from_domain, task, envvars, envvars_sh, importfile, fromdom, todom, crdatasource, changerequest, cluster_json, msname, msbranch, deppkg, logdeployment, consumes, provides):
     """
     ACTION: deploy, updatecomp, approve, move, envscript, kv, cluster, export or import for the type of action to perform.
 
@@ -659,6 +661,20 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             if (deppkg):
                 for filename in (deppkg):
                     dhapi.update_deppkgs(dhurl, cookies, compid, filename)
+
+            if (consumes is not None):
+                file = open(consumes)
+                payload = file.read().replace("\n", " ")
+                file.close()
+                print("Adding Consuming End Points")
+                dhapi.post_json(dhurl + "/dmadminweb/API2/consumes/" + str(compid), payload, cookies)
+            
+            if (provides is not None):
+                file = open(provides)
+                payload = file.read().replace("\n", " ")
+                file.close()
+                print("Adding Providing End Points")
+                dhapi.post_json(dhurl + "/dmadminweb/API2/provides/" + str(compid), payload, cookies)
 
             applist = []
 
