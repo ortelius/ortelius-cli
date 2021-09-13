@@ -2038,11 +2038,16 @@ def post_textfile(dhurl, cookies, compid, filename, file_type):
 
 def update_deppkgs(dhurl, cookies, compid, filename):
     payload = ""
+    
+    parts = filename.split('@')
+    filetype = parts[0].lower()
+    filename = parts[1]
+
     with open(filename, "r") as fin_data:
         data = json.load(fin_data)
         payload = json.dumps(data)
 
-    result = post_json(dhurl+"/msapi/deppkg?compid=" + str(compid), payload, cookies)
+    result = post_json(dhurl+"/msapi/deppkg" + filetype + "?compid=" + str(compid), payload, cookies)
 
     if (result is None):
         return ({"message": "Could not persist '" + filename + "' with compid: '" + str(compid) + "'"})

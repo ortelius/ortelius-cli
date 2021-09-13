@@ -204,7 +204,7 @@ from deployhub import dhapi
 @click.option('--cluster_json', help='json from kubectl get deploy -n default -o json')
 @click.option('--msname', help='New microservice being added to the cluster')
 @click.option('--msbranch', help='New microservice branch being added to the cluster')
-@click.option('--deppkg', help='File name for the Safety, CycloneDx json scan data, use multiple time for each file', multiple=True)
+@click.option('--deppkg', help='File name for the Safety, CycloneDx json scan data, use multiple time for each file.  Parameter format is: <type>@<filename> where type=safety, cyclonedx', multiple=True)
 @click.option('--logdeployment', is_flag=True, help='Records a deployment by a external program')
 @click.option('--consumes', help='json file listing end points being consumed')
 @click.option('--provides', help='json file listing end points being provided')
