@@ -2047,7 +2047,7 @@ def update_deppkgs(dhurl, cookies, compid, filename):
         data = json.load(fin_data)
         payload = json.dumps(data)
 
-    result = post_json(dhurl+"/msapi/deppkg" + filetype + "?compid=" + str(compid), payload, cookies)
+    result = post_json(dhurl+"/msapi/deppkg/" + filetype + "?compid=" + str(compid), payload, cookies)
 
     if (result is None):
         return ({"message": "Could not persist '" + filename + "' with compid: '" + str(compid) + "'"})
