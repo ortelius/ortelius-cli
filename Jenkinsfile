@@ -82,7 +82,7 @@ node {
 		   --compname '${CompName}' \
 		   --compvariant '${CompVariant}' \
 		   --compversion '${CompVersionCommit}' \
-	    	   --compattr 'GitCommit:${GitCommit}'  \
+	       --compattr 'GitCommit:${GitCommit}'  \
 		   --compattr 'GitUrl:${GitUrl}' \
 		   --compattr 'GitRepo:${GitRepo}' \
 		   --compattr 'GitBranch:${GitBranch}' \
@@ -101,7 +101,9 @@ node {
 		   --compattr 'ServiceOwner:${ServiceOwner}' \
 		   --compattr 'ServiceOwnerEmail:${ServiceOwnerEmail}' \
 		   --compattr 'ServiceOwnerPhone:${ServiceOwnerPhone}' \
-		   --compattr 'Readme:${CompReadme}'
+		   --compattr 'Readme:${CompReadme}' \
+		   --provides /workspace/deppkg-provides.json \
+		   --consumes /workspace/deppkg-consumes.json
 		"""
     }  
 }
