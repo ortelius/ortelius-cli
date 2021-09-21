@@ -920,6 +920,38 @@ Call the CircleCI REST api to run a pipeline.
 
 - `string` - result of the api call.
 
+<a name="dhapi.upload_helm"></a>
+#### upload\_helm
+
+```python
+upload_helm(dhurl, cookies, fullcompname, chart, chartversion, chartvalues, helmrepo, helmrepouser, helmrepopass, helmrepourl, helmopts, deployid, dockeruser, dockerpass, helmtemplate)
+```
+
+Gather the helm chart and values and upload to the deployment log
+
+**Arguments**:
+
+- `dhurl` _string_ - url to the server
+- `cookies` _string_ - cookies from login
+- `fullcompname` _string_ - full name of the component including variant and version
+- `chart` _string_ - name of the chart.  "chart org/chart name"
+- `chartversion` _string_ - version of the chart. "" for no version
+- `chartvalues` _string_ - path name to the values file for the chart
+- `helmrepo` _string_ - name of the helm repo
+- `helmrepouser` _string_ - username to use to login to a private repo
+- `helmrepopass` _string_ - password for the helmrepouser
+- `helmrepourl` _string_ - url for the helm repo
+- `helmopts` _string_ - additional helm options used for the deployment
+- `deployid` _int_ - deployment id to associate the helm capture to
+- `dockeruser` _string_ - docker repo user used to get the image digest
+- `dockerpass` _string_ - password for the dockeruser
+- `helmtemplate` _string_ - path name to the file that contains the helm template output
+  
+
+**Returns**:
+
+  Void
+
 <a name="dhapi.set_kvconfig"></a>
 #### set\_kvconfig
 

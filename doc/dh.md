@@ -8,7 +8,7 @@ DeployHub's CLI using the dhapi module.
   
   ACTION - one of the following
   
-- `deploy` - deploy the application to the evironment
+- `deploy` - deploy the application to the environment
   - Usage:
     > --dhurl
     > --dhuser
@@ -48,6 +48,8 @@ DeployHub's CLI using the dhapi module.
     > --appversion (optional)
     > --autoappinc (optional)
     > --compattr
+    > --consumes (optional)
+    > --provides (optional)
   
   - Predefined Key/Values:
     * BuildId - Identifier for the CI job
@@ -144,7 +146,8 @@ DeployHub's CLI using the dhapi module.
   - `--todom` - To Domain
   - `--msname` - New microservice being added to the cluster
   - `--msbranch` - New microservice branch being added to the cluster
-  
+  - `--consumes` - json file that lists the endpoints the component consumes.  [ {"verb", "get", "path": "/weather"}]
+  - `--provides` - json file that lists the endpoints the component provides.  [ {"verb", "get", "path": "/checkout"}]
   
   Example Jenkinsfile Snippet:
   https://github.com/ortelius/compupdate/blob/main/Jenkinsfile
