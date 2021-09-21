@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+
+# pydoc-markdown -I bin | sed 's/  --/    > --/g' | sed 's/Usage:/- Usage:/g' | sed 's/- `--/  - `--/g' | sed 's/  \\* /    \\* /g' | tr '\n' '\a' | grep -o '.*dh\\.main' | tr '\a' '\n' | sed -e '$ d' > doc/dh.md
+
 """
 DeployHub's CLI using the dhapi module.
 
@@ -6,7 +9,7 @@ Args:
 
     ACTION - one of the following
 
-        deploy: deploy the application to the evironment
+        deploy: deploy the application to the environment
             Usage:
                 --dhurl
                 --dhuser
@@ -46,6 +49,8 @@ Args:
                 --appversion (optional)
                 --autoappinc (optional)
                 --compattr
+                --consumes (optional)
+                --provides (optional)
 
             - Predefined Key/Values:
                 * BuildId - Identifier for the CI job
