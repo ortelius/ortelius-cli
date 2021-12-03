@@ -292,6 +292,9 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
         if (dhapi.is_empty(dhpass)):
             print("--dhpass is required")
             sys.exit(1)
+        
+        if (dhapi.is_empty(appversion)):
+            appversion = ""
 
         retcode = 0
         if (dhapi.is_empty(deploydata)):
@@ -683,6 +686,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
             applist = []
 
+            print("AppName=" + appname + " AppAutoInc=" + appautoinc)
             if (dhapi.is_empty(appname) and dhapi.is_not_empty(appautoinc)):  # derive appname and inc
                 data = dhapi.get_component_fromid(dhurl, cookies, parent_compid)
 
