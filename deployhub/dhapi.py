@@ -1096,6 +1096,27 @@ def update_envid_attrs(dhurl, cookies, envid, attrs):
         return [False, "Could not update attributes on '" + str(envid) + "'"]
     return [True, data, dhurl + "/dmadminweb/API/setvar/environment/" + str(envid)]
 
+def is_compassigned2app(dhurl, cookies, appid, compid):
+    """
+    Check to see if the component is already assigned to the application version.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        appid (int): id of the application
+        compid (int): id of the component
+
+    Returns:
+        boolean: True if the component is assigned to the application version.
+    """
+
+    data = get_json(dhurl + "/dmadminweb/API/compassigned2app/" + str(appid) + "/" + str(compid), cookies)
+
+    if (data is None):
+        return False
+        
+    return data.get('result', False)
+
 
 def get_application(dhurl, cookies, appname, appversion, id_only):
     """
@@ -1236,7 +1257,7 @@ def get_component_from_tag(dhurl, cookies, image_tag):
     return id
 
 
-def new_application(dhurl, cookies, appname, appversion, appautoinc, envs):
+def new_application(dhurl, cookies, appname, appversion, appautoinc, envs, compid):
     """
     Create a new application version and base version if needed.
 
@@ -1290,6 +1311,7 @@ def new_application(dhurl, cookies, appname, appversion, appautoinc, envs):
 
     data = get_application(dhurl, cookies, full_appname, "latest", False)
     latest_appid = data[0]
+    latest_name = data[1]
 
     # Refetch the current app version to see if we need to create it or not
     data = get_application(dhurl, cookies, full_appname, appversion, True)
@@ -1314,6 +1336,11 @@ def new_application(dhurl, cookies, appname, appversion, appautoinc, envs):
         data = get_application(dhurl, cookies, full_appname, appversion, True)
         appid = data[0]
 
+    compassigned2app = is_compassigned2app(dhurl, cookies, latest_appid, compid)
+
+    if (compassigned2app):
+        return[latest_appid, ".".join(parts) + "." + latest_name]
+    
     if (appid < 0):
         data = get_json(dhurl + "/dmadminweb/API/newappver/" + str(latest_appid) + "/?name=" + urllib.parse.quote(appname + ";" + appversion) + "&" + domain, cookies)
 

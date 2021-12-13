@@ -729,11 +729,11 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 if (dhapi.is_empty(appversion)):
                     appversion = ""
 
-                print("Creating Application Version '" + str(appname) + "' '" + appversion + "'")
-                data = dhapi.new_application(dhurl, cookies, appname, appversion, appautoinc, envs)
+                print("Application Version Definition:'" + str(appname) + "' '" + appversion + "' AppAutoInc:" + appautoinc)
+                data = dhapi.new_application(dhurl, cookies, appname, appversion, appautoinc, envs, compid)
                 appid = data[0]
                 appname = dhapi.get_application_name(dhurl, cookies, appid)
-                print("Creation Done: " + appname)
+                print("Using Application Version: " + appname)
 
                 deploydata_dict['application'] = appname
 
@@ -912,7 +912,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 if (appid < 0):
                     print("Creating Application Version '" +
                           str(appname) + "' '" + appversion + "'")
-                    data = dhapi.new_application(dhurl, cookies, appname, appversion, appautoinc, envs)
+                    data = dhapi.new_application(dhurl, cookies, appname, appversion, appautoinc, envs, compid)
                     appid = data[0]
                     appname = dhapi.get_application_name(dhurl, cookies, appid)
                     print("Creation Done: " + appname)
