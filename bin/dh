@@ -182,9 +182,9 @@ from deployhub import dhapi
 
 @click.command()
 @click.argument('action', required=True)
-@click.option('--dhurl', help='DeployHub Url', envvar='DHURL', required=True)
-@click.option('--dhuser', help='DeployHub User', envvar='DHUSER', required=True)
-@click.option('--dhpass', help='DeployHub Password', envvar='DHPASS', required=True)
+@click.option('--dhurl', help='DeployHub Url', envvar='DHURL')
+@click.option('--dhuser', help='DeployHub User', envvar='DHUSER')
+@click.option('--dhpass', help='DeployHub Password', envvar='DHPASS')
 @click.option('--appname', help='Application Name', envvar='COMPONENT_APPLICATION')
 @click.option('--appversion', help='Application Version', envvar='COMPONENT_APPLICATION_VERSION')
 @click.option('--appautoinc', help='Application Auto Increment Version', envvar='COMPONENT_APPLICATION_AUTOINC')
