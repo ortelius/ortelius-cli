@@ -161,6 +161,7 @@ Example Jenkinsfile Snippet:
 
 __version__ = '9.3.173'
 
+from cmath import exp
 import json
 import os
 import re
@@ -170,8 +171,10 @@ import sys
 import time
 from datetime import datetime
 from pprint import pprint
+from string import Template
 
 import click
+from pydantic import NoneIsAllowedError
 import qtoml
 
 from deployhub import dhapi
@@ -213,8 +216,9 @@ from deployhub import dhapi
 @click.option('--logdeployment', is_flag=True, help='Records a deployment by a external program')
 @click.option('--consumes', help='json file listing end points being consumed')
 @click.option('--provides', help='json file listing end points being provided')
+@click.option('--rsp', help='Response File for Parameters')
 
-def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, deployenv, envs, compattr, kvconfig, deploydata, deploydatasave, from_domain, task, envvars, envvars_sh, importfile, fromdom, todom, crdatasource, changerequest, cluster_json, msname, msbranch, deppkg, logdeployment, consumes, provides):
+def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, deployenv, envs, compattr, kvconfig, deploydata, deploydatasave, from_domain, task, envvars, envvars_sh, importfile, fromdom, todom, crdatasource, changerequest, cluster_json, msname, msbranch, deppkg, logdeployment, consumes, provides, rsp):
     """
     ACTION: deploy, updatecomp, approve, move, envscript, kv, cluster, export or import for the type of action to perform.
 
@@ -253,6 +257,42 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
         export: exports a domain including all objects to stdout\n
         import: imports the export file into the new domain\n
     """
+
+    attrs = {}
+    if (rsp is None):
+        rsp = "component.toml"
+
+    if (os.path.exists(rsp)):
+        file = open(rsp)
+        lines = line = file.read();
+        file.close()        
+        mapping = os.environ
+
+        template = Template(lines)
+        lines = template.safe_substitute(**mapping)
+
+        vardict = qtoml.loads(lines)
+        pprint(vardict)
+
+        if (appname is None):
+            appname = vardict.get('Application', None)
+
+        if (appversion is None):
+            appversion = vardict.get('Application_Version', None)
+        
+        if (deployenv is None):
+            deployenv = vardict.get('DeployEnv', None)
+
+        if (compname is None):
+            compname = vardict.get('Name', None)
+
+        if (compvariant is None):
+            compvariant = vardict.get('Variant', None)
+
+        if (compversion is None):
+            compversion = vardict.get('Version', None)
+        
+        attrs = vardict.get('Attributes', {})
 
     if (dhapi.is_not_empty(compvariant)):
         compvariant = compvariant.replace('/', '_')
@@ -591,7 +631,6 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
             print("Creation Done: " + compname)
 
-            attrs = {}
             print("Updating Component Attributes\n")
             for attr in compattr:
                 if (':' in attr):
@@ -1118,40 +1157,27 @@ def envscript(envvars, envvars_sh):
     Returns:
         no data returned.  Output is in the shell script file.
     """
-    lines = subprocess.run(['cat', envvars], check=False, stdout=subprocess.PIPE).stdout.decode('utf-8')
-
-    vardict = qtoml.loads(lines)
 
     if (dhapi.is_empty(envvars_sh)):
         envvars_sh = 'cloudbuild.sh'
 
     fp_script = open(envvars_sh, 'a')
 
-    if ("Component" in vardict):
-        vardict = vardict["Component"]
+    lines = subprocess.run(['cat', envvars], check=False, stdout=subprocess.PIPE).stdout.decode('utf-8')
 
-    fp_script.write("export BLDDATE=\"" + time.ctime(time.time()) + "\"\n")
+    mapping = os.environ
 
-    for key in vardict:
-        if (key.upper() == "COMPONENTS"):
-            comp_to_app = vardict[key]
+    template = Template(lines)
+    lines = template.safe_substitute(**mapping)
 
-            cnt = 0
-            for compapp in comp_to_app:
-                if (cnt == 0):
-                    fp_script.write("export COMPONENT_NAME=\"" + compapp.get("Name", "") + "\"\n")
-                    fp_script.write("export COMPONENT_VERSION=\"" + vardict.get("Version", "") + "\"\n")
-                    fp_script.write("export COMPONENT_APPLICATION=\"" + compapp.get("Application", "") + "\"\n")
-                    fp_script.write("export COMPONENT_APPLICATION_VERSION=\"" + compapp.get("AppVersion", "") + "\"\n")
-                else:
-                    fp_script.write("export COMPONENT_NAME_" + str(cnt) + "=\"" + compapp.get("Name", "") + "\"\n")
-                    fp_script.write("export COMPONENT_VERSION_" + str(cnt) + "=\"" + vardict.get("Version", "") + "\"\n")
-                    fp_script.write("export COMPONENT_APPLICATION_" + str(cnt) + "=\"" + compapp.get("Application", "") + "\"\n")
-                    fp_script.write("export COMPONENT_APPLICATION_VERSION_" + str(cnt) + "=\"" + compapp.get("AppVersion", "") + "\"\n")
+    vardict = qtoml.loads(lines)
 
-                cnt = cnt + 1
-        else:
-            fp_script.write("export COMPONENT_" + key.upper() + '="' + str(vardict[key]) + "\"\n")
+    export_vars = vardict.get('Export',{})
+
+    for (key,line) in export_vars.items():
+        template = Template(line)
+        line = template.safe_substitute(**vardict)
+        fp_script.write("export " + key + "=\"" + line + "\"\n")
 
     fp_script.close()
     os.chmod(envvars_sh, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
