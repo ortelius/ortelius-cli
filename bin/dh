@@ -1166,6 +1166,11 @@ def envscript(envvars, envvars_sh):
     lines = subprocess.run(['cat', envvars], check=False, stdout=subprocess.PIPE).stdout.decode('utf-8')
 
     mapping = os.environ
+
+    if (mapping.get('BLDDATE', None) is None):
+        now = datetime.now()
+        mapping['BLDDATE'] = now.strftime("%c")
+
     for key, val in mapping.items():
         fp_script.write("export " + key + "=\"" + val + "\"\n")
 
