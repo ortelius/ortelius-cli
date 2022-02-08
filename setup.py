@@ -30,7 +30,8 @@ setup(
         'PyYAML',
         'requests',
         'configobj',
-        'flatten_dict'
+        'flatten_dict',
+        'pydantic'
         ],
     include_package_data=True
 )
