@@ -1179,6 +1179,10 @@ def envscript(envvars, envvars_sh):
 
     vardict = qtoml.loads(lines)
 
+    attrvars = vardict.get('Attributes', {})
+    for key, val in attrvars.items():
+        vardict[key] = val
+
     export_vars = vardict.get('Export',{})
 
     for (key,line) in export_vars.items():
