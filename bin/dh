@@ -677,9 +677,8 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                     attrs['GitRepo'] = "/".join(os.getenv('GIT_URL', '').split('/')[-2:]).replace(".git", "")
 
             lcompattr = {}
-            for attr in (attrs):
-                key, value = attr.split(':', 1)
-                lcompattr[key.lower()] = value
+            for key, val in attrs.items():
+                lcompattr[key.lower()] = val
 
             attrs.pop('Readme', None)
             attrs.pop('readme', None)
