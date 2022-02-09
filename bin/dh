@@ -676,6 +676,11 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 if ('/' in os.getenv('GIT_URL', '')):
                     attrs['GitRepo'] = "/".join(os.getenv('GIT_URL', '').split('/')[-2:]).replace(".git", "")
 
+            lcompattr = {}
+            for attr in (attrs):
+                key, value = attr.split(':', 1)
+                lcompattr[key.lower()] = value
+
             attrs.pop('Readme', None)
             attrs.pop('readme', None)
             attrs.pop('README', None)
@@ -689,11 +694,6 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
             pprint(attrs)
             print("")
-
-            lcompattr = {}
-            for attr in (compattr):
-                key, value = attr.split(':', 1)
-                lcompattr[key.lower()] = value
 
             print("Updating Change Requests\n")
             pprint(lcompattr)
