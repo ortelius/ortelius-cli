@@ -772,7 +772,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 if (dhapi.is_empty(appversion)):
                     appversion = ""
 
-                print("Application Version Definition:'" + str(appname) + "' '" + appversion + "' AppAutoInc:" + appautoinc)
+                print("Application Version Definition:'" + str(appname) + "' '" + appversion + "' AppAutoInc:" + str(appautoinc))
                 data = dhapi.new_application(dhurl, cookies, appname, appversion, appautoinc, envs, compid)
                 appid = data[0]
                 appname = dhapi.get_application_name(dhurl, cookies, appid)
