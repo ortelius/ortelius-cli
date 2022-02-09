@@ -696,6 +696,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 lcompattr[key.lower()] = value
 
             print("Updating Change Requests\n")
+            pprint(lcompattr)
 
             data = dhapi.update_component_attrs(dhurl, cookies, compname, compvariant, compversion, attrs, crdatasource, changerequest)
             print("Attribute Update Done")
