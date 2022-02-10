@@ -41,7 +41,7 @@ def fspath(path):
         path = path_type.__fspath__(path)
     except AttributeError:
         # Added for Python 3.5 support.
-        if isinstance(path, pathlib.Path):
+        if isinstance(path, Path):
             return str(path)
         elif hasattr(path_type, '__fspath__'):
             raise
@@ -2079,3 +2079,11 @@ def update_deppkgs(dhurl, cookies, compid, filename):
     if (result is None):
         return ({"message": "Could not persist '" + filename + "' with compid: '" + str(compid) + "'"})
     return result
+
+def run_git(cmd):
+    pid = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    retval = ""
+    for line in pid.stdout.readlines():
+        retval = line.decode('utf-8').strip()
+        break
+    return retval
