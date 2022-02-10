@@ -172,6 +172,7 @@ import time
 from datetime import datetime
 from pprint import pprint
 from string import Template
+from typing_extensions import Required
 
 import click
 from pydantic import NoneIsAllowedError
@@ -182,9 +183,9 @@ from deployhub import dhapi
 
 @click.command()
 @click.argument('action', required=True)
-@click.option('--dhurl', help='DeployHub Url', envvar='DHURL')
-@click.option('--dhuser', help='DeployHub User', envvar='DHUSER')
-@click.option('--dhpass', help='DeployHub Password', envvar='DHPASS')
+@click.option('--dhurl', help='DeployHub Url', envvar='DHURL', required=True)
+@click.option('--dhuser', help='DeployHub User', envvar='DHUSER', required=True)
+@click.option('--dhpass', help='DeployHub Password', envvar='DHPASS', required=True)
 @click.option('--appname', help='Application Name', envvar='COMPONENT_APPLICATION')
 @click.option('--appversion', help='Application Version', envvar='COMPONENT_APPLICATION_VERSION')
 @click.option('--appautoinc', help='Application Auto Increment Version', envvar='COMPONENT_APPLICATION_AUTOINC')
@@ -300,7 +301,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
     if (dhapi.is_not_empty(compvariant)):
         compvariant = compvariant.replace('/', '_')
 
-    if (action.lower() == "kv" or action.lower() == "deploy" or action.lower() == "cluster" or action.lower() == "updatecomp" or action.lower() == "approve" or action.lower() == "export" or action.lower() == "import" or action.lower() == "assign"):
+    if (action.lower() == "kv" or action.lower() == "deploy" or action.lower() == "cluster" or action.lower() == "updatecomp" or action.lower() == "approve" or action.lower() == "export" or action.lower() == "import" or action.lower() == "assign" or action.lower() == "envscript"):
         if (dhapi.is_empty(dhurl)):
             print("--dhurl is required")
             sys.exit(1)
@@ -1065,7 +1066,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             sys.exit(1)
 
         print('Creating env shell script from ' + envvars)
-        envscript(envvars, envvars_sh)
+        envscript(dhurl, cookies, envvars, envvars_sh)
     elif (action.lower() == "export"):
         if (dhapi.is_empty(dhurl)):
             print("--dhurl is required")
@@ -1149,11 +1150,13 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
         sys.exit(1)
 
 
-def envscript(envvars, envvars_sh):
+def envscript(dhurl, cookies, envvars, envvars_sh):
     """
     Add the variabes from the envvars toml file to the shell script.
 
     Args:
+        dhurl (string): url for the server
+        cookies (string): cookies from the login
         envvars (string): file name for the environment toml file
         envvars_sh (string): the shell script to update with var from toml file
 
@@ -1213,6 +1216,18 @@ def envscript(envvars, envvars_sh):
             dhapi.run_git('git fetch --unshallow')
             run_fetch = 0
         export_vars['GIT_COMMIT_TIME'] = dhapi.run_git("git show -s --format=%ct " + mapping.get('SHORT_SHA',''))
+
+    compname = vardict.get('Name',None)
+
+    if (compname is not None):      
+        gitcommit = dhapi.get_previous_commit(dhurl, cookies, compname)
+        if (dhapi.is_not_empty(gitcommit)):
+            if (run_fetch):
+                dhapi.run_git('git fetch --unshallow')
+                run_fetch = 0
+        export_vars['GIT_PREVIOUS_COMPONENT_COMMIT'] = gitcommit
+        export_vars['GIT_LINES_ADDED'] = dhapi.run_git("git diff --stat " + mapping.get('SHORT_SHA','') + " " + gitcommit + ' | grep changed | cut -d" " -f5')
+        export_vars['GIT_LINES_DELETED'] = dhapi.run_git("git diff --stat " + mapping.get('SHORT_SHA','') + " " + gitcommit + ' | grep changed | cut -d" " -f7')
 
     for (key,line) in export_vars.items():
         template = Template(line)

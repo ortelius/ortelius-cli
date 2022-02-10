@@ -633,6 +633,22 @@ def get_component_fromid(dhurl, cookies, compid):
     return data
 
 
+def get_previous_commit(dhurl, cookies, compname):
+    """
+    Get the git commit associated with the previous component
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        compname (int): name of the component
+
+    Returns:
+        string: string of the commit
+    """
+    data = get_component(dhurl, cookies, compname, "", "", True, True)
+    parent_compid = data[0]
+    data = get_component_fromid(dhurl, cookies, parent_compid)
+    return data['result'].get('gitcommit', '')   
+
 def get_component_attrs(dhurl, cookies, compid):
     """
     Get the component attributes json string.
