@@ -702,6 +702,34 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             data = dhapi.update_component_attrs(dhurl, cookies, compname, compvariant, compversion, attrs, crdatasource, changerequest)
             print("Attribute Update Done")
 
+            if (lcompattr.get('readme', None) is None):
+                if (os.path.exists('README')):
+                    lcompattr['readme'] = 'README'
+                elif (os.path.exists('README.md')):
+                    lcompattr['readme'] = 'README.md'
+                elif (os.path.exists('readme')):
+                    lcompattr['readme'] = 'readme' 
+                elif (os.path.exists('readme.md')):
+                    lcompattr['readme'] = 'readme.md'                 
+
+            if (lcompattr.get('license', None) is None):
+                if (os.path.exists('LICENSE')):
+                    lcompattr['license'] = 'LICENSE'
+                elif (os.path.exists('LICENSE.md')):
+                    lcompattr['license'] = 'LICENSE.md'
+                elif (os.path.exists('license')):
+                    lcompattr['license'] = 'license' 
+                elif (os.path.exists('license.md')):
+                    lcompattr['license'] = 'license.md'    
+
+            if (lcompattr.get('swagger', None) is None):
+                if (os.path.exists('swagger.yaml')):
+                    lcompattr['swagger'] = 'swagger.yaml'
+                elif (os.path.exists('swagger.yml')):
+                    lcompattr['swagger'] = 'swagger.yml'
+                elif (os.path.exists('swagger.json')):
+                    lcompattr['swagger'] = 'swagger.json' 
+
             if (lcompattr.get('readme', None) is not None):
                 dhapi.post_textfile(dhurl, cookies, compid, lcompattr.get('readme', ''), 'readme')
             
