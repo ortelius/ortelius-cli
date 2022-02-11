@@ -300,6 +300,8 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
         
         attrs = vardict.get('Attributes', {})
 
+        pprint(vardict)
+
     if (dhapi.is_not_empty(compvariant)):
         compvariant = compvariant.replace('/', '_')
 
