@@ -280,6 +280,16 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
         vardict = qtoml.loads(lines)
 
+        attrvars = vardict.get('Attributes', {})
+        for key, val in attrvars.items():
+            vardict[key] = val
+
+        # do secord subsitution to resolve as much as possible
+        template = Template(lines)
+        lines = template.safe_substitute(**vardict)
+
+        vardict = qtoml.loads(lines)
+
         if (appname is None):
             appname = vardict.get('Application', None)
 
