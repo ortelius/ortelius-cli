@@ -646,8 +646,11 @@ def get_previous_commit(dhurl, cookies, compname):
     """
     data = get_component(dhurl, cookies, compname, "", "", True, True)
     parent_compid = data[0]
-    data = get_component_fromid(dhurl, cookies, parent_compid)
-    return data['result'].get('gitcommit', '')   
+    if (parent_compid > 0):
+     data = get_component_fromid(dhurl, cookies, parent_compid)
+     if (data.get('result', None) is not None):
+        return data['result'].get('gitcommit', '')
+    return ''   
 
 def get_component_attrs(dhurl, cookies, compid):
     """
