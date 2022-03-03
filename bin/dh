@@ -1232,24 +1232,28 @@ def envscript(dhurl, cookies, envvars, envvars_sh):
             dhapi.run_git('git fetch --unshallow')
             run_fetch = 0
         export_vars['BUILDNUM'] = dhapi.run_git('git log --oneline | wc -l | tr -d " "')
+        mapping['BUILDNUM'] = export_vars['BUILDNUM']
         
     if (mapping.get('GIT_REPO', None) is None and attrvars.get('GIT_REPO', None) is None and export_vars.get('GIT_REPO', None) is None):
         if (run_fetch):
             dhapi.run_git('git fetch --unshallow')
             run_fetch = 0
         export_vars['GIT_REPO'] = dhapi.run_git("git config --get remote.origin.url | sed 's/.*://;s/.git$//;s#^//github.com/##;'")
+        mapping['GIT_REPO'] = export_vars['GIT_REPO']
    
     if (mapping.get('GIT_URL', None) is None and attrvars.get('GIT_URL', None) is None and export_vars.get('GIT_URL', None) is None):
         if (run_fetch):
             dhapi.run_git('git fetch --unshallow')
             run_fetch = 0
         export_vars['GIT_URL'] = dhapi.run_git("git config --get remote.origin.url")
+        mapping['GIT_URL'] = export_vars['GIT_URL']
         
     if (mapping.get('GIT_COMMIT_TIMESTAMP', None) is None and attrvars.get('GIT_COMMIT_TIMESTAMP', None) is None and export_vars.get('GIT_COMMIT_TIMESTAMP', None) is None):
         if (run_fetch):
             dhapi.run_git('git fetch --unshallow')
             run_fetch = 0
         export_vars['GIT_COMMIT_TIMESTAMP'] = dhapi.run_git("git show -s --format=%ct " + mapping.get('SHORT_SHA',''))
+        mapping['GIT_COMMIT_TIMESTAMP'] = export_vars['GIT_COMMIT_TIMESTAMP']
 
     compname = vardict.get('Name',None)
 
@@ -1262,6 +1266,9 @@ def envscript(dhurl, cookies, envvars, envvars_sh):
             export_vars['GIT_PREVIOUS_COMPONENT_COMMIT'] = gitcommit
             export_vars['GIT_LINES_ADDED'] = dhapi.run_git("git diff --stat " + mapping.get('SHORT_SHA','') + " " + gitcommit + ' | grep changed | cut -d" " -f5')
             export_vars['GIT_LINES_DELETED'] = dhapi.run_git("git diff --stat " + mapping.get('SHORT_SHA','') + " " + gitcommit + ' | grep changed | cut -d" " -f7')
+            mapping['GIT_PREVIOUS_COMPONENT_COMMIT'] = export_vars['GIT_PREVIOUS_COMPONENT_COMMIT']
+            mapping['GIT_LINES_ADDED'] = export_vars['GIT_LINES_ADDED']
+            mapping['GIT_LINES_DELETED'] = export_vars['GIT_LINES_DELETED']
 
     for (key,line) in export_vars.items():
         template = Template(line)
