@@ -161,7 +161,6 @@ Example Jenkinsfile Snippet:
 
 __version__ = '9.3.196'
 
-from cmath import exp
 import json
 import os
 import re
@@ -169,16 +168,15 @@ import stat
 import subprocess
 import sys
 import time
+from cmath import exp
 from datetime import datetime
 from pprint import pprint
 from string import Template
-# from typing_extensions import Required
 
 import click
-from pydantic import NoneIsAllowedError
 import qtoml
-
 from deployhub import dhapi
+from pydantic import NoneIsAllowedError
 
 
 @click.command()
@@ -1223,6 +1221,9 @@ def envscript(dhurl, cookies, envvars, envvars_sh):
 
     # if the buildnum, git_repo, git_url, git_commit_time, git_lines not in os.environ and not in attrvars and not in export then export
     run_fetch = True
+    if (mapping.get('SHORT_SHA', None) is None):
+        mapping['SHORT_SHA'] = dhapi.run_git("git log --oneline -n 1 | cut -d' '  -f1")
+
     if (mapping.get('BUILDNUM', None) is None):
         if (run_fetch):
             dhapi.run_git('git fetch --unshallow')
@@ -1246,6 +1247,12 @@ def envscript(dhurl, cookies, envvars, envvars_sh):
             dhapi.run_git('git fetch --unshallow')
             run_fetch = 0
         mapping['GIT_COMMIT_TIMESTAMP'] = dhapi.run_git("git show -s --format=%ct " + mapping.get('SHORT_SHA',''))
+
+    if (mapping.get('GIT_COMMITTERS_CNT', None) is None):
+        if (run_fetch):
+            dhapi.run_git('git fetch --unshallow')
+            run_fetch = 0
+        mapping['GIT_COMMITTERS_CNT'] = dhapi.run_git("git log | grep Author | sort -u | wc -l")
 
     template = Template(lines)
     lines = template.safe_substitute(**mapping)
@@ -1276,6 +1283,9 @@ def envscript(dhurl, cookies, envvars, envvars_sh):
             export_vars['GIT_PREVIOUS_COMPONENT_COMMIT'] = gitcommit
             export_vars['GIT_LINES_ADDED'] = dhapi.run_git("git diff --stat " + mapping.get('SHORT_SHA','') + " " + gitcommit + ' | grep changed | cut -d" " -f5')
             export_vars['GIT_LINES_DELETED'] = dhapi.run_git("git diff --stat " + mapping.get('SHORT_SHA','') + " " + gitcommit + ' | grep changed | cut -d" " -f7')
+            export_vars['GIT_COMMIT_AUTHORS'] = dhapi.run_git("git log " + gitcommit + ".." + mapping.get('SHORT_SHA','') + " | grep Author | sort -u | cut -d'<' -f2 | cut -d'>' -f1 | tr '\n' ',' | sed 's/,*.$//'")
+        else:
+            export_vars['GIT_COMMIT_AUTHORS'] = dhapi.run_git("git log " + mapping.get('SHORT_SHA','') + " | grep Author | sort -u | cut -d'<' -f2 | cut -d'>' -f1 | tr '\n' ',' | sed 's/,*.$//'")
 
     for (key,line) in export_vars.items():
         template = Template(line)
