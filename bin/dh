@@ -216,8 +216,8 @@ from pydantic import NoneIsAllowedError
 @click.option('--consumes', help='json file listing end points being consumed')
 @click.option('--provides', help='json file listing end points being provided')
 @click.option('--rsp', help='Response File for Parameters')
-
-def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, deployenv, envs, compattr, kvconfig, deploydata, deploydatasave, from_domain, task, envvars, envvars_sh, importfile, fromdom, todom, crdatasource, changerequest, cluster_json, msname, msbranch, deppkg, logdeployment, consumes, provides, rsp):
+@click.option('--cert', help='Customer SSL Certificate File')
+def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, deployenv, envs, compattr, kvconfig, deploydata, deploydatasave, from_domain, task, envvars, envvars_sh, importfile, fromdom, todom, crdatasource, changerequest, cluster_json, msname, msbranch, deppkg, logdeployment, consumes, provides, rsp, cert):
     """
     ACTION: deploy, updatecomp, approve, move, envscript, kv, cluster, export or import for the type of action to perform.
 
@@ -263,8 +263,8 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
     if (os.path.exists(rsp)):
         file = open(rsp)
-        lines = line = file.read();
-        file.close()        
+        lines = line = file.read()
+        file.close()
         mapping = os.environ
 
         if (mapping.get('BLDDATE', None) is None):
@@ -293,7 +293,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
         if (appversion is None):
             appversion = vardict.get('Application_Version', None)
-        
+
         if (deployenv is None):
             deployenv = vardict.get('DeployEnv', None)
 
@@ -305,7 +305,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
         if (compversion is None):
             compversion = vardict.get('Version', None)
-        
+
         attrs = vardict.get('Attributes', {})
 
         pprint(vardict)
@@ -328,6 +328,9 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
         errors = []
 
+        if (dhapi.is_not_empty(cert)):
+            dhapi.sslcerts(dhurl, cert)
+
         cookies = dhapi.login(dhurl, dhuser, dhpass, errors)
 
         if cookies is None:
@@ -348,7 +351,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
         if (dhapi.is_empty(dhpass)):
             print("--dhpass is required")
             sys.exit(1)
-        
+
         if (dhapi.is_empty(appversion)):
             appversion = ""
 
@@ -458,7 +461,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 kvconfig = data.get('kvconfig', '')
 
             pipeline = data.get('circleci_pipeline', '')
-            
+
             appversion = dhapi.clean_name(appversion)
             data['appversion'] = appversion
 
@@ -707,7 +710,6 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             print("")
 
             print("Updating Change Requests\n")
-            pprint(lcompattr)
 
             data = dhapi.update_component_attrs(dhurl, cookies, compname, compvariant, compversion, attrs, crdatasource, changerequest)
             print("Attribute Update Done")
@@ -718,9 +720,9 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 elif (os.path.exists('README.md')):
                     lcompattr['readme'] = 'README.md'
                 elif (os.path.exists('readme')):
-                    lcompattr['readme'] = 'readme' 
+                    lcompattr['readme'] = 'readme'
                 elif (os.path.exists('readme.md')):
-                    lcompattr['readme'] = 'readme.md'                 
+                    lcompattr['readme'] = 'readme.md'
 
             if (lcompattr.get('license', None) is None):
                 if (os.path.exists('LICENSE')):
@@ -728,9 +730,9 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 elif (os.path.exists('LICENSE.md')):
                     lcompattr['license'] = 'LICENSE.md'
                 elif (os.path.exists('license')):
-                    lcompattr['license'] = 'license' 
+                    lcompattr['license'] = 'license'
                 elif (os.path.exists('license.md')):
-                    lcompattr['license'] = 'license.md'    
+                    lcompattr['license'] = 'license.md'
 
             if (lcompattr.get('swagger', None) is None):
                 if (os.path.exists('swagger.yaml')):
@@ -738,11 +740,11 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 elif (os.path.exists('swagger.yml')):
                     lcompattr['swagger'] = 'swagger.yml'
                 elif (os.path.exists('swagger.json')):
-                    lcompattr['swagger'] = 'swagger.json' 
+                    lcompattr['swagger'] = 'swagger.json'
 
             if (lcompattr.get('readme', None) is not None):
                 dhapi.post_textfile(dhurl, cookies, compid, lcompattr.get('readme', ''), 'readme')
-            
+
             if (lcompattr.get('license', None) is not None):
                 dhapi.post_textfile(dhurl, cookies, compid, lcompattr.get('license', ''), 'license')
 
@@ -759,7 +761,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 file.close()
                 print("Adding Consuming End Points")
                 dhapi.post_json(dhurl + "/dmadminweb/API2/consumes/" + str(compid), payload, cookies)
-            
+
             if (provides is not None):
                 file = open(provides)
                 payload = file.read().replace("\n", " ")
@@ -1229,24 +1231,24 @@ def envscript(dhurl, cookies, envvars, envvars_sh):
             dhapi.run_git('git fetch --unshallow')
             run_fetch = False
         mapping['BUILDNUM'] = dhapi.run_git('git log --oneline | wc -l | tr -d " "')
-        
+
     if (mapping.get('GIT_REPO', None) is None):
         if (run_fetch):
             dhapi.run_git('git fetch --unshallow')
             run_fetch = False
         mapping['GIT_REPO'] = dhapi.run_git("git config --get remote.origin.url | sed 's/.*://;s/.git$//;s#^//github.com/##;'")
-   
+
     if (mapping.get('GIT_URL', None) is None):
         if (run_fetch):
             dhapi.run_git('git fetch --unshallow')
             run_fetch = 0
         mapping['GIT_URL'] = dhapi.run_git("git config --get remote.origin.url")
-        
+
     if (mapping.get('GIT_COMMIT_TIMESTAMP', None) is None):
         if (run_fetch):
             dhapi.run_git('git fetch --unshallow')
             run_fetch = 0
-        mapping['GIT_COMMIT_TIMESTAMP'] = dhapi.run_git("git show -s --format=%ct " + mapping.get('SHORT_SHA',''))
+        mapping['GIT_COMMIT_TIMESTAMP'] = dhapi.run_git("git show -s --format=%ct " + mapping.get('SHORT_SHA', ''))
 
     if (mapping.get('GIT_COMMITTERS_CNT', None) is None):
         if (run_fetch):
@@ -1263,7 +1265,7 @@ def envscript(dhurl, cookies, envvars, envvars_sh):
     for key, val in attrvars.items():
         vardict[key] = val
 
-    export_vars = vardict.get('Export',{})
+    export_vars = vardict.get('Export', {})
 
     for key, val in mapping.items():
         if (export_vars.get(key, None) is None):
@@ -1272,22 +1274,25 @@ def envscript(dhurl, cookies, envvars, envvars_sh):
         if (vardict.get(key, None) is None):
             vardict[key] = val
 
-    compname = vardict.get('Name',None)
+    compname = vardict.get('Name', None)
 
-    if (compname is not None):      
+    if (compname is not None):
         gitcommit = dhapi.get_previous_commit(dhurl, cookies, compname)
         if (dhapi.is_not_empty(gitcommit)):
             if (run_fetch):
                 dhapi.run_git('git fetch --unshallow')
                 run_fetch = 0
             export_vars['GIT_PREVIOUS_COMPONENT_COMMIT'] = gitcommit
-            export_vars['GIT_LINES_ADDED'] = dhapi.run_git("git diff --stat " + mapping.get('SHORT_SHA','') + " " + gitcommit + ' | grep changed | cut -d" " -f5')
-            export_vars['GIT_LINES_DELETED'] = dhapi.run_git("git diff --stat " + mapping.get('SHORT_SHA','') + " " + gitcommit + ' | grep changed | cut -d" " -f7')
-            export_vars['GIT_COMMIT_AUTHORS'] = dhapi.run_git("git log " + gitcommit + ".." + mapping.get('SHORT_SHA','') + " | grep Author | sort -u | cut -d'<' -f2 | cut -d'>' -f1 | tr '\n' ',' | sed 's/,*.$//'")
+            export_vars['GIT_LINES_ADDED'] = dhapi.run_git("git diff --stat " + mapping.get('SHORT_SHA', '') + " " + gitcommit + ' | grep changed | cut -d" " -f5')
+            export_vars['GIT_LINES_DELETED'] = dhapi.run_git("git diff --stat " + mapping.get('SHORT_SHA', '') + " " + gitcommit + ' | grep changed | cut -d" " -f7')
+            export_vars['GIT_COMMIT_AUTHORS'] = dhapi.run_git("git log " + gitcommit + ".." + mapping.get('SHORT_SHA', '') + " | grep Author | sort -u | cut -d'<' -f2 | cut -d'>' -f1 | tr '\n' ',' | sed 's/,*.$//'")
         else:
-            export_vars['GIT_COMMIT_AUTHORS'] = dhapi.run_git("git log " + mapping.get('SHORT_SHA','') + " | grep Author | sort -u | cut -d'<' -f2 | cut -d'>' -f1 | tr '\n' ',' | sed 's/,*.$//'")
+            export_vars['GIT_COMMIT_AUTHORS'] = dhapi.run_git("git log " + mapping.get('SHORT_SHA', '') + " | grep Author | sort -u | cut -d'<' -f2 | cut -d'>' -f1 | tr '\n' ',' | sed 's/,*.$//'")
+            export_vars['GIT_PREVIOUS_COMPONENT_COMMIT'] = ""
+            export_vars['GIT_LINES_ADDED'] = "0"
+            export_vars['GIT_LINES_DELETED'] = "0"
 
-    for (key,line) in export_vars.items():
+    for (key, line) in export_vars.items():
         template = Template(line)
         line = template.safe_substitute(**vardict)
 
