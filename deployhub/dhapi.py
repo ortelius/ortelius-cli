@@ -2090,7 +2090,10 @@ def post_textfile(dhurl, cookies, compid, filename, file_type):
             if (res.status_code == 200):
                 file_data = res.content
         except requests.exceptions.ConnectionError as conn_error:
-            print(str(conn_error))
+            print("WARNING: " + filename + " not found")
+
+    if (is_empty(file_data)):
+      return
 
     encoded_bytes = base64.encodebytes(file_data)
 
