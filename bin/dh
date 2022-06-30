@@ -1256,18 +1256,37 @@ def envscript(dhurl, cookies, envvars, envvars_sh):
             run_fetch = 0
         mapping['GIT_URL'] = dhapi.run_git("git config --get remote.origin.url")
 
+    if (mapping.get('GIT_BRANCH', None) is None):
+        if (run_fetch):
+            dhapi.run_git('git fetch --unshallow')
+            run_fetch = 0
+        mapping['GIT_BRANCH'] = dhapi.run_git("git branch --show-current")
+
     if (mapping.get('GIT_COMMIT_TIMESTAMP', None) is None):
         if (run_fetch):
             dhapi.run_git('git fetch --unshallow')
             run_fetch = 0
-        mapping['GIT_COMMIT_TIMESTAMP'] = dhapi.run_git("git show -s --format=%ct " + mapping.get('SHORT_SHA', ''))
+        mapping['GIT_COMMIT_TIMESTAMP'] = dhapi.run_git("git show -s --pretty='format:%cd' --date=format:'%Y-%m-%d %H:%M:%S' " + mapping.get('SHORT_SHA', ''))
 
-    if (mapping.get('GIT_COMMITTERS_CNT', None) is None):
+    if (mapping.get('GIT_BRANCH_CREATE_TIMESTAMP', None) is None):
         if (run_fetch):
             dhapi.run_git('git fetch --unshallow')
             run_fetch = 0
-        mapping['GIT_COMMITTERS_CNT'] = dhapi.run_git("git log | grep Author | sort -u | wc -l")
+        mapping['GIT_BRANCH_CREATE_TIMESTAMP'] = dhapi.run_git("git reflog --date=local | tac | grep $(git branch --show-current) | head -1 | awk -F' ' '{print $1}' | xargs git show -s --pretty='format:%cd' --date=format:'%Y-%m-%d %H:%M:%S'")
 
+    if (mapping.get('GIT_BRANCH_CREATE_COMMIT', None) is None):
+        if (run_fetch):
+            dhapi.run_git('git fetch --unshallow')
+            run_fetch = 0
+        mapping['GIT_BRANCH_CREATE_COMMIT'] = dhapi.run_git("git reflog --date=local | tac | grep $(git branch --show-current) | head -1 | awk -F' ' '{print $1}'")
+
+
+    if (mapping.get('GIT_COMMIT_AUTHORS', None) is None):
+        if (run_fetch):
+            dhapi.run_git('git fetch --unshallow')
+            run_fetch = 0
+        mapping['GIT_COMMIT_AUTHORS'] = dhapi.run_git("git rev-list --remotes --pretty --since='" + mapping.get('GIT_BRANCH_CREATE_TIMESTAMP','') + "' --until='" + mapping.get('GIT_COMMIT_TIMESTAMP','') + "' | grep -i 'Author:' | grep -v dependabot | awk -F'[:<>]' '{print $2}' | sed 's/^ //' | sed 's/ $//' | sort -u | tr '\n' ',' | sed 's/,$//'")
+   
     if (mapping.get('BASENAME', None) is None):
         mapping['BASENAME'] = os.path.basename(os.getcwd())
 
@@ -1279,6 +1298,15 @@ def envscript(dhurl, cookies, envvars, envvars_sh):
     attrvars = vardict.get('Attributes', {})
     for key, val in attrvars.items():
         vardict[key] = val
+
+    if (mapping.get('GIT_TOTAL_COMMITTERS_CNT', None) is None and attrvars.get('TotalCommittersCnt', None) is not None):
+        mapping['GIT_TOTAL_COMMITTERS_CNT'] = attrvars.get('TotalCommittersCnt', '')
+
+    if (mapping.get('GIT_COMMITTERS_CNT', None) is None and mapping.get('GIT_COMMIT_AUTHORS', None) is not None):
+        mapping['GIT_COMMITTERS_CNT'] = str(len(mapping.get('GIT_COMMIT_AUTHORS').split(',')))
+    
+    if (mapping.get('GIT_COMMITTERS_CNT', None) is not None and mapping.get('GIT_TOTAL_COMMITTERS_CNT', None) is not None):
+        mapping['GIT_CONTRIB_PERCENTAGE'] = str(round(int(mapping.get('GIT_COMMITTERS_CNT')) / int(mapping.get('GIT_TOTAL_COMMITTERS_CNT')) * 100))
 
     export_vars = vardict.get('Export', {})
 
@@ -1300,9 +1328,7 @@ def envscript(dhurl, cookies, envvars, envvars_sh):
             export_vars['GIT_PREVIOUS_COMPONENT_COMMIT'] = gitcommit
             export_vars['GIT_LINES_ADDED'] = dhapi.run_git("git diff --stat " + mapping.get('SHORT_SHA', '') + " " + gitcommit + ' | grep changed | cut -d" " -f5')
             export_vars['GIT_LINES_DELETED'] = dhapi.run_git("git diff --stat " + mapping.get('SHORT_SHA', '') + " " + gitcommit + ' | grep changed | cut -d" " -f7')
-            export_vars['GIT_COMMIT_AUTHORS'] = dhapi.run_git("git log " + gitcommit + ".." + mapping.get('SHORT_SHA', '') + " | grep Author | sort -u | cut -d'<' -f2 | cut -d'>' -f1 | tr '\n' ',' | sed 's/,*.$//'")
         else:
-            export_vars['GIT_COMMIT_AUTHORS'] = dhapi.run_git("git log " + mapping.get('SHORT_SHA', '') + " | grep Author | sort -u | cut -d'<' -f2 | cut -d'>' -f1 | tr '\n' ',' | sed 's/,*.$//'")
             export_vars['GIT_PREVIOUS_COMPONENT_COMMIT'] = ""
             export_vars['GIT_LINES_ADDED'] = "0"
             export_vars['GIT_LINES_DELETED'] = "0"
@@ -1310,7 +1336,8 @@ def envscript(dhurl, cookies, envvars, envvars_sh):
     if (mapping.get('BASENAME', None) is not None):
         export_vars['BASENAME'] = mapping['BASENAME']
 
-    for (key, line) in export_vars.items():
+    for key in sorted(export_vars):
+        line = export_vars[key]
         template = Template(line)
         line = template.safe_substitute(**vardict)
 
