@@ -1268,24 +1268,30 @@ def envscript(dhurl, cookies, envvars, envvars_sh):
             run_fetch = 0
         mapping['GIT_COMMIT_TIMESTAMP'] = dhapi.run_git("git show -s --pretty='format:%cd' --date=format:'%Y-%m-%d %H:%M:%S' " + mapping.get('SHORT_SHA', ''))
 
-    if (mapping.get('GIT_BRANCH_CREATE_TIMESTAMP', None) is None):
+    if (mapping.get('GIT_BRANCH_PARENT', None) is None):
         if (run_fetch):
             dhapi.run_git('git fetch --unshallow')
             run_fetch = 0
-        mapping['GIT_BRANCH_CREATE_TIMESTAMP'] = dhapi.run_git("git reflog --date=local | tac | grep $(git branch --show-current) | head -1 | awk -F' ' '{print $1}' | xargs git show -s --pretty='format:%cd' --date=format:'%Y-%m-%d %H:%M:%S'")
+        mapping['GIT_BRANCH_PARENT'] = dhapi.run_git("git show-branch -a 2>/dev/null | sed \"s/].*//\" | grep \"\\*\" | grep -v \"$(git rev-parse --abbrev-ref HEAD)\" | head -n1 | sed \"s/^.*\\[//\"")
+        print(mapping['GIT_BRANCH_PARENT'])
 
     if (mapping.get('GIT_BRANCH_CREATE_COMMIT', None) is None):
         if (run_fetch):
             dhapi.run_git('git fetch --unshallow')
             run_fetch = 0
-        mapping['GIT_BRANCH_CREATE_COMMIT'] = dhapi.run_git("git reflog --date=local | tac | grep $(git branch --show-current) | head -1 | awk -F' ' '{print $1}'")
+        mapping['GIT_BRANCH_CREATE_COMMIT'] = dhapi.run_git("git log --oneline --reverse " +  mapping.get('GIT_BRANCH_PARENT', 'main') + ".." + mapping.get('GIT_BRANCH') + " | head -1 | awk -F' ' '{print $1}'")
 
+    if (mapping.get('GIT_BRANCH_CREATE_TIMESTAMP', None) is None):
+        if (run_fetch):
+            dhapi.run_git('git fetch --unshallow')
+            run_fetch = 0
+        mapping['GIT_BRANCH_CREATE_TIMESTAMP'] = dhapi.run_git("git show -s --pretty='format:%cd' --date=format:'%Y-%m-%d %H:%M:%S' " + mapping.get('GIT_BRANCH_CREATE_COMMIT', 'HEAD'))
 
     if (mapping.get('GIT_COMMIT_AUTHORS', None) is None):
         if (run_fetch):
             dhapi.run_git('git fetch --unshallow')
             run_fetch = 0
-        mapping['GIT_COMMIT_AUTHORS'] = dhapi.run_git("git rev-list --remotes --pretty --since='" + mapping.get('GIT_BRANCH_CREATE_TIMESTAMP','') + "' --until='" + mapping.get('GIT_COMMIT_TIMESTAMP','') + "' | grep -i 'Author:' | grep -v dependabot | awk -F'[:<>]' '{print $2}' | sed 's/^ //' | sed 's/ $//' | sort -u | tr '\n' ',' | sed 's/,$//'")
+        mapping['GIT_COMMIT_AUTHORS'] = dhapi.run_git("git rev-list --remotes --pretty --since='" + mapping.get('GIT_BRANCH_CREATE_TIMESTAMP','') + "' --until='" + mapping.get('GIT_COMMIT_TIMESTAMP','') + "' | grep -i 'Author:' | grep -v dependabot | awk -F'[:<>]' '{print $3}' | sed 's/^ //' | sed 's/ $//' | sort -u | tr '\n' ',' | sed 's/,$//'")
    
     if (mapping.get('BASENAME', None) is None):
         mapping['BASENAME'] = os.path.basename(os.getcwd())
