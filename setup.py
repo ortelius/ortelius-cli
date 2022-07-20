@@ -31,7 +31,8 @@ setup(
         'requests',
         'configobj',
         'flatten_dict',
-        'pydantic'
+        'pydantic',
+        'certifi'
         ],
     include_package_data=True
 )
