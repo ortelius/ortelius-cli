@@ -1266,7 +1266,7 @@ def envscript(dhurl, cookies, envvars, envvars_sh):
         if (run_fetch):
             dhapi.run_git('git fetch --unshallow')
             run_fetch = 0
-        mapping['GIT_COMMIT_TIMESTAMP'] = dhapi.run_git("git show -s --pretty='format:%cd' --date=format:'%Y-%m-%d %H:%M:%S' " + mapping.get('SHORT_SHA', ''))
+        mapping['GIT_COMMIT_TIMESTAMP'] = dhapi.run_git("git log --pretty='format:%cd' " + mapping.get('SHORT_SHA', '')  + " | head -1")
 
     if (mapping.get('GIT_BRANCH_PARENT', None) is None):
         if (run_fetch):
@@ -1285,7 +1285,7 @@ def envscript(dhurl, cookies, envvars, envvars_sh):
         if (run_fetch):
             dhapi.run_git('git fetch --unshallow')
             run_fetch = 0
-        mapping['GIT_BRANCH_CREATE_TIMESTAMP'] = dhapi.run_git("git show -s --pretty='format:%cd' --date=format:'%Y-%m-%d %H:%M:%S' " + mapping.get('GIT_BRANCH_CREATE_COMMIT', 'HEAD'))
+        mapping['GIT_BRANCH_CREATE_TIMESTAMP'] = dhapi.run_git("git log --pretty='format:%cd' " + mapping.get('GIT_BRANCH_CREATE_COMMIT', 'HEAD') + " | head -1")
 
     if (mapping.get('GIT_COMMIT_AUTHORS', None) is None):
         if (run_fetch):
