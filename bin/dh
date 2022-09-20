@@ -1260,7 +1260,7 @@ def envscript(dhurl, cookies, envvars, envvars_sh):
         if (run_fetch):
             dhapi.run_git('git fetch --unshallow')
             run_fetch = 0
-        mapping['GIT_BRANCH'] = dhapi.run_git("git branch --show-current")
+        mapping['GIT_BRANCH'] = dhapi.run_git("git rev-parse --abbrev-ref HEAD")
 
     if (mapping.get('GIT_COMMIT_TIMESTAMP', None) is None):
         if (run_fetch):
@@ -1334,10 +1334,12 @@ def envscript(dhurl, cookies, envvars, envvars_sh):
             export_vars['GIT_PREVIOUS_COMPONENT_COMMIT'] = gitcommit
             export_vars['GIT_LINES_ADDED'] = dhapi.run_git("git diff --stat " + mapping.get('SHORT_SHA', '') + " " + gitcommit + ' | grep changed | cut -d" " -f5')
             export_vars['GIT_LINES_DELETED'] = dhapi.run_git("git diff --stat " + mapping.get('SHORT_SHA', '') + " " + gitcommit + ' | grep changed | cut -d" " -f7')
+            export_vars['GIT_LINES_TOTAL'] = dhapi.run_git("wc -l $(git ls-files) | grep total | awk -F' ' '{print $1}'")
         else:
             export_vars['GIT_PREVIOUS_COMPONENT_COMMIT'] = ""
             export_vars['GIT_LINES_ADDED'] = "0"
             export_vars['GIT_LINES_DELETED'] = "0"
+            export_vars['GIT_LINES_TOTAL'] = "0"
 
     if (mapping.get('BASENAME', None) is not None):
         export_vars['BASENAME'] = mapping['BASENAME']
