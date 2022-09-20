@@ -2105,7 +2105,7 @@ def post_textfile(dhurl, cookies, compid, filename, file_type):
         file.append(d)
 
     payload = {'compid': compid, 'filetype': file_type, 'file': file}
-    result = post_json(dhurl + "/msapi/textfile/", json.dumps(payload), cookies)
+    result = post_json(dhurl + "/msapi/textfile", json.dumps(payload), cookies)
 
     if (result is None):
         return ({"message": "Could not persist '" + filename + "' with compid: '" + str(compid) + "'"})
