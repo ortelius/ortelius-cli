@@ -705,6 +705,9 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             attrs.pop('License', None)
             attrs.pop('license', None)
             attrs.pop('LICENSE', None)
+            attrs.pop('GradleLicense', None)
+            attrs.pop('gradlelicense', None)
+            attrs.pop('GRADLELICENSE', None)
 
             pprint(attrs)
             print("")
@@ -743,17 +746,35 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                     lcompattr['swagger'] = 'swagger.json'
 
             if (lcompattr.get('readme', None) is not None):
-                dhapi.post_textfile(dhurl, cookies, compid, lcompattr.get('readme', ''), 'readme')
+                if (os.path.exists(lcompattr.get('readme'))):
+                    dhapi.post_textfile(dhurl, cookies, compid, lcompattr.get('readme', ''), 'readme')
+                else:
+                    print("WARNING: ReadMe not found:"  + lcompattr.get('readme'))
 
             if (lcompattr.get('license', None) is not None):
-                dhapi.post_textfile(dhurl, cookies, compid, lcompattr.get('license', ''), 'license')
+                if (os.path.exists(lcompattr.get('license'))):
+                    dhapi.post_textfile(dhurl, cookies, compid, lcompattr.get('license', ''), 'license')
+                else:
+                    print("WARNING: License not found:"  + lcompattr.get('license'))
 
             if (lcompattr.get('swagger', None) is not None):
-                dhapi.post_textfile(dhurl, cookies, compid, lcompattr.get('swagger', ''), 'swagger')
+                if (os.path.exists(lcompattr.get('swagger'))):
+                    dhapi.post_textfile(dhurl, cookies, compid, lcompattr.get('swagger', ''), 'swagger')
+                else:
+                    print("WARNING: Swagger not found:"  + lcompattr.get('swagger'))
+
+            glic = None
+            if (lcompattr.get('gradlelicense', None) is not None):
+                if (os.path.exists(lcompattr.get('gradlelicense'))):
+                    # Opening JSON file
+                    with open(lcompattr.get('gradlelicense')) as gradle_license:
+                        glic = json.load(gradle_license)
+                else:
+                    print("WARNING: Gradle License not found:"  + lcompattr.get('gradlelicense'))
 
             if (deppkg):
                 for filename in (deppkg):
-                    dhapi.update_deppkgs(dhurl, cookies, compid, filename)
+                    dhapi.update_deppkgs(dhurl, cookies, compid, filename, glic)
 
             if (consumes is not None):
                 file = open(consumes)
@@ -1313,6 +1334,8 @@ def envscript(dhurl, cookies, envvars, envvars_sh):
     
     if (mapping.get('GIT_COMMITTERS_CNT', None) is not None and mapping.get('GIT_TOTAL_COMMITTERS_CNT', None) is not None):
         mapping['GIT_CONTRIB_PERCENTAGE'] = str(round(int(mapping.get('GIT_COMMITTERS_CNT')) / int(mapping.get('GIT_TOTAL_COMMITTERS_CNT')) * 100))
+    else: 
+        mapping['GIT_CONTRIB_PERCENTAGE'] = '0'
 
     export_vars = vardict.get('Export', {})
 
