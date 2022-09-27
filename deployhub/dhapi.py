@@ -1531,6 +1531,7 @@ def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, depl
     Returns:
         list of dict: a list of dictionary items defining the component found.
     """
+    envs = []
     newvals = {}
     complist = []
 
@@ -2112,7 +2113,7 @@ def post_textfile(dhurl, cookies, compid, filename, file_type):
     return result
 
 
-def update_deppkgs(dhurl, cookies, compid, filename):
+def update_deppkgs(dhurl, cookies, compid, filename, glic):
     payload = ""
 
     parts = filename.split('@')
@@ -2121,6 +2122,23 @@ def update_deppkgs(dhurl, cookies, compid, filename):
 
     with open(filename, "r") as fin_data:
         data = json.load(fin_data)
+
+        if (glic is not None):
+            glic_hash = {}
+
+            for lic in glic.get('dependencies', []):
+                if (lic.get('moduleLicense', None) is not None):
+                    glic_hash['pkg:maven/' + lic['moduleName'].replace(':', '/') + '@' + lic['moduleVersion']] = lic.get('moduleLicense', '')
+
+            newdata = []
+            for sbom_pkg in data.get('components'):
+                if (glic_hash.get(sbom_pkg['purl'], None) is not None):
+                    sbom_pkg['licenses'] = [{"license": {"name": glic_hash.get(sbom_pkg['purl'], None) }}]
+
+                newdata.append(sbom_pkg)
+            
+            data['components'] = newdata
+        
         payload = json.dumps(data)
 
     result = post_json(dhurl + "/msapi/deppkg/" + filetype + "?compid=" + str(compid), payload, cookies)
