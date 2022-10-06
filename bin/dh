@@ -672,10 +672,6 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 else:
                     attrs[key] = value
 
-            gittag = attrs.get("GitTag", None)
-            if (dhapi.is_empty(gittag) and attrs.get('GitBranch', None) is not None):
-                attrs['GitTag'] = attrs.get('GitBranch', '')
-
             now = datetime.now()
             date_time = now.strftime("%c")
 
@@ -683,13 +679,34 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             attrs['BuildId'] = attrs.get('BuildId', os.getenv('BUILD_ID', ''))
             attrs['BuildNumber'] = attrs.get('BuildNumber', os.getenv('BUILD_NUMBER', ''))
             attrs['DockerBuildDate'] = attrs.get('DockerBuildDate', date_time)
-            attrs['GitCommit'] = attrs.get('GitCommit', os.getenv('GIT_COMMIT', ''))
             attrs['GitBranch'] = attrs.get('GitBranch', os.getenv('GIT_BRANCH', ''))
-            attrs['GitTag'] = attrs.get('GitTag', os.getenv('GIT_BRANCH', ''))
-            attrs['GitUrl'] = attrs.get('GitUrl', os.getenv('GIT_URL', ''))
+            attrs['GitBranchCreateCommit'] = attrs.get('GitBranchCreateCommit', os.getenv('GIT_BRANCH_CREATE_COMMIT', ''))
+            attrs['GitBranchCreateTimestamp'] = attrs.get('GitBranchCreateTimestamp', os.getenv('GIT_BRANCH_CREATE_TIMESTAMP', ''))
+            attrs['GitBranchParent'] = attrs.get('GitBranchParent', os.getenv('GIT_BRANCH_PARENT', ''))
+            attrs['GitCommit'] = attrs.get('GitCommit', os.getenv('GIT_COMMIT', ''))
+            attrs['GitCommitAuthors'] = attrs.get('GitCommitAuthors', os.getenv('GIT_COMMIT_AUTHORS', ''))
+            attrs['GitCommittersCnt'] = attrs.get('GitCommittersCnt', os.getenv('GIT_COMMITTERS_CNT', ''))
+            attrs['GitCommitTimestamp'] = attrs.get('GitCommitTimestamp', os.getenv('GIT_COMMIT_TIMESTAMP', ''))                
+            attrs['GitContribPercentage'] = attrs.get('GitContribPercentage', os.getenv('GIT_CONTRIB_PERCENTAGE', ''))
+            attrs['GitLinesAdded'] = attrs.get('GitLinesAdded', os.getenv('GIT_LINES_ADDED', ''))
+            attrs['GitLinesDeleted'] = attrs.get('GitLinesDeleted', os.getenv('GIT_LINES_DELETED', ''))
+            attrs['GitLinesTotal'] = attrs.get('GitLinesTotal', os.getenv('GIT_LINES_TOTAL', ''))   
+            attrs['GitOrg'] = attrs.get('GitOrg', os.getenv('GIT_ORG', ''))
+            attrs['GitPreviousComponentCommit'] = attrs.get('GitPreviousComponentCommit', os.getenv('GIT_PREVIOUS_COMPONENT_COMMIT', ''))
+
             if (attrs.get('GitRepo', None) is None):
                 if ('/' in os.getenv('GIT_URL', '')):
                     attrs['GitRepo'] = "/".join(os.getenv('GIT_URL', '').split('/')[-2:]).replace(".git", "")
+
+            attrs['GitRepo'] = attrs.get('GitRepo', os.getenv('GIT_REPO', ''))
+            attrs['GitRepoProject'] = attrs.get('GitRepoProject', os.getenv('GIT_REPO_PROJECT', ''))
+
+            gittag = attrs.get("GitTag", None)
+            if (dhapi.is_empty(gittag) and attrs.get('GitBranch', None) is not None):
+                attrs['GitTag'] = attrs.get('GitBranch', os.getenv('GIT_BRANCH', ''))
+
+            attrs['GitTotalCommittersCnt'] = attrs.get('GitTotalCommittersCnt', os.getenv('GIT_TOTAL_COMMITTERS_CNT', ''))
+            attrs['GitUrl'] = attrs.get('GitUrl', os.getenv('GIT_URL', ''))
 
             lcompattr = {}
             for key, val in attrs.items():
@@ -1313,7 +1330,13 @@ def envscript(dhurl, cookies, envvars, envvars_sh):
             dhapi.run_git('git fetch --unshallow')
             run_fetch = 0
         mapping['GIT_COMMIT_AUTHORS'] = dhapi.run_git("git rev-list --remotes --pretty --since='" + mapping.get('GIT_BRANCH_CREATE_TIMESTAMP','') + "' --until='" + mapping.get('GIT_COMMIT_TIMESTAMP','') + "' | grep -i 'Author:' | grep -v dependabot | awk -F'[:<>]' '{print $3}' | sed 's/^ //' | sed 's/ $//' | sort -u | tr '\n' ',' | sed 's/,$//'")
-   
+
+    if (mapping.get('GIT_LINES_TOTAL', None) is None):
+        if (run_fetch):
+            dhapi.run_git('git fetch --unshallow')
+            run_fetch = 0
+        mapping['GIT_LINES_TOTAL'] = dhapi.run_git("wc -l $(git ls-files) | grep total | awk -F' ' '{print $1}'")
+
     if (mapping.get('BASENAME', None) is None):
         mapping['BASENAME'] = os.path.basename(os.getcwd())
 
@@ -1337,6 +1360,7 @@ def envscript(dhurl, cookies, envvars, envvars_sh):
     else: 
         mapping['GIT_CONTRIB_PERCENTAGE'] = '0'
 
+
     export_vars = vardict.get('Export', {})
 
     for key, val in mapping.items():
@@ -1357,12 +1381,10 @@ def envscript(dhurl, cookies, envvars, envvars_sh):
             export_vars['GIT_PREVIOUS_COMPONENT_COMMIT'] = gitcommit
             export_vars['GIT_LINES_ADDED'] = dhapi.run_git("git diff --stat " + mapping.get('SHORT_SHA', '') + " " + gitcommit + ' | grep changed | cut -d" " -f5')
             export_vars['GIT_LINES_DELETED'] = dhapi.run_git("git diff --stat " + mapping.get('SHORT_SHA', '') + " " + gitcommit + ' | grep changed | cut -d" " -f7')
-            export_vars['GIT_LINES_TOTAL'] = dhapi.run_git("wc -l $(git ls-files) | grep total | awk -F' ' '{print $1}'")
         else:
             export_vars['GIT_PREVIOUS_COMPONENT_COMMIT'] = ""
             export_vars['GIT_LINES_ADDED'] = "0"
             export_vars['GIT_LINES_DELETED'] = "0"
-            export_vars['GIT_LINES_TOTAL'] = "0"
 
     if (mapping.get('BASENAME', None) is not None):
         export_vars['BASENAME'] = mapping['BASENAME']
