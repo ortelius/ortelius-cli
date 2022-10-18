@@ -676,14 +676,14 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             date_time = now.strftime("%c")
 
             attrs['BuildUrl'] = attrs.get('BuildUrl', os.getenv('BUILD_URL', ''))
-            attrs['BuildId'] = attrs.get('BuildId', os.getenv('BUILD_ID', ''))
-            attrs['BuildNumber'] = attrs.get('BuildNumber', os.getenv('BUILD_NUMBER', ''))
+            attrs['BuildId'] = attrs.get('BuildId', os.getenv('BUILD_ID', os.getenv('BUILD_NUMBER', os.getenv('BUILD_NUM', ''))))
+            attrs['BuildNumber'] = attrs.get('BuildNumber', os.getenv('BUILD_NUMBER', os.getenv('BUILD_NUM', '')))
             attrs['DockerBuildDate'] = attrs.get('DockerBuildDate', date_time)
             attrs['GitBranch'] = attrs.get('GitBranch', os.getenv('GIT_BRANCH', ''))
             attrs['GitBranchCreateCommit'] = attrs.get('GitBranchCreateCommit', os.getenv('GIT_BRANCH_CREATE_COMMIT', ''))
             attrs['GitBranchCreateTimestamp'] = attrs.get('GitBranchCreateTimestamp', os.getenv('GIT_BRANCH_CREATE_TIMESTAMP', ''))
             attrs['GitBranchParent'] = attrs.get('GitBranchParent', os.getenv('GIT_BRANCH_PARENT', ''))
-            attrs['GitCommit'] = attrs.get('GitCommit', os.getenv('GIT_COMMIT', ''))
+            attrs['GitCommit'] = attrs.get('GitCommit', os.getenv('GIT_COMMIT', os.getenv('SHORT_SHA', '')))
             attrs['GitCommitAuthors'] = attrs.get('GitCommitAuthors', os.getenv('GIT_COMMIT_AUTHORS', ''))
             attrs['GitCommittersCnt'] = attrs.get('GitCommittersCnt', os.getenv('GIT_COMMITTERS_CNT', ''))
             attrs['GitCommitTimestamp'] = attrs.get('GitCommitTimestamp', os.getenv('GIT_COMMIT_TIMESTAMP', ''))                
@@ -1263,6 +1263,9 @@ def envscript(dhurl, cookies, envvars, envvars_sh):
     run_fetch = True
     if (mapping.get('SHORT_SHA', None) is None):
         mapping['SHORT_SHA'] = dhapi.run_git("git log --oneline -n 1 | cut -d' '  -f1")
+
+    if (mapping.get('GIT_COMMIT', None) is None):
+        mapping['GIT_COMMIT'] = dhapi.run_git("git log --oneline -n 1 | cut -d' '  -f1")
 
     if (mapping.get('BUILDNUM', None) is None):
         if (run_fetch):
