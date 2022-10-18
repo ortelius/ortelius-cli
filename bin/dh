@@ -1352,8 +1352,8 @@ def envscript(dhurl, cookies, envvars, envvars_sh):
     for key, val in attrvars.items():
         vardict[key] = val
 
-    if (mapping.get('GIT_TOTAL_COMMITTERS_CNT', None) is None and attrvars.get('TotalCommittersCnt', None) is not None):
-        mapping['GIT_TOTAL_COMMITTERS_CNT'] = attrvars.get('TotalCommittersCnt', '')
+    if (mapping.get('GIT_TOTAL_COMMITTERS_CNT', None) is None and attrvars.get('TotalCommittersCnt', attrvars.get('GitTotalCommittersCnt', None)) is not None):
+        mapping['GIT_TOTAL_COMMITTERS_CNT'] = attrvars.get('TotalCommittersCnt', attrvars.get('GitTotalCommittersCnt', ''))
 
     if (mapping.get('GIT_COMMITTERS_CNT', None) is None and mapping.get('GIT_COMMIT_AUTHORS', None) is not None):
         mapping['GIT_COMMITTERS_CNT'] = str(len(mapping.get('GIT_COMMIT_AUTHORS').split(',')))
