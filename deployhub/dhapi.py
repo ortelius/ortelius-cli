@@ -15,6 +15,7 @@ from pathlib import Path
 from pprint import pprint
 from urllib.parse import urlparse
 
+import certifi
 import configobj
 import qtoml
 import requests
@@ -26,8 +27,9 @@ def url_validator(url):
     try:
         result = urlparse(url)
         return True
-    except:
+    except BaseException:
         return False
+
 
 def fspath(path):
     """See https://www.python.org/dev/peps/pep-0519/#os for details."""
@@ -41,7 +43,7 @@ def fspath(path):
         path = path_type.__fspath__(path)
     except AttributeError:
         # Added for Python 3.5 support.
-        if isinstance(path, pathlib.Path):
+        if isinstance(path, Path):
             return str(path)
         elif hasattr(path_type, '__fspath__'):
             raise
@@ -93,7 +95,7 @@ def post_json(url, payload, cookies):
         string: The json string.
     """
     try:
-        res = requests.post(url, data=payload, cookies=cookies, headers={"Content-Type":"application/json"})
+        res = requests.post(url, data=payload, cookies=cookies, headers={"Content-Type": "application/json"})
         if (res is None):
             return None
         if (res.status_code != 200):
@@ -149,6 +151,22 @@ def is_not_empty(my_string):
         my_string = str(my_string)
 
     return bool(my_string and my_string.strip())
+
+
+def sslcerts(dhurl, customcert):
+    try:
+        test = requests.get(dhurl)
+    except requests.exceptions.SSLError as err:
+        print('Adding custom certs to certifi store...')
+        cafile = certifi.where()
+        with open(customcert, 'rb') as infile:
+            customca = infile.read()
+        with open(cafile, 'rb') as infile:
+            ca = infile.read()
+        with open('/tmp/customca.pem', 'ab') as outfile:
+            outfile.write(ca)
+            outfile.write(customca)
+        os.environ['SSL_CERT_FILE'] = '/tmp/customca.pem'
 
 
 def login(dhurl, user, password, errors):
@@ -633,6 +651,26 @@ def get_component_fromid(dhurl, cookies, compid):
     return data
 
 
+def get_previous_commit(dhurl, cookies, compname):
+    """
+    Get the git commit associated with the previous component
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        compname (int): name of the component
+
+    Returns:
+        string: string of the commit
+    """
+    data = get_component(dhurl, cookies, compname, "", "", True, True)
+    parent_compid = data[0]
+    if (parent_compid > 0):
+        data = get_component_fromid(dhurl, cookies, parent_compid)
+        if (data.get('result', None) is not None):
+            return data['result'].get('gitcommit', '')
+    return ''
+
+
 def get_component_attrs(dhurl, cookies, compid):
     """
     Get the component attributes json string.
@@ -935,7 +973,7 @@ def new_component_item(dhurl, cookies, compid, kind, component_items):
                 parent_item = data['result']['id']
 
             ypos = ypos + 100
-            i = i+1
+            i = i + 1
     return data
 
 
@@ -1097,6 +1135,28 @@ def update_envid_attrs(dhurl, cookies, envid, attrs):
     return [True, data, dhurl + "/dmadminweb/API/setvar/environment/" + str(envid)]
 
 
+def is_compassigned2app(dhurl, cookies, appid, compid):
+    """
+    Check to see if the component is already assigned to the application version.
+
+    Args:
+        dhurl (string): url to the server
+        cookies (string): cookies from login
+        appid (int): id of the application
+        compid (int): id of the component
+
+    Returns:
+        boolean: True if the component is assigned to the application version.
+    """
+
+    data = get_json(dhurl + "/dmadminweb/API/compassigned2app/" + str(appid) + "/" + str(compid), cookies)
+
+    if (data is None):
+        return False
+
+    return data.get('result', False)
+
+
 def get_application(dhurl, cookies, appname, appversion, id_only):
     """
     Get the application json string.
@@ -1214,6 +1274,7 @@ def get_base_component(dhurl, cookies, compid, id_only):
 
     return result['id']
 
+
 def get_component_from_tag(dhurl, cookies, image_tag):
     """
     Get the component based on the docker tag.
@@ -1236,7 +1297,7 @@ def get_component_from_tag(dhurl, cookies, image_tag):
     return id
 
 
-def new_application(dhurl, cookies, appname, appversion, appautoinc, envs):
+def new_application(dhurl, cookies, appname, appversion, appautoinc, envs, compid):
     """
     Create a new application version and base version if needed.
 
@@ -1290,6 +1351,7 @@ def new_application(dhurl, cookies, appname, appversion, appautoinc, envs):
 
     data = get_application(dhurl, cookies, full_appname, "latest", False)
     latest_appid = data[0]
+    latest_name = data[1]
 
     # Refetch the current app version to see if we need to create it or not
     data = get_application(dhurl, cookies, full_appname, appversion, True)
@@ -1313,6 +1375,11 @@ def new_application(dhurl, cookies, appname, appversion, appautoinc, envs):
 
         data = get_application(dhurl, cookies, full_appname, appversion, True)
         appid = data[0]
+
+    compassigned2app = is_compassigned2app(dhurl, cookies, latest_appid, compid)
+
+    if (compassigned2app):
+        return[latest_appid, ".".join(parts) + "." + latest_name]
 
     if (appid < 0):
         data = get_json(dhurl + "/dmadminweb/API/newappver/" + str(latest_appid) + "/?name=" + urllib.parse.quote(appname + ";" + appversion) + "&" + domain, cookies)
@@ -1464,6 +1531,7 @@ def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, depl
     Returns:
         list of dict: a list of dictionary items defining the component found.
     """
+    envs = []
     newvals = {}
     complist = []
 
@@ -1501,7 +1569,7 @@ def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, depl
                 compversion = tag
 
                 if (full_msname == msname):
-                    deployed_ms = {'compid' : compid, 'compname': compname, 'compvariant': compvariant, 'compversion': compversion, 'full_msname': full_msname, 'msname': short_msname, 'branch': branch, 'repo': repo, 'tag': tag, 'deploy_time': deploy_time}
+                    deployed_ms = {'compid': compid, 'compname': compname, 'compvariant': compvariant, 'compversion': compversion, 'full_msname': full_msname, 'msname': short_msname, 'branch': branch, 'repo': repo, 'tag': tag, 'deploy_time': deploy_time}
 
                 if (branch in ('master', 'main')):
                     if (not msversion.startswith('1.') and msversion != "1"):
@@ -1509,11 +1577,11 @@ def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, depl
 
                     latest_container = master_containers.get(short_msname, None)
                     if (latest_container is None):
-                        master_containers[short_msname] = {'compid' : compid, 'compname': compname, 'compvariant': compvariant, 'compversion': compversion, 'full_msname': full_msname, 'msname': short_msname, 'branch': branch, 'repo': repo, 'tag': tag, 'deploy_time': deploy_time}
+                        master_containers[short_msname] = {'compid': compid, 'compname': compname, 'compvariant': compvariant, 'compversion': compversion, 'full_msname': full_msname, 'msname': short_msname, 'branch': branch, 'repo': repo, 'tag': tag, 'deploy_time': deploy_time}
                     elif (latest_container['deploy_time'] <= deploy_time):
-                        master_containers[short_msname] = {'compid' : compid, 'compname': compname, 'compvariant': compvariant, 'compversion': compversion, 'full_msname': full_msname, 'msname': short_msname, 'branch': branch, 'repo': repo, 'tag': tag, 'deploy_time': deploy_time}
+                        master_containers[short_msname] = {'compid': compid, 'compname': compname, 'compvariant': compvariant, 'compversion': compversion, 'full_msname': full_msname, 'msname': short_msname, 'branch': branch, 'repo': repo, 'tag': tag, 'deploy_time': deploy_time}
                 elif (msbranch is not None and branch == msbranch):
-                    branch_containers.append({'compid' : compid, 'compname': compname, 'compvariant': compvariant, 'compversion': compversion, 'full_msname': full_msname, 'msname': short_msname, 'branch': branch, 'repo': repo, 'tag': tag, 'deploy_time': deploy_time})
+                    branch_containers.append({'compid': compid, 'compname': compname, 'compvariant': compvariant, 'compversion': compversion, 'full_msname': full_msname, 'msname': short_msname, 'branch': branch, 'repo': repo, 'tag': tag, 'deploy_time': deploy_time})
 
         if (msbranch is not None):
             complist = []
@@ -1565,7 +1633,6 @@ def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, depl
             for item in compid_list:
                 new_ids.append(item['compid'])
 
-
             if (areEqual(existing_ids, new_ids)):
                 print("Application Version " + appname + ";" + appversion + " already exists")
             else:
@@ -1594,6 +1661,7 @@ def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, depl
             log_deploy_application(dhurl, cookies, deploydata)
     return
 
+
 def areEqual(arr1, arr2):
     n = len(arr1)
     m = len(arr2)
@@ -1614,6 +1682,7 @@ def areEqual(arr1, arr2):
 
     # If all elements were same.
     return True
+
 
 def log_deploy_application(dhurl, cookies, deploydata):
     """
@@ -1676,8 +1745,10 @@ def run_circleci_pipeline(pipeline):
     data = post_json_with_header(url, os.environ.get("CI_TOKEN", ""))
     return data
 
+
 def get_script_path():
     return os.path.dirname(os.path.realpath(sys.argv[0]))
+
 
 def upload_helm(dhurl, cookies, fullcompname, chart, chartversion, chartvalues, helmrepo, helmrepouser, helmrepopass, helmrepourl, helmopts, deployid, dockeruser, dockerpass, helmtemplate):
     """
@@ -1811,6 +1882,7 @@ def upload_helm(dhurl, cookies, fullcompname, chart, chartversion, chartvalues, 
     # pprint(data)
     print("Finished Helm Capture for Deployment #" + str(deployid))
 
+
 def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, env, crdatasource, crlist):
     """
     Update the attributes for the component based on the properties files found in the cloned directory.
@@ -1890,7 +1962,7 @@ def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, comp
         try:
             print(filename)
             config = ConfigObj(filename, encoding='iso-8859-1')
-            filename = filename[len(kvconfig)+1:]
+            filename = filename[len(kvconfig) + 1:]
             normal_dict[filename] = config.dict()
         except configobj.ConfigObjError as error:
             print(error)
@@ -2007,6 +2079,7 @@ def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, comp
             update_envid_attrs(dhurl, cookies, envid, attrs)
     return
 
+
 def post_textfile(dhurl, cookies, compid, filename, file_type):
 
     file_data = ''
@@ -2018,7 +2091,10 @@ def post_textfile(dhurl, cookies, compid, filename, file_type):
             if (res.status_code == 200):
                 file_data = res.content
         except requests.exceptions.ConnectionError as conn_error:
-            print(str(conn_error))
+            print("WARNING: " + filename + " not found")
+
+    if (is_empty(file_data)):
+      return
 
     encoded_bytes = base64.encodebytes(file_data)
 
@@ -2030,25 +2106,52 @@ def post_textfile(dhurl, cookies, compid, filename, file_type):
         file.append(d)
 
     payload = {'compid': compid, 'filetype': file_type, 'file': file}
-    result = post_json(dhurl+"/msapi/textfile/", json.dumps(payload), cookies)
+    result = post_json(dhurl + "/msapi/textfile", json.dumps(payload), cookies)
 
     if (result is None):
         return ({"message": "Could not persist '" + filename + "' with compid: '" + str(compid) + "'"})
     return result
 
-def update_deppkgs(dhurl, cookies, compid, filename):
+
+def update_deppkgs(dhurl, cookies, compid, filename, glic):
     payload = ""
-    
+
     parts = filename.split('@')
     filetype = parts[0].lower()
     filename = parts[1]
 
     with open(filename, "r") as fin_data:
         data = json.load(fin_data)
+
+        if (glic is not None):
+            glic_hash = {}
+
+            for lic in glic.get('dependencies', []):
+                if (lic.get('moduleLicense', None) is not None):
+                    glic_hash['pkg:maven/' + lic['moduleName'].replace(':', '/') + '@' + lic['moduleVersion']] = lic.get('moduleLicense', '')
+
+            newdata = []
+            for sbom_pkg in data.get('components'):
+                if (glic_hash.get(sbom_pkg['purl'], None) is not None):
+                    sbom_pkg['licenses'] = [{"license": {"name": glic_hash.get(sbom_pkg['purl'], None) }}]
+
+                newdata.append(sbom_pkg)
+            
+            data['components'] = newdata
+        
         payload = json.dumps(data)
 
-    result = post_json(dhurl+"/msapi/deppkg/" + filetype + "?compid=" + str(compid), payload, cookies)
+    result = post_json(dhurl + "/msapi/deppkg/" + filetype + "?compid=" + str(compid), payload, cookies)
 
     if (result is None):
         return ({"message": "Could not persist '" + filename + "' with compid: '" + str(compid) + "'"})
     return result
+
+
+def run_git(cmd):
+    pid = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    retval = ""
+    for line in pid.stdout.readlines():
+        retval = line.decode('utf-8').strip()
+        break
+    return retval

@@ -17,7 +17,7 @@ setup(
     author='Steve Taylor',
     author_email='steve@deployhub.com',
     name='deployhub',
-    version='9.3.169',
+    version='9.3.210',
     packages=['deployhub',],
     scripts=['bin/dh', 'bin/helminfo.sh'],
     license='GNU AFFERO GENERAL PUBLIC LICENSE',
@@ -30,7 +30,9 @@ setup(
         'PyYAML',
         'requests',
         'configobj',
-        'flatten_dict'
+        'flatten_dict',
+        'pydantic',
+        'certifi'
         ],
     include_package_data=True
 )
