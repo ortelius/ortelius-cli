@@ -1,4 +1,24 @@
-# DeployHub CLI
-The dh script interacts with the DeployHub REST APIs to perform a deployment of an application to an environment and update an application version with the component version including attributes.
+# Ortelius CLI
 
-See [CLI Documentation](doc/dh.md) and [Python API Documentation](doc/deployhub.md)
+The dh Python script interacts with the Ortelius REST APIs to perform:
+
+- Deploy the application to the environment
+- Approve the application version
+- Move the application version using the supplied task
+- Create/replace the component version for the application version
+- Assign a component version to an application version
+- Assign the key/values pairs to the component version
+- Create a bash file from the component toml file
+- Export a domain including all objects to stdout
+- Imports the export file into the new domain
+
+## Installation
+
+1. [Install Python 3.8 or newer](https://www.python.org/downloads/)
+2. Install Ortelius CLI
+
+   `pip install --upgrade ortelius-cli`
+
+## Further Reading
+
+See [Ortelius CLI Documentation](doc/dh.md) and [Ortelius Python API Documentation](doc/deployhub.md)
