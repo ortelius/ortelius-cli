@@ -73,11 +73,11 @@ Args:
                 BuildId = "${BUILDID}"                                      # Identifier for the CI job (DERIVED IF NOT SPECIFIED)
                 BuildNumber = "${BUILD_NUM}"                                # Build number for the CI job (DERIVED IF NOT SPECIFIED)
                 BuildUrl = "${BUILD_URL}"                                   # Build url for the CI job (DERIVED IF NOT SPECIFIED)
-                Chart = ""                                                  # Helm Chart for the component
+                Chart = "$CHART}"                                           # Helm Chart for the component
                 ChartNamespace = ""                                         # Name space for the component to be deployed to
                 ChartRepo = ""                                              # Helm Chart Repo Name
                 ChartRepoUrl = ""                                           # Helm Chart Repo Url
-                ChartVersion = ""                                           # Helm Chart version
+                ChartVersion = "${CHARTVERSION}"                            # Helm Chart version
                 CustomAction = ""                                           # Custom Action to assign to the Component
                 DeployAlways = ""                                           # Set the Always Deploy option Y/N, default is N
                 DockerBuildDate = ""                                        # Timestamp when the image was created (DERIVED IF NOT SPECIFIED)
@@ -679,6 +679,10 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 parent_compid = dhapi.new_component_version(dhurl, cookies, compname, compvariant, "", kind, None, compautoinc)
 
             print("Creating Component")
+            shortname = compname
+            if ('.' in shortname):
+                shortname = shortname.split('.')[-1]
+                    
             compid = dhapi.new_component_version(dhurl, cookies, compname, compvariant, compversion, kind, None, compautoinc)
             compname = dhapi.get_component_name(dhurl, cookies, compid)
             compversion = ""
@@ -834,34 +838,30 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 else:
                     print("WARNING: Swagger not found:"  + lcompattr.get('swagger'))
 
+            chartpath = None
             if (lcompattr.get('chart', None) is None):
-                shortname = attrs.get('Name','')
-                print("SN=" + shortname)
-                if ('.' in shortname):
-                    shortname = shortname.split('.')[-1]
-                    print("SN2=" + shortname)
-                    chart = None
-                    if (os.path.exists('helm/' + shortname + '/Chart.yaml')):
-                        attrs['Chart'] = 'helm/' + shortname
-                        chart = 'helm/' + shortname + '/Chart.yaml'
-                    elif (os.path.exists('helm/' + shortname + '/Chart.yml')):
-                        attrs['Chart'] = 'helm/' + shortname
-                        chart = 'helm/' + shortname + '/Chart.yml'
-                    elif (os.path.exists('chart/' + shortname + '/Chart.yaml')):
-                        attrs['Chart'] = 'chart/' + shortname
-                        chart = 'chart/' + shortname + '/Chart.yaml'
-                    elif (os.path.exists('chart/' + shortname + '/Chart.yml')):
-                        attrs['Chart'] = 'chart/' + shortname
-                        chart = 'chart/' + shortname + '/Chart.yml'
-                    elif (os.path.exists('charts/' + shortname + '/Chart.yaml')):
-                        attrs['Chart'] = 'charts/' + shortname
-                        chart = 'charts/' + shortname + '/Chart.yaml'
-                    elif (os.path.exists('charts/' + shortname + '/Chart.yml')):
-                        attrs['Chart'] = 'charts/' + shortname
-                        chart = 'charts/' + shortname + '/Chart.yml'
+                print("SN2=" + shortname)
+                if (os.path.exists('helm/' + shortname + '/Chart.yaml')):
+                    attrs['Chart'] = 'helm/' + shortname
+                    chartpath  = 'helm/' + shortname + '/Chart.yaml'
+                elif (os.path.exists('helm/' + shortname + '/Chart.yml')):
+                    attrs['Chart'] = 'helm/' + shortname
+                    chartpath  = 'helm/' + shortname + '/Chart.yml'
+                elif (os.path.exists('chart/' + shortname + '/Chart.yaml')):
+                    attrs['Chart'] = 'chart/' + shortname
+                    chartpath  = 'chart/' + shortname + '/Chart.yaml'
+                elif (os.path.exists('chart/' + shortname + '/Chart.yml')):
+                    attrs['Chart'] = 'chart/' + shortname
+                    chartpath  = 'chart/' + shortname + '/Chart.yml'
+                elif (os.path.exists('charts/' + shortname + '/Chart.yaml')):
+                    attrs['Chart'] = 'charts/' + shortname
+                    chartpath  = 'charts/' + shortname + '/Chart.yaml'
+                elif (os.path.exists('charts/' + shortname + '/Chart.yml')):
+                    attrs['Chart'] = 'charts/' + shortname
+                    chartpath  = 'charts/' + shortname + '/Chart.yml'
 
-            if (attrs.get('Chart', None) is not None and chart is not None):
-                chartdata = yaml.safe_load(Path(chart).read_text())
+            if (attrs.get('Chart', None) is not None and chartpath  is not None):
+                chartdata = yaml.safe_load(Path(chartpath).read_text())
                 attrs['ChartVersion'] = chartdata.get('version', '')
 
             glic = None
