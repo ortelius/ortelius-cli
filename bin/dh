@@ -717,6 +717,20 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             attrs['BuildId'] = attrs.get('BuildId', os.getenv('BUILD_ID', os.getenv('BUILD_NUMBER', os.getenv('BUILD_NUM', os.getenv('GITHUB_RUN_ID', '')))))
             attrs['BuildNumber'] = attrs.get('BuildNumber', os.getenv('BUILD_NUMBER', os.getenv('BUILD_NUM', os.getenv('GITHUB_RUN_NUMBER', ''))))
             attrs['DockerBuildDate'] = attrs.get('DockerBuildDate', date_time)
+
+            attrs['DockerRepo'] = attrs.get('DockerRepo', os.getenv('DOCKERREPO', os.getenv('IMAGE_TAG', '')))
+            attrs['DockerSha'] = attrs.get('DockerSha', os.getenv('DOCKERSHA', os.getenv('DIGEST', '')))
+            attrs['DockerTag'] = attrs.get('DockerTag', os.getenv('DOCKERTAG', os.getenv('IMAGE_TAG', '')))
+
+
+            if (attrs.get('DockerRepo', None) is not None):
+                dockerrepo = attrs.get('DockerRepo')
+                if (':' in dockerrepo):
+                    parts = dockerrepo.split(':')
+                    attrs['DockerRepo'] = parts[0]
+                    if (attrs.get('DockerTag', None) in None):
+                        attrs['DockerTag'] = parts[1]
+
             attrs['GitBranch'] = attrs.get('GitBranch', os.getenv('GIT_BRANCH', ''))
             attrs['GitBranchCreateCommit'] = attrs.get('GitBranchCreateCommit', os.getenv('GIT_BRANCH_CREATE_COMMIT', ''))
             attrs['GitBranchCreateTimestamp'] = attrs.get('GitBranchCreateTimestamp', os.getenv('GIT_BRANCH_CREATE_TIMESTAMP', ''))
