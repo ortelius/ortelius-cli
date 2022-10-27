@@ -197,10 +197,11 @@ Args:
 # To generate markdown use:
 # pydoc-markdown -I bin | awk '/dh.main/ {p=1}; p==0 {print}' 
 
-__version__ = '9.3.214'
+__version__ = '9.3.213'
 
 import json
 import os
+from pathlib import Path
 import re
 import stat
 import subprocess
@@ -213,6 +214,7 @@ from string import Template
 
 import click
 import qtoml
+import yaml
 from deployhub import dhapi
 from pydantic import NoneIsAllowedError
 
@@ -831,6 +833,34 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                     dhapi.post_textfile(dhurl, cookies, compid, lcompattr.get('swagger', ''), 'swagger')
                 else:
                     print("WARNING: Swagger not found:"  + lcompattr.get('swagger'))
+
+            if (lcompattr.get('chart', None) is None):
+                shortname = attrs.get('Name','')
+                if ('.' in shortname):
+                    shortname = shortname.split('.')[-1]
+                    chart = None
+                    if (os.path.exists('helm/' + shortname + '/Chart.yaml')):
+                        attrs['Chart'] = 'helm/' + shortname
+                        chart = 'helm/' + shortname + '/Chart.yaml'
+                    elif (os.path.exists('helm/' + shortname + '/Chart.yml')):
+                        attrs['Chart'] = 'helm/' + shortname
+                        chart = 'helm/' + shortname + '/Chart.yml'
+                    elif (os.path.exists('chart/' + shortname + '/Chart.yaml')):
+                        attrs['Chart'] = 'chart/' + shortname
+                        chart = 'chart/' + shortname + '/Chart.yaml'
+                    elif (os.path.exists('chart/' + shortname + '/Chart.yml')):
+                        attrs['Chart'] = 'chart/' + shortname
+                        chart = 'chart/' + shortname + '/Chart.yml'
+                    elif (os.path.exists('charts/' + shortname + '/Chart.yaml')):
+                        attrs['Chart'] = 'charts/' + shortname
+                        chart = 'charts/' + shortname + '/Chart.yaml'
+                    elif (os.path.exists('charts/' + shortname + '/Chart.yml')):
+                        attrs['Chart'] = 'charts/' + shortname
+                        chart = 'charts/' + shortname + '/Chart.yml'
+
+            if (attrs.get('Chart', None) is not None and chart is not None):
+                chartdata = yaml.safe_load(Path(chart).read_text())
+                attrs['ChartVersion'] = chartdata.get('version', '')
 
             glic = None
             if (lcompattr.get('gradlelicense', None) is not None):
