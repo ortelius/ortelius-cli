@@ -713,9 +713,9 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             now = datetime.now()
             date_time = now.strftime("%c")
 
-            attrs['BuildUrl'] = attrs.get('BuildUrl', os.getenv('BUILD_URL', ''))
-            attrs['BuildId'] = attrs.get('BuildId', os.getenv('BUILD_ID', os.getenv('BUILD_NUMBER', os.getenv('BUILD_NUM', ''))))
-            attrs['BuildNumber'] = attrs.get('BuildNumber', os.getenv('BUILD_NUMBER', os.getenv('BUILD_NUM', '')))
+            attrs['BuildUrl'] = attrs.get('BuildUrl', os.getenv('BUILD_URL', os.getenv('GITHUB_SERVER_URL', '') + '/' + os.getenv('GITHUB_REPOSITORY', '') + '/actions/runs/' + os.getenv('GITHUB_RUN_ID', '')))
+            attrs['BuildId'] = attrs.get('BuildId', os.getenv('BUILD_ID', os.getenv('BUILD_NUMBER', os.getenv('BUILD_NUM', os.getenv('GITHUB_RUN_ID', '')))))
+            attrs['BuildNumber'] = attrs.get('BuildNumber', os.getenv('BUILD_NUMBER', os.getenv('BUILD_NUM', os.getenv('GITHUB_RUN_NUMBER', ''))))
             attrs['DockerBuildDate'] = attrs.get('DockerBuildDate', date_time)
             attrs['GitBranch'] = attrs.get('GitBranch', os.getenv('GIT_BRANCH', ''))
             attrs['GitBranchCreateCommit'] = attrs.get('GitBranchCreateCommit', os.getenv('GIT_BRANCH_CREATE_COMMIT', ''))
