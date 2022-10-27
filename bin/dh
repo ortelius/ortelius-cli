@@ -836,8 +836,10 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
             if (lcompattr.get('chart', None) is None):
                 shortname = attrs.get('Name','')
+                print("SN=" + shortname)
                 if ('.' in shortname):
                     shortname = shortname.split('.')[-1]
+                    print("SN2=" + shortname)
                     chart = None
                     if (os.path.exists('helm/' + shortname + '/Chart.yaml')):
                         attrs['Chart'] = 'helm/' + shortname
