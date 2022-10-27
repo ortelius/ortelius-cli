@@ -16,7 +16,7 @@ setup(
     author='Steve Taylor',
     author_email='steve@deployhub.com',
     name='ortelius-cli',
-    version='9.3.216',
+    version='9.3.217',
     packages=['deployhub',],
     scripts=['bin/dh', 'bin/helminfo.sh'],
     license='Apache-2.0',
