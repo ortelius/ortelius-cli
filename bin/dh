@@ -73,11 +73,11 @@ Args:
                 BuildId = "${BUILDID}"                                      # Identifier for the CI job (DERIVED IF NOT SPECIFIED)
                 BuildNumber = "${BUILD_NUM}"                                # Build number for the CI job (DERIVED IF NOT SPECIFIED)
                 BuildUrl = "${BUILD_URL}"                                   # Build url for the CI job (DERIVED IF NOT SPECIFIED)
-                Chart = ""                                                  # Helm Chart for the component
+                Chart = "$CHART}"                                           # Helm Chart for the component
                 ChartNamespace = ""                                         # Name space for the component to be deployed to
                 ChartRepo = ""                                              # Helm Chart Repo Name
                 ChartRepoUrl = ""                                           # Helm Chart Repo Url
-                ChartVersion = ""                                           # Helm Chart version
+                ChartVersion = "${CHARTVERSION}"                            # Helm Chart version
                 CustomAction = ""                                           # Custom Action to assign to the Component
                 DeployAlways = ""                                           # Set the Always Deploy option Y/N, default is N
                 DockerBuildDate = ""                                        # Timestamp when the image was created (DERIVED IF NOT SPECIFIED)
@@ -197,10 +197,11 @@ Args:
 # To generate markdown use:
 # pydoc-markdown -I bin | awk '/dh.main/ {p=1}; p==0 {print}' 
 
-__version__ = '9.3.212'
+__version__ = '9.3.219'
 
 import json
 import os
+from pathlib import Path
 import re
 import stat
 import subprocess
@@ -213,6 +214,7 @@ from string import Template
 
 import click
 import qtoml
+import yaml
 from deployhub import dhapi
 from pydantic import NoneIsAllowedError
 
@@ -677,6 +679,10 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 parent_compid = dhapi.new_component_version(dhurl, cookies, compname, compvariant, "", kind, None, compautoinc)
 
             print("Creating Component")
+            shortname = compname
+            if ('.' in shortname):
+                shortname = shortname.split('.')[-1]
+                    
             compid = dhapi.new_component_version(dhurl, cookies, compname, compvariant, compversion, kind, None, compautoinc)
             compname = dhapi.get_component_name(dhurl, cookies, compid)
             compversion = ""
@@ -713,10 +719,24 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             now = datetime.now()
             date_time = now.strftime("%c")
 
-            attrs['BuildUrl'] = attrs.get('BuildUrl', os.getenv('BUILD_URL', ''))
-            attrs['BuildId'] = attrs.get('BuildId', os.getenv('BUILD_ID', os.getenv('BUILD_NUMBER', os.getenv('BUILD_NUM', ''))))
-            attrs['BuildNumber'] = attrs.get('BuildNumber', os.getenv('BUILD_NUMBER', os.getenv('BUILD_NUM', '')))
+            attrs['BuildUrl'] = attrs.get('BuildUrl', os.getenv('BUILD_URL', os.getenv('GITHUB_SERVER_URL', '') + '/' + os.getenv('GITHUB_REPOSITORY', '') + '/actions/runs/' + os.getenv('GITHUB_RUN_ID', '')))
+            attrs['BuildId'] = attrs.get('BuildId', os.getenv('BUILD_ID', os.getenv('BUILD_NUMBER', os.getenv('BUILD_NUM', os.getenv('GITHUB_RUN_ID', '')))))
+            attrs['BuildNumber'] = attrs.get('BuildNumber', os.getenv('BUILD_NUMBER', os.getenv('BUILD_NUM', os.getenv('GITHUB_RUN_NUMBER', ''))))
             attrs['DockerBuildDate'] = attrs.get('DockerBuildDate', date_time)
+
+            attrs['DockerRepo'] = attrs.get('DockerRepo', os.getenv('DOCKERREPO', os.getenv('IMAGE_TAG', '')))
+            attrs['DockerSha'] = attrs.get('DockerSha', os.getenv('DOCKERSHA', os.getenv('DIGEST', '')))
+            attrs['DockerTag'] = attrs.get('DockerTag', os.getenv('DOCKERTAG', os.getenv('IMAGE_TAG', '')))
+
+
+            if (attrs.get('DockerRepo', None) is not None):
+                dockerrepo = attrs.get('DockerRepo')
+                if (':' in dockerrepo):
+                    parts = dockerrepo.split(':')
+                    attrs['DockerRepo'] = parts[0]
+                    if (attrs.get('DockerTag', None) in None):
+                        attrs['DockerTag'] = parts[1]
+
             attrs['GitBranch'] = attrs.get('GitBranch', os.getenv('GIT_BRANCH', ''))
             attrs['GitBranchCreateCommit'] = attrs.get('GitBranchCreateCommit', os.getenv('GIT_BRANCH_CREATE_COMMIT', ''))
             attrs['GitBranchCreateTimestamp'] = attrs.get('GitBranchCreateTimestamp', os.getenv('GIT_BRANCH_CREATE_TIMESTAMP', ''))
@@ -749,6 +769,32 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             lcompattr = {}
             for key, val in attrs.items():
                 lcompattr[key.lower()] = val
+
+            chartpath = None
+            if (lcompattr.get('chart', None) is None):
+                print("SN2=" + shortname)
+                if (os.path.exists('helm/' + shortname + '/Chart.yaml')):
+                    attrs['Chart'] = 'helm/' + shortname
+                    chartpath  = 'helm/' + shortname + '/Chart.yaml'
+                elif (os.path.exists('helm/' + shortname + '/Chart.yml')):
+                    attrs['Chart'] = 'helm/' + shortname
+                    chartpath  = 'helm/' + shortname + '/Chart.yml'
+                elif (os.path.exists('chart/' + shortname + '/Chart.yaml')):
+                    attrs['Chart'] = 'chart/' + shortname
+                    chartpath  = 'chart/' + shortname + '/Chart.yaml'
+                elif (os.path.exists('chart/' + shortname + '/Chart.yml')):
+                    attrs['Chart'] = 'chart/' + shortname
+                    chartpath  = 'chart/' + shortname + '/Chart.yml'
+                elif (os.path.exists('charts/' + shortname + '/Chart.yaml')):
+                    attrs['Chart'] = 'charts/' + shortname
+                    chartpath  = 'charts/' + shortname + '/Chart.yaml'
+                elif (os.path.exists('charts/' + shortname + '/Chart.yml')):
+                    attrs['Chart'] = 'charts/' + shortname
+                    chartpath  = 'charts/' + shortname + '/Chart.yml'
+
+            if (attrs.get('Chart', None) is not None and chartpath  is not None):
+                chartdata = yaml.safe_load(Path(chartpath).read_text())
+                attrs['ChartVersion'] = chartdata.get('version', '')
 
             attrs.pop('Readme', None)
             attrs.pop('readme', None)
