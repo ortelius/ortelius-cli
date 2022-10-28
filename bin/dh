@@ -197,7 +197,7 @@ Args:
 # To generate markdown use:
 # pydoc-markdown -I bin | awk '/dh.main/ {p=1}; p==0 {print}' 
 
-__version__ = '9.3.218'
+__version__ = '9.3.219'
 
 import json
 import os
