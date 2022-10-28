@@ -766,6 +766,32 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             attrs['GitTotalCommittersCnt'] = attrs.get('GitTotalCommittersCnt', os.getenv('GIT_TOTAL_COMMITTERS_CNT', ''))
             attrs['GitUrl'] = attrs.get('GitUrl', os.getenv('GIT_URL', ''))
 
+            chartpath = None
+            if (lcompattr.get('chart', None) is None):
+                print("SN2=" + shortname)
+                if (os.path.exists('helm/' + shortname + '/Chart.yaml')):
+                    attrs['Chart'] = 'helm/' + shortname
+                    chartpath  = 'helm/' + shortname + '/Chart.yaml'
+                elif (os.path.exists('helm/' + shortname + '/Chart.yml')):
+                    attrs['Chart'] = 'helm/' + shortname
+                    chartpath  = 'helm/' + shortname + '/Chart.yml'
+                elif (os.path.exists('chart/' + shortname + '/Chart.yaml')):
+                    attrs['Chart'] = 'chart/' + shortname
+                    chartpath  = 'chart/' + shortname + '/Chart.yaml'
+                elif (os.path.exists('chart/' + shortname + '/Chart.yml')):
+                    attrs['Chart'] = 'chart/' + shortname
+                    chartpath  = 'chart/' + shortname + '/Chart.yml'
+                elif (os.path.exists('charts/' + shortname + '/Chart.yaml')):
+                    attrs['Chart'] = 'charts/' + shortname
+                    chartpath  = 'charts/' + shortname + '/Chart.yaml'
+                elif (os.path.exists('charts/' + shortname + '/Chart.yml')):
+                    attrs['Chart'] = 'charts/' + shortname
+                    chartpath  = 'charts/' + shortname + '/Chart.yml'
+
+            if (attrs.get('Chart', None) is not None and chartpath  is not None):
+                chartdata = yaml.safe_load(Path(chartpath).read_text())
+                attrs['ChartVersion'] = chartdata.get('version', '')
+
             lcompattr = {}
             for key, val in attrs.items():
                 lcompattr[key.lower()] = val
@@ -837,32 +863,6 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                     dhapi.post_textfile(dhurl, cookies, compid, lcompattr.get('swagger', ''), 'swagger')
                 else:
                     print("WARNING: Swagger not found:"  + lcompattr.get('swagger'))
-
-            chartpath = None
-            if (lcompattr.get('chart', None) is None):
-                print("SN2=" + shortname)
-                if (os.path.exists('helm/' + shortname + '/Chart.yaml')):
-                    attrs['Chart'] = 'helm/' + shortname
-                    chartpath  = 'helm/' + shortname + '/Chart.yaml'
-                elif (os.path.exists('helm/' + shortname + '/Chart.yml')):
-                    attrs['Chart'] = 'helm/' + shortname
-                    chartpath  = 'helm/' + shortname + '/Chart.yml'
-                elif (os.path.exists('chart/' + shortname + '/Chart.yaml')):
-                    attrs['Chart'] = 'chart/' + shortname
-                    chartpath  = 'chart/' + shortname + '/Chart.yaml'
-                elif (os.path.exists('chart/' + shortname + '/Chart.yml')):
-                    attrs['Chart'] = 'chart/' + shortname
-                    chartpath  = 'chart/' + shortname + '/Chart.yml'
-                elif (os.path.exists('charts/' + shortname + '/Chart.yaml')):
-                    attrs['Chart'] = 'charts/' + shortname
-                    chartpath  = 'charts/' + shortname + '/Chart.yaml'
-                elif (os.path.exists('charts/' + shortname + '/Chart.yml')):
-                    attrs['Chart'] = 'charts/' + shortname
-                    chartpath  = 'charts/' + shortname + '/Chart.yml'
-
-            if (attrs.get('Chart', None) is not None and chartpath  is not None):
-                chartdata = yaml.safe_load(Path(chartpath).read_text())
-                attrs['ChartVersion'] = chartdata.get('version', '')
 
             glic = None
             if (lcompattr.get('gradlelicense', None) is not None):
