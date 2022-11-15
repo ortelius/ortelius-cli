@@ -772,7 +772,6 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
             chartpath = None
             if (lcompattr.get('chart', None) is None):
-                print("SN2=" + shortname)
                 if (os.path.exists('helm/' + shortname + '/Chart.yaml')):
                     attrs['Chart'] = 'helm/' + shortname
                     chartpath  = 'helm/' + shortname + '/Chart.yaml'

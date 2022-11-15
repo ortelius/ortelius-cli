@@ -79,6 +79,8 @@ def get_json(url, cookies):
         return res.json()
     except requests.exceptions.ConnectionError as conn_error:
         print(str(conn_error))
+    except Exception as err:
+        print(f'Other error occurred: {err}')
     return None
 
 
@@ -1710,6 +1712,9 @@ def log_deploy_application(dhurl, cookies, deploydata):
         compversion = data.get('compversion', None)
         environment = data.get('environment', '')
         application = data.get('application', '')
+
+        if (data.get('skipdeploy', None) is None):
+            payload['skipdeploy'] = 'Y'
 
         if (is_not_empty(application) and is_not_empty(environment)):
 
