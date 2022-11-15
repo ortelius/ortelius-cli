@@ -1714,7 +1714,9 @@ def log_deploy_application(dhurl, cookies, deploydata):
         application = data.get('application', '')
 
         if (data.get('skipdeploy', None) is None):
-            payload['skipdeploy'] = 'Y'
+            data['skipdeploy'] = 'Y'
+
+        payload = json.dumps(data)
 
         if (is_not_empty(application) and is_not_empty(environment)):
 
