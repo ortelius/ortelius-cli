@@ -154,8 +154,9 @@ Ortelius' CLI using the dhapi module.
   
   #### Parameter Descriptions
   
-  `--appautoinc` Application Auto Increment Version
-  `--appname` Application Name
+  | Parameter| Descriptions |
+  | appautoinc | Application Auto Increment Version |
+  | appname | Application Name |
   `--appversion` Application Version
   `--cert` Customer SSL Certificate File
   `--changerequest` Change Request for Component, use multiple time for each Change Request Id
@@ -171,9 +172,9 @@ Ortelius' CLI using the dhapi module.
   `--deploydatasave` Name of the json file to save the new component and application versions names to
   `--deployenv` Deployment Environment
   `--deppkg` File name for the Safety, CycloneDx, SPDX json scan data, use multiple time for each file.  Parameter format is: <type>@<filename> where type=safety, cyclonedx, spdx
-  `--dhpass` DeployHub Password
-  `--dhurl` DeployHub Url
-  `--dhuser` DeployHub User
+  `--dhpass` Ortelius Password
+  `--dhurl` Ortelius Url
+  `--dhuser` Ortleius User
   `--docker` docker Kind of the component item
   `--envs` Environments to Associate App to, use multiple time for each env
   `--envvars_sh` Environment Variables Output shell file
