@@ -151,45 +151,44 @@ Ortelius' CLI using the dhapi module.
   --dhpass
   --from_dom
   --to_dom
-  
-  #### Parameter Descriptions
+#### Parameter Usage
   
   | Parameter| Descriptions |
+  | --- | --- | 
   | appautoinc | Application Auto Increment Version |
   | appname | Application Name |
-  
-  `--appversion` Application Version
-  `--cert` Customer SSL Certificate File
-  `--changerequest` Change Request for Component, use multiple time for each Change Request Id
-  `--cluster_json` json from kubectl get deploy -n default -o json
-  `--compattr` Component Attributes, use multiple time for each attr
-  `--compautoinc` Component Auto Increment Version
-  `--compname` Component Name
-  `--compvariant` Component Variant
-  `--compversion` Component Version
-  `--consumes`  json file that lists the endpoints the component consumes.  [ {"verb", "get", "path": "/weather"}]
-  `--crdatasource` Change Request Data Source for the Component
-  `--deploydata` The json file that contains the application, environment and log details
-  `--deploydatasave` Name of the json file to save the new component and application versions names to
-  `--deployenv` Deployment Environment
-  `--deppkg` File name for the Safety, CycloneDx, SPDX json scan data, use multiple time for each file.  Parameter format is: <type>@<filename> where type=safety, cyclonedx, spdx
-  `--dhpass` Ortelius Password
-  `--dhurl` Ortelius Url
-  `--dhuser` Ortleius User
-  `--docker` docker Kind of the component item
-  `--envs` Environments to Associate App to, use multiple time for each env
-  `--envvars_sh` Environment Variables Output shell file
-  `--envvars` Component TOML file
-  `--file` file Kind of the component item
-  `--from_domain` Move from domain
-  `--fromdom` From Domain
-  `--importfile` File to Import
-  `--kvconfig` Directory containing the json and properties file
-  `--logdeployment` Records a deployment by a external program
-  `--msbranch` New microservice branch being added to the cluster
-  `--msname` New microservice being added to the cluster
-  `--provides`  json file that lists the endpoints the component provides.  [ {"verb", "get", "path": "/checkout"}]
-  `--rsp` Response File for Parameters, ie component.toml
-  `--task` Task to use for move
-  `--todom` To Domain
+  | appversion | Application Version |
+  | cert | Customer SSL Certificate File |
+  | changerequest | Change Request for Component, use multiple time for each Change Request Id |
+  | cluster_json | json from kubectl get deploy -n default -o json |
+  | compattr | Component Attributes, use multiple time for each attr |
+  | compautoinc | Component Auto Increment Version |
+  | compname | Component Name |
+  | compvariant | Component Variant |
+  | compversion | Component Version |
+  | consumes | json file that lists the endpoints the component consumes.  [ {"verb", "get", "path": "/weather"}] |
+  | crdatasource | Change Request Data Source for the Component |
+  | deploydata | The json file that contains the application, environment and log details |
+  | deploydatasave | Name of the json file to save the new component and application versions names to |
+  | deployenv | Deployment Environment |
+  | deppkg | File name for the Safety, CycloneDx, SPDX json scan data, use multiple time for each file.  Parameter format is: <type>@<filename> where type=safety, cyclonedx, spdx
+  | dhpass | Ortelius Password |
+  | dhurl | Ortelius Url |
+  | dhuser | Ortleius User |
+  | docker | docker Kind of the component item |
+  | envs | Environments to Associate App to, use multiple time for each env |
+  | envvars_sh | Environment Variables Output shell file |
+  | envvars | Component TOML file |
+  | file | file Kind of the component item |
+  | from_domain | Move from domain |
+  | fromdom | From Domain |
+  | importfile | File to Import |
+  | kvconfig | Directory containing the json and properties file |
+  | logdeployment | Records a deployment by a external program |
+  | msbranch | New microservice branch being added to the cluster |
+  | msname | New microservice being added to the cluster |
+  | provides | json file that lists the endpoints the component provides.  [ {"verb", "get", "path": "/checkout"}] |
+  | rsp | Response File for Parameters, ie component.toml |
+  | task | Task to use for move |
+  | todom | To Domain |
 
