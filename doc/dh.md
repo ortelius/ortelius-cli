@@ -1,5 +1,12 @@
 <a name="dh"></a>
 # dh
+## CLI Prerequisites 
+
+- Install Python 3.6 or higher.
+  - [Python download.](https://www.python.org/downloads/)
+- Install the CLI module.
+  - `pip install ortelius-cli`
+
 
 Ortelius' CLI using the dhapi module.
 
