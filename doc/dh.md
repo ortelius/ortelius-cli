@@ -1,14 +1,34 @@
 <a name="dh"></a>
-# dh
+# The Ortelius Command Line Interface
+The Ortelius Command Line Interface supports integration with DevOps tools and CI/CD pipelines.
+
+The CLI Python script interacts with the Ortelius REST APIs to perform:
+
+- Approve the application version
+- Move the application version using the supplied task
+- Create/replace the component version for the application version
+- Assign a component version to an application version
+- Assign the key/values pairs to the component version
+- Create a bash file from the component .toml file
+- Export a domain including all objects to stdout
+- Imports the export file into the new domain
+- Deploy the Application
+- Upload Swagger and SBOM files
+
+
 ## CLI Prerequisites 
 
-- Install Python 3.6 or higher.
+- The Ortelius CLI uses Python. Install Python 3.6 or higher.
   - [Python download.](https://www.python.org/downloads/)
-- Install the CLI module.
+
+- Install the CLI module. The CLI module is available at https://pypi.org/project/ortelius-cli/. To install run:
   - `pip install ortelius-cli`
 
+## Get Started with a POC
+Refer to the [Ortelius sample POC](https://pypi.org/project/ortelius-cli/) to get started. This POC provides you the steps to incorporate Ortelius into your Pipeline, with SBOM generation. 
 
-Ortelius' CLI using the dhapi module.
+
+## Ortelius' CLI using the dhapi module.
 
 **Arguments**:
 
@@ -42,7 +62,7 @@ Ortelius' CLI using the dhapi module.
   --from_domain
   --task
   
-- `updatecomp` - create/replace the component version for the application verion
+- `updatecomp` - create/replace the component version for the application verion with SBOM (CycloneDX or SPDX formats).
   Usage:
   --dhurl
   --dhuser
