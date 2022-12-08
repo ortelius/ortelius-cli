@@ -99,8 +99,8 @@ Refer to the [Ortelius sample POC](https://pypi.org/project/ortelius-cli/) to ge
   BuildId = "${BUILDID}"                                      # Identifier for the CI job (DERIVED IF NOT SPECIFIED)
   BuildNumber = "${BUILD_NUM}"                                # Build number for the CI job (DERIVED IF NOT SPECIFIED)
   BuildUrl = "${BUILD_URL}"                                   # Build url for the CI job (DERIVED IF NOT SPECIFIED)
-  Chart = ""                                                  # Helm Chart for the component
-  ChartNamespace = ""                                         # Name space for the component to be deployed to
+  Chart = ""                                                  # Helm Chart for the Component
+  ChartNamespace = ""                                         # Name space for the Component to be deployed to
   ChartRepo = ""                                              # Helm Chart Repo Name
   ChartRepoUrl = ""                                           # Helm Chart Repo Url
   ChartVersion = ""                                           # Helm Chart version
@@ -123,7 +123,7 @@ Refer to the [Ortelius sample POC](https://pypi.org/project/ortelius-cli/) to ge
   GitLinesDeleted = "${GIT_LINES_DELETED}"                    # Lines deleted since the previous commit (DERIVED IF NOT SPECIFIED)
   GitLinesTotal = "${GIT_LINES_TOTAL}"                        # Total line count for the branch (DERIVED IF NOT SPECIFIED)
   GitOrg = "${GIT_ORG}"                                       # Orgranization for the repo (DERIVED IF NOT SPECIFIED)
-  GitPreviousComponentCommit = "${GIT_PREVIOUS_COMPONENT_COMMIT}" # Commit of the previous component (DERIVED IF NOT SPECIFIED)
+  GitPreviousComponentCommit = "${GIT_PREVIOUS_COMPONENT_COMMIT}" # Commit of the previous Component (DERIVED IF NOT SPECIFIED)
   GitRepo = "${GIT_REPO}"                                     # Git repo that triggered the CI job (DERIVED IF NOT SPECIFIED)
   GitRepoProject = "${GIT_REPO_PROJECT}"                      # Project name part of the repository url (DERIVED IF NOT SPECIFIED)
   GitTag = "${GIT_TAG)"                                       # Git tag in the git repo (DERIVED IF NOT SPECIFIED)
