@@ -25,7 +25,7 @@ The CLI Python script interacts with the Ortelius REST APIs to perform:
   - `pip install ortelius-cli`
 
 ## Get Started with a POC
-Refer to the [Ortelius sample POC](https://pypi.org/project/ortelius-cli/) to get started. This POC provides you the steps to incorporate Ortelius into your Pipeline, with SBOM generation. 
+Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc.pdf) to get started. This POC provides you the steps to incorporate Ortelius into your Pipeline, with SBOM generation. 
 
 
 ## Ortelius' CLI using the dhapi module.
