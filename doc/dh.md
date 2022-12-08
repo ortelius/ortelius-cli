@@ -21,7 +21,7 @@ The CLI Python script interacts with the Ortelius REST APIs to perform:
 - The Ortelius CLI uses Python. Install Python 3.6 or higher.
   - [Python download.](https://www.python.org/downloads/)
 
-- Install the CLI module. The CLI module is available at https://pypi.org/project/ortelius-cli/. To install run:
+- Install the Ortelius CLI where your CI/CD server is running. . The CLI module is available at https://pypi.org/project/ortelius-cli/. To install run:
   - `pip install ortelius-cli`
 
 ## Get Started with a POC
