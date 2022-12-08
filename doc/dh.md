@@ -4,16 +4,16 @@ The Ortelius Command Line Interface supports integration with DevOps tools and C
 
 The CLI Python script interacts with the Ortelius REST APIs to perform:
 
-- Approve the application version
-- Move the application version using the supplied task
-- Create/replace the component version for the application version
-- Assign a component version to an application version
-- Assign the key/values pairs to the component version
-- Create a bash file from the component .toml file
-- Export a domain including all objects to stdout
-- Imports the export file into the new domain
-- Deploy the Application
-- Upload Swagger and SBOM files
+- Approve the _Application Version_
+- Move the _Application Version- using the supplied task
+- Create/replace the _Component Version_ for the _Application Version_
+- Assign a _Component Version_ to an _Application version_
+- Assign the key/values pairs to the _Component version_
+- Create a bash file from the _Component_ .toml file
+- Export a _Domain_ including all objects to stdout
+- Imports the export file into the new _Domain_
+- Deploy the _Application Version_
+- Upload Swagger and SBOM files to _Component Version_
 
 
 ## CLI Prerequisites 
@@ -35,7 +35,7 @@ Refer to the [Ortelius sample POC](https://pypi.org/project/ortelius-cli/) to ge
   
   ACTION - one of the following
   
-- `deploy` - deploy the application to the environment
+- `deploy` - deploy the _Application_ to the _Environment_
   Usage:
   --dhurl
   --dhuser
@@ -44,7 +44,7 @@ Refer to the [Ortelius sample POC](https://pypi.org/project/ortelius-cli/) to ge
   --appversion (optional)
   --deployenv
   
-- `approve` - approve the application version
+- `approve` - approve the _Application Version_
   Usage:
   --dhurl
   --dhuser
@@ -52,7 +52,7 @@ Refer to the [Ortelius sample POC](https://pypi.org/project/ortelius-cli/) to ge
   --appname
   --appversion (optional)
   
-- `move` - move the application version using the supplied task
+- `move` - move the _Application Version_ using the supplied task
   Usage:
   --dhurl
   --dhuser
@@ -62,7 +62,7 @@ Refer to the [Ortelius sample POC](https://pypi.org/project/ortelius-cli/) to ge
   --from_domain
   --task
   
-- `updatecomp` - create/replace the component version for the application verion with SBOM (CycloneDX or SPDX formats).
+- `updatecomp` - create/replace the _Component Version_ for the _Application Verion_ with SBOM (CycloneDX or SPDX formats).
   Usage:
   --dhurl
   --dhuser
@@ -138,7 +138,7 @@ Refer to the [Ortelius sample POC](https://pypi.org/project/ortelius-cli/) to ge
   Swagger = ""                                                # Swagger/OpenApi file location in the Git Repo (DERIVED IF NOT SPECIFIED)
   ```
   
-- `assign` - assigns a component version to an application verion
+- `assign` - assigns a _Component Version_ to an _Application Verion_
   Usage:
   --dhurl
   --dhuser
@@ -149,7 +149,7 @@ Refer to the [Ortelius sample POC](https://pypi.org/project/ortelius-cli/) to ge
   --appname
   --appversion (optional)
   
-- `kv` - assigns the key/values pairs to the component verion
+- `kv` - assigns the key/values pairs to the _Component Verion_
   Usage:
   --dhurl
   --dhuser
@@ -159,63 +159,64 @@ Refer to the [Ortelius sample POC](https://pypi.org/project/ortelius-cli/) to ge
   --compversion (optional)
   --kvconfig
   
-- `envscript` - creates a bash file from the component toml file
+- `envscript` - creates a bash file from the _Component_ toml file
   Usage:
   --envvars
   --envvars_sh
   
-- `export` - exports a domain including all objects to stdout
+- `export` - exports a _Domain_ including all objects to stdout
   Usage:
   --dhurl
   --dhuser
   --dhpass
   --from_dom
   
-- `import` - imports the export file into the new domain
+- `import` - imports the export file into the new _Domain_
   Usage:
   --dhurl
   --dhuser
   --dhpass
   --from_dom
   --to_dom
+  
 #### Parameter Usage
   
   | Parameter| Descriptions |
   | --- | --- | 
-  | appautoinc | Application Auto Increment Version |
-  | appname | Application Name |
-  | appversion | Application Version |
+  | appautoinc | _Application_ Auto Increment Version |
+  | appname | _Application_ Name |
+  | appversion | _Application Version_ |
   | cert | Customer SSL Certificate File |
-  | changerequest | Change Request for Component, use multiple time for each Change Request Id |
+  | changerequest | Change Request for _Component_, use multiple time for each Change Request Id |
   | cluster_json | json from kubectl get deploy -n default -o json |
-  | compattr | Component Attributes, use multiple time for each attr |
-  | compautoinc | Component Auto Increment Version |
-  | compname | Component Name |
-  | compvariant | Component Variant |
-  | compversion | Component Version |
-  | consumes | json file that lists the endpoints the component consumes.  [ {"verb", "get", "path": "/weather"}] |
-  | crdatasource | Change Request Data Source for the Component |
-  | deploydata | The json file that contains the application, environment and log details |
-  | deploydatasave | Name of the json file to save the new component and application versions names to |
-  | deployenv | Deployment Environment |
+  | compattr | _Component_ attributes, use multiple time for each attr |
+  | compautoinc | _Component_ auto increment version |
+  | compname | _Component_ Name |
+  | compvariant | _Component_ Variant |
+  | compversion | _Component Version_ |
+  | consumes | json file that lists the endpoints the _Component_ consumes.  [ {"verb", "get", "path": "/weather"}] |
+  | crdatasource | Change Request Data Source for the _Component_ |
+  | deploydata | The json file that contains the _Application_, _Environment_ and log details |
+  | deploydatasave | Name of the json file to save the new _Component_ and _Application Versions_ names to |
+  | deployenv | Deployment _Environment_ |
   | deppkg | File name for the Safety, CycloneDx, SPDX json scan data, use multiple time for each file.  Parameter format is: <type>@<filename> where type=safety, cyclonedx, spdx
   | dhpass | Ortelius Password |
   | dhurl | Ortelius Url |
   | dhuser | Ortleius User |
-  | docker | docker Kind of the component item |
-  | envs | Environments to Associate App to, use multiple time for each env |
+  | docker | docker Kind of the _Component_ item |
+  | envs | _Environments_ to Associate _Application Version_ to, use multiple time for each env |
   | envvars_sh | Environment Variables Output shell file |
-  | envvars | Component TOML file |
-  | file | file Kind of the component item |
-  | from_domain | Move from domain |
-  | fromdom | From Domain |
+  | envvars | _Component_ TOML file |
+  | file | file Kind of the _Component_ item |
+  | from_domain | Move from _Domain_ |
+  | fromdom | From _Domain_ |
   | importfile | File to Import |
   | kvconfig | Directory containing the json and properties file |
   | logdeployment | Records a deployment by a external program |
   | msbranch | New microservice branch being added to the cluster |
   | msname | New microservice being added to the cluster |
-  | provides | json file that lists the endpoints the component provides.  [ {"verb", "get", "path": "/checkout"}] |
+  | provides | json file that lists the _Endpoints_ the _Component_ provides.  [ {"verb", "get", "path": "/checkout"}] |
   | rsp | Response File for Parameters, ie component.toml |
   | task | Task to use for move |
-  | todom | To Domain |
+  | todom | To _Domain_ |
 
