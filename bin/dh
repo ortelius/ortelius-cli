@@ -752,6 +752,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             attrs['GitOrg'] = attrs.get('GitOrg', os.getenv('GIT_ORG', ''))
             attrs['GitPreviousComponentCommit'] = attrs.get('GitPreviousComponentCommit', os.getenv('GIT_PREVIOUS_COMPONENT_COMMIT', ''))
 
+
             if (attrs.get('GitRepo', None) is None):
                 if ('/' in os.getenv('GIT_URL', '')):
                     attrs['GitRepo'] = "/".join(os.getenv('GIT_URL', '').split('/')[-2:]).replace(".git", "")
@@ -765,6 +766,8 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
             attrs['GitTotalCommittersCnt'] = attrs.get('GitTotalCommittersCnt', os.getenv('GIT_TOTAL_COMMITTERS_CNT', ''))
             attrs['GitUrl'] = attrs.get('GitUrl', os.getenv('GIT_URL', ''))
+
+            attrs['JobTriggeredBy'] = attrs.get('JobTriggeredBy', attrs.get('JobTriggerdBy', ''))
 
             lcompattr = {}
             for key, val in attrs.items():
