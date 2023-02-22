@@ -653,7 +653,7 @@ def get_component_fromid(dhurl, cookies, compid):
     return data
 
 
-def get_previous_commit(dhurl, cookies, compname):
+def get_previous_commit(dhurl, cookies, compname, compvariant):
     """
     Get the git commit associated with the previous component
     Args:
@@ -664,7 +664,7 @@ def get_previous_commit(dhurl, cookies, compname):
     Returns:
         string: string of the commit
     """
-    data = get_component(dhurl, cookies, compname, "", "", True, True)
+    data = get_component(dhurl, cookies, compname, compvariant, "", True, True)
     parent_compid = data[0]
     if (parent_compid > 0):
         data = get_component_fromid(dhurl, cookies, parent_compid)

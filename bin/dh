@@ -1460,9 +1460,10 @@ def envscript(dhurl, cookies, envvars, envvars_sh):
             vardict[key] = val
 
     compname = vardict.get('Name', None)
+    compvariant = vardict.get('Variant', None)
 
     if (compname is not None):
-        gitcommit = dhapi.get_previous_commit(dhurl, cookies, compname)
+        gitcommit = dhapi.get_previous_commit(dhurl, cookies, compname, compvariant)
         if (dhapi.is_not_empty(gitcommit)):
             if (run_fetch):
                 dhapi.run_git('git fetch --unshallow')
