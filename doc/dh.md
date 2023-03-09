@@ -5,9 +5,9 @@ Ortelius' CLI using the dhapi module.
 
 **Arguments**:
 
-  
+
   ACTION - one of the following
-  
+
 - `deploy` - deploy the application to the environment
   Usage:
   --dhurl
@@ -16,7 +16,7 @@ Ortelius' CLI using the dhapi module.
   --appname
   --appversion (optional)
   --deployenv
-  
+
 - `approve` - approve the application version
   Usage:
   --dhurl
@@ -24,7 +24,7 @@ Ortelius' CLI using the dhapi module.
   --dhpass
   --appname
   --appversion (optional)
-  
+
 - `move` - move the application version using the supplied task
   Usage:
   --dhurl
@@ -34,7 +34,7 @@ Ortelius' CLI using the dhapi module.
   --appversion (optional)
   --from_domain
   --task
-  
+
 - `updatecomp` - create/replace the component version for the application verion
   Usage:
   --dhurl
@@ -47,26 +47,26 @@ Ortelius' CLI using the dhapi module.
   --provides (optional)
   --deppkg cyclonedx@<cyclonedx json sbom file> (optional)
   --deppkg spdx@<spdx json sbom file> (optional)
-  
+
   ##### Component TOML Definition for --rsp parameter
-  
+
   ```toml
   # Application Name and Version to create an associate the Component Version to
   # NOTE: Only needed if you need to assoicate the Component Version to the Application Verion
-  
+
   Application = ""          # Name of the Applcation including the full Domain Name
   Application_Version = ""  # The semantic version for the Application Version
-  
+
   # Component Name, Variant and Version
   Name = ""
   Variant = "${GIT_BRANCH}"
   Version = "v1.0.0.${BUILD_NUM}-g${GIT_COMMIT}"                  # 1.0.0 should be replace with your starting version string
-  
+
   # Export the derived IMAGE_TAG, DOCKERREPO values to the CI/CD Tool via a shell script when using the `envscript` command line action
   [Export]
   IMAGE_TAG = "${Variant}-${Version}"
   DOCKERREPO = "${DockerRepo}"
-  
+
   # Key/Values to associate to the Component Version.  Custom key/values can be added under this section.
   [Attributes]
   BuildId = "${BUILDID}"                                      # Identifier for the CI job (DERIVED IF NOT SPECIFIED)
@@ -109,7 +109,7 @@ Ortelius' CLI using the dhapi module.
   ServiceOwnerPhone = ""                                      # Phone number for the Owner of the Service
   Swagger = ""                                                # Swagger/OpenApi file location in the Git Repo (DERIVED IF NOT SPECIFIED)
   ```
-  
+
 - `assign` - assigns a component version to an application verion
   Usage:
   --dhurl
@@ -120,7 +120,7 @@ Ortelius' CLI using the dhapi module.
   --compversion (optional)
   --appname
   --appversion (optional)
-  
+
 - `kv` - assigns the key/values pairs to the component verion
   Usage:
   --dhurl
@@ -130,19 +130,19 @@ Ortelius' CLI using the dhapi module.
   --compvariant (optional)
   --compversion (optional)
   --kvconfig
-  
+
 - `envscript` - creates a bash file from the component toml file
   Usage:
   --envvars
   --envvars_sh
-  
+
 - `export` - exports a domain including all objects to stdout
   Usage:
   --dhurl
   --dhuser
   --dhpass
   --from_dom
-  
+
 - `import` - imports the export file into the new domain
   Usage:
   --dhurl
@@ -150,9 +150,9 @@ Ortelius' CLI using the dhapi module.
   --dhpass
   --from_dom
   --to_dom
-  
+
   #### Parameter Descriptions
-  
+
   `--appautoinc` Application Auto Increment Version
   `--appname` Application Name
   `--appversion` Application Version
@@ -189,4 +189,3 @@ Ortelius' CLI using the dhapi module.
   `--rsp` Response File for Parameters, ie component.toml
   `--task` Task to use for move
   `--todom` To Domain
-
