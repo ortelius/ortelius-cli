@@ -31,7 +31,7 @@ Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc
 
 **Arguments**:
 
-  
+
   ACTION - one of the following
   
 - `deploy` - deploy the _Application_ to the _Environment_
@@ -61,7 +61,7 @@ Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc
   --from_domain
   --task
   
-- `updatecomp` - create/replace the _Component Version_ for the _Application Verion_ with SBOM (CycloneDX or SPDX formats).
+- `updatecomp` - create/replace the _Component Version_ for the _Application Version_ with SBOM (CycloneDX or SPDX formats).
   Usage:
   --dhurl
   --dhuser
@@ -73,26 +73,26 @@ Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc
   --provides (optional)
   --deppkg cyclonedx@<cyclonedx json sbom file> (optional)
   --deppkg spdx@<spdx json sbom file> (optional)
-  
+
   ##### Component TOML Definition for --rsp parameter
-  
+
   ```toml
   # Application Name and Version to create an associate the Component Version to
-  # NOTE: Only needed if you need to assoicate the Component Version to the Application Verion
-  
+  # NOTE: Only needed if you need to assoicate the Component Version to the Application Version
+
   Application = ""          # Name of the Applcation including the full Domain Name
   Application_Version = ""  # The semantic version for the Application Version
-  
+
   # Component Name, Variant and Version
   Name = ""
   Variant = "${GIT_BRANCH}"
   Version = "v1.0.0.${BUILD_NUM}-g${GIT_COMMIT}"                  # 1.0.0 should be replace with your starting version string
-  
+
   # Export the derived IMAGE_TAG, DOCKERREPO values to the CI/CD Tool via a shell script when using the `envscript` command line action
   [Export]
   IMAGE_TAG = "${Variant}-${Version}"
   DOCKERREPO = "${DockerRepo}"
-  
+
   # Key/Values to associate to the Component Version.  Custom key/values can be added under this section.
   [Attributes]
   BuildId = "${BUILDID}"                                      # Identifier for the CI job (DERIVED IF NOT SPECIFIED)
@@ -136,7 +136,7 @@ Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc
   Swagger = ""                                                # Swagger/OpenApi file location in the Git Repo (DERIVED IF NOT SPECIFIED)
   ```
   
-- `assign` - assigns a _Component Version_ to an _Application Verion_
+- `assign` - assigns a _Component Version_ to an _Application Version_
   Usage:
   --dhurl
   --dhuser
@@ -147,7 +147,7 @@ Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc
   --appname
   --appversion (optional)
   
-- `kv` - assigns the key/values pairs to the _Component Verion_
+- `kv` - assigns the key/values pairs to the _Component Version_
   Usage:
   --dhurl
   --dhuser

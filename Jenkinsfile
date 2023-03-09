@@ -1,11 +1,11 @@
 #!/usr/bin/env groovy
 
 node {
-	
+
     stage('Clone sources') {
         git url: 'git@github.com:ortelius/store-emailservice.git'
     }
-    
+
     stage ('Build') {
 		/*********************************/
 		/*   Update for your component   */
@@ -105,11 +105,11 @@ node {
 		   --provides /workspace/deppkg-provides.json \
 		   --consumes /workspace/deppkg-consumes.json
 		"""
-    }  
+    }
 }
 
 
 // Function to disable shell echo and grab output from command
 def eval2var(script) {
         return sh(returnStdout: true, script: '#!/bin/sh -e\n' + script);
-}	
+}
