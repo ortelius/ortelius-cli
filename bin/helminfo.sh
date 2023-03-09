@@ -37,7 +37,7 @@ digest=`sha256sum $chartname*.tgz | cut -f1 -d " "`
 echo "{"
 echo "\"chartdigest\": \"$digest\","
 echo "\"images\": ["
-tar -xf $chartname*.tgz 
+tar -xf $chartname*.tgz
 IFS=$'\n'
 
 cnt=0
@@ -72,7 +72,7 @@ do
     img=$(echo $line | cut -d ":" -f 1)
     tag=$(echo $line | cut -d ":" -f 2)
     fi
-    
+
     apiuser=$helmrepouser
     apipass=$helmrepopass
 
@@ -94,7 +94,7 @@ do
     TOKEN=$(echo -u ${apiuser}:${apipass} | xargs curl -s -X GET "${authdomsvc}&scope=${authscope}&offline_token=1&client_id=shell" | jq -r '.token')
 
     digest=$(curl --head -s -H "Authorization: Bearer ${TOKEN}" -H "Accept: application/vnd.docker.distribution.manifest.v2+json" https://${apidomain}/v2/${org}/${img}/manifests/$tag | grep -i "Docker-Content-Digest:" | cut -f 2 -d " " | tr -d '"' | tr -d "\r")
-    
+
 cat <<-EOF
     {
         "registry": "$reg",
@@ -104,7 +104,7 @@ cat <<-EOF
         "imagedigest": "$digest"
     }
 EOF
-done 
+done
 echo "]"
 echo "}"
 rm $chartname*.tgz
