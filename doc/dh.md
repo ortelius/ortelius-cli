@@ -18,11 +18,10 @@ The CLI Python script interacts with the Ortelius REST APIs to perform:
 
 ## CLI Prerequisites 
 
-- The Ortelius CLI uses Python. Install Python 3.6 or higher.
-  - [Python download.](https://www.python.org/downloads/)
+1. [Install Python 3.8 or newer](https://www.python.org/downloads/)
+2. Install Ortelius CLI
 
-- Install the Ortelius CLI where your CI/CD server is running. . The CLI module is available at https://pypi.org/project/ortelius-cli/. To install run:
-  - `pip install ortelius-cli`
+   `pip install --upgrade ortelius-cli`
 
 ## Get Started with a POC
 Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc.pdf) to get started. This POC provides you the steps to incorporate Ortelius into your Pipeline, with SBOM generation. 
