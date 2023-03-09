@@ -96,7 +96,6 @@ Ortelius' CLI using the dhapi module.
   GitLinesDeleted = "${GIT_LINES_DELETED}"                    # Lines deleted since the previous commit (DERIVED IF NOT SPECIFIED)
   GitLinesTotal = "${GIT_LINES_TOTAL}"                        # Total line count for the branch (DERIVED IF NOT SPECIFIED)
   GitOrg = "${GIT_ORG}"                                       # Orgranization for the repo (DERIVED IF NOT SPECIFIED)
-  GitPreviousComponentCommit = "${GIT_PREVIOUS_COMPONENT_COMMIT}" # Commit of the previous component (DERIVED IF NOT SPECIFIED)
   GitRepo = "${GIT_REPO}"                                     # Git repo that triggered the CI job (DERIVED IF NOT SPECIFIED)
   GitRepoProject = "${GIT_REPO_PROJECT}"                      # Project name part of the repository url (DERIVED IF NOT SPECIFIED)
   GitTag = "${GIT_TAG)"                                       # Git tag in the git repo (DERIVED IF NOT SPECIFIED)

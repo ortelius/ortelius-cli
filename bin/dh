@@ -97,7 +97,6 @@ Args:
                 GitLinesDeleted = "${GIT_LINES_DELETED}"                    # Lines deleted since the previous commit (DERIVED IF NOT SPECIFIED)
                 GitLinesTotal = "${GIT_LINES_TOTAL}"                        # Total line count for the branch (DERIVED IF NOT SPECIFIED)
                 GitOrg = "${GIT_ORG}"                                       # Orgranization for the repo (DERIVED IF NOT SPECIFIED)
-                GitPreviousComponentCommit = "${GIT_PREVIOUS_COMPONENT_COMMIT}" # Commit of the previous component (DERIVED IF NOT SPECIFIED)
                 GitRepo = "${GIT_REPO}"                                     # Git repo that triggered the CI job (DERIVED IF NOT SPECIFIED)
                 GitRepoProject = "${GIT_REPO_PROJECT}"                      # Project name part of the repository url (DERIVED IF NOT SPECIFIED)
                 GitTag = "${GIT_TAG)"                                       # Git tag in the git repo (DERIVED IF NOT SPECIFIED)
@@ -750,8 +749,6 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             attrs['GitLinesDeleted'] = attrs.get('GitLinesDeleted', os.getenv('GIT_LINES_DELETED', ''))
             attrs['GitLinesTotal'] = attrs.get('GitLinesTotal', os.getenv('GIT_LINES_TOTAL', ''))   
             attrs['GitOrg'] = attrs.get('GitOrg', os.getenv('GIT_ORG', ''))
-            attrs['GitPreviousComponentCommit'] = attrs.get('GitPreviousComponentCommit', os.getenv('GIT_PREVIOUS_COMPONENT_COMMIT', ''))
-
 
             if (attrs.get('GitRepo', None) is None):
                 if ('/' in os.getenv('GIT_URL', '')):
@@ -1439,7 +1436,7 @@ def envscript(dhurl, cookies, envvars, envvars_sh):
         vardict[key] = val
 
     if (mapping.get('GIT_TOTAL_COMMITTERS_CNT', None) is None and attrvars.get('TotalCommittersCnt', attrvars.get('GitTotalCommittersCnt', None)) is not None):
-        mapping['GIT_TOTAL_COMMITTERS_CNT'] = attrvars.get('TotalCommittersCnt', attrvars.get('GitTotalCommittersCnt', ''))
+        mapping['GIT_TOTAL_COMMITTERS_CNT'] = attrvars.get('TotalCommittersCnt', attrvars.get('GitTotalCommittersCnt', None))
 
     if (mapping.get('GIT_COMMITTERS_CNT', None) is None and mapping.get('GIT_COMMIT_AUTHORS', None) is not None):
         mapping['GIT_COMMITTERS_CNT'] = str(len(mapping.get('GIT_COMMIT_AUTHORS').split(',')))
