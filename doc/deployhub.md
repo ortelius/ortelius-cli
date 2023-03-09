@@ -30,7 +30,7 @@ Get URL as json string.
 
 - `url` _string_ - url to server
   cookies (string) - login cookies
-  
+
 
 **Returns**:
 
@@ -50,7 +50,7 @@ Post URL as json string.
 - `url` _string_ - url to server
 - `payload` _string_ - json payload to post
 - `cookies` _string_ - login cookies
-  
+
 
 **Returns**:
 
@@ -69,7 +69,7 @@ Post URL as json string.
 
 - `url` _string_ - url to server
 - `token` _string_ - CircleCI token for header
-  
+
 
 **Returns**:
 
@@ -87,7 +87,7 @@ Is the string empty.
 **Arguments**:
 
 - `my_string` _string_ - string to check emptyness on
-  
+
 
 **Returns**:
 
@@ -105,7 +105,7 @@ Is the string NOT empty.
 **Arguments**:
 
 - `my_string` _string_ - string to check emptyness on
-  
+
 
 **Returns**:
 
@@ -126,7 +126,7 @@ Login to DeployHub using the DH Url, userid and password.
 - `user` _string_ - username to login with
 - `password` _string_ - password for login
 - `errors` _list_ - list to return any errors back to the caller
-  
+
 
 **Returns**:
 
@@ -147,7 +147,7 @@ Deploy the application to the environment.
 - `cookies` _string_ - cookies from login
 - `appid` _int_ - id to the application
 - `env` _string_ - full name of the environemt
-  
+
 
 **Returns**:
 
@@ -169,7 +169,7 @@ Deploy the application to the environment.
 - `appname` _string_ - name of the application including domain name
 - `appversion` _string_ - version of application. Should include vairiant if used.
 - `env` _string_ - full name of the environment
-  
+
 
 **Returns**:
 
@@ -192,7 +192,7 @@ Move an application from the from_domain using the task.
 - `appversion` _string_ - version of application. Should include vairiant if used.
 - `from_domain` _string_ - full name of the domain to move from
 - `task` _string_ - task to use to do the move
-  
+
 
 **Returns**:
 
@@ -213,7 +213,7 @@ Approve the application for the current domain that it is in.
 - `cookies` _string_ - cookies from login
 - `appname` _string_ - name of the application including domain name
 - `appversion` _string_ - version of application. Should include vairiant if used.
-  
+
 
 **Returns**:
 
@@ -233,7 +233,7 @@ Check to see if the deployment has completed.
 - `dhurl` _string_ - url to the server
 - `cookies` _string_ - cookies from login
 - `deployment_id` _int_ - id of the deployment to check
-  
+
 
 **Returns**:
 
@@ -253,7 +253,7 @@ Get the logs for the deployment.
 - `dhurl` _string_ - url to the server
 - `cookies` _string_ - cookies from login
 - `deployment_id` _int_ - id of the deployment to check
-  
+
 
 **Returns**:
 
@@ -276,7 +276,7 @@ Get the attributes for this deployment base on app version and env.
 - `compname` _string_ - name of the component including domain name
 - `env` _string_ - name of the environment including domain name
 - `srv` _string_ - name of the end-point including domain name
-  
+
 
 **Returns**:
 
@@ -296,7 +296,7 @@ Get the attributes for an application.
 - `dhurl` _string_ - url to the server
 - `cookies` _string_ - cookies from login
 - `appid` _id_ - id of the application
-  
+
 
 **Returns**:
 
@@ -316,7 +316,7 @@ Get the domain name and id that matches best with the passed in name.
 - `dhurl` _string_ - url to the server
 - `cookies` _string_ - cookies from login
 - `findname` _string_ - domain name to match
-  
+
 
 **Returns**:
 
@@ -334,7 +334,7 @@ Remove periods and dashes from the name.
 **Arguments**:
 
 - `name` _string_ - string to clean
-  
+
 
 **Returns**:
 
@@ -358,7 +358,7 @@ Get the component json string.
 - `compversion` _string_ - version of the component, optional
 - `id_only` _boolean_ - return just the id and not the whole json string
 - `latest` _boolean_ - return the latest version
-  
+
 
 **Returns**:
 
@@ -379,7 +379,7 @@ Get the environment json string.
 - `dhurl` _string_ - url to the server
 - `cookies` _string_ - cookies from login
 - `env` _string_ - name of the environment
-  
+
 
 **Returns**:
 
@@ -400,7 +400,7 @@ Get the full component name.
 - `dhurl` _string_ - url to the server
 - `cookies` _string_ - cookies from login
 - `compid` _int_ - id of the component
-  
+
 
 **Returns**:
 
@@ -420,7 +420,7 @@ Get the component json string.
 - `dhurl` _string_ - url to the server
 - `cookies` _string_ - cookies from login
 - `compid` _int_ - id of the component
-  
+
 
 **Returns**:
 
@@ -440,7 +440,7 @@ Get the component attributes json string.
 - `dhurl` _string_ - url to the server
 - `cookies` _string_ - cookies from login
 - `compid` _int_ - id of the component
-  
+
 
 **Returns**:
 
@@ -460,7 +460,7 @@ Get the application name.
 - `dhurl` _string_ - url to the server
 - `cookies` _string_ - cookies from login
 - `appid` _int_ - id of the application
-  
+
 
 **Returns**:
 
@@ -597,7 +597,7 @@ Create the component object based on the component name and variant.
 - `compversion` _string_ - version of the component, optional
 - `kind` _string_ - docker or file for the kind of component
 - `parent_compid` - id of the parent component version
-  
+
 
 **Returns**:
 
@@ -622,7 +622,7 @@ Update the attributes, key/value pairs, for the component and CR list.
 - `attrs` _dict_ - key/value dictionary
 - `crdatasource` _string_ - name of the CR data source
 - `cdlist` _list_ - list of CRs to assign to the component
-  
+
 
 **Returns**:
 
@@ -645,7 +645,7 @@ Update the attributes, key/value pairs, for the component and CR list.
 - `attrs` _dict_ - key/value dictionary
 - `crdatasource` _string_ - name of the CR data source
 - `cdlist` _list_ - list of CRs to assign to the component
-  
+
 
 **Returns**:
 
@@ -666,7 +666,7 @@ Update the attributes, key/value pairs, for the environment.
 - `cookies` _string_ - cookies from login
 - `envid` _int_ - id of the environment to update
 - `attrs` _dict_ - key/value dictionary
-  
+
 
 **Returns**:
 
@@ -687,7 +687,7 @@ Get the application json string.
 - `cookies` _string_ - cookies from login
 - `appid` _int_ - id of the application
 - `id_only` _boolean_ - True return the id only otherwise json string
-  
+
 
 **Returns**:
 
@@ -708,7 +708,7 @@ Get the application json string.
 - `cookies` _string_ - cookies from login
 - `appid` _int_ - id of the application
 - `appversion` _string_ - 'latest' to get the last application version
-  
+
 
 **Returns**:
 
@@ -729,7 +729,7 @@ Get the base component json string.
 - `cookies` _string_ - cookies from login
 - `compid` _int_ - id of the component
 - `id_only` _boolean_ - True return the id only otherwise json string
-  
+
 
 **Returns**:
 
@@ -749,7 +749,7 @@ Get the component based on the docker tag.
 - `dhurl` _string_ - url to the server
 - `cookies` _string_ - cookies from login
 - `image_tag` _string_ - image tag
-  
+
 
 **Returns**:
 
@@ -791,7 +791,7 @@ Add a component version to an application version.
 - `cookies` _string_ - cookies from login
 - `appid` _int_ - id of the application
 - `compid` _int_ - id of the component to add to the application
-  
+
 
 **Returns**:
 
@@ -815,7 +815,7 @@ Assign component to application in the correct postion in the tree.
 - `parent_compid` _int_ - parent component in the layout panel
 - `xpos` _int_ - xpos in the layout panel
 - `ypos` _int_ - ypos in the layout panel
-  
+
 
 **Returns**:
 
@@ -836,7 +836,7 @@ Assign an application to environment to enable deployments.
 - `cookies` _string_ - cookies from login
 - `appname` _string_ - name of application
 - `envs` _list_ - list of environments to assign the application to
-  
+
 
 **Returns**:
 
@@ -854,7 +854,7 @@ Clones a repo into the working directory and reads the features.toml file into a
 **Arguments**:
 
 - `project` _string_ - name of the github org/project to clone
-  
+
 
 **Returns**:
 
@@ -875,7 +875,7 @@ Parse the kubernetes deployment yaml for component name and version.
 - `cookies` _string_ - cookies from login
 - `kubeyaml` _string_ - path to the output for the deployment yaml
 - `defaultdomain` _string_ - domain name to use for the component
-  
+
 
 **Returns**:
 
@@ -896,7 +896,7 @@ Record a deployment of an application to an environment.
 - `cookies` _string_ - cookies from login
 - `deploydata` _string_ - path to a json file that contains
   the component version, application and environment to record.
-  
+
 
 **Returns**:
 
@@ -914,7 +914,7 @@ Call the CircleCI REST api to run a pipeline.
 **Arguments**:
 
 - `pipeline` _string_ - name of the pipeline to run
-  
+
 
 **Returns**:
 
@@ -946,7 +946,7 @@ Gather the helm chart and values and upload to the deployment log
 - `dockeruser` _string_ - docker repo user used to get the image digest
 - `dockerpass` _string_ - password for the dockeruser
 - `helmtemplate` _string_ - path name to the file that contains the helm template output
-  
+
 
 **Returns**:
 
@@ -980,9 +980,8 @@ the application version will be created for the environment.
 - `env` _string_ - environment to assign the key/value component to
 - `crdatasource` _string_ - name of the CR data source
 - `crlist` _list_ - list of CR to assign to the component
-  
+
 
 **Returns**:
 
   no data returned
-

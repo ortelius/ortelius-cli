@@ -100,7 +100,7 @@ Args:
                 GitRepo = "${GIT_REPO}"                                     # Git repo that triggered the CI job (DERIVED IF NOT SPECIFIED)
                 GitRepoProject = "${GIT_REPO_PROJECT}"                      # Project name part of the repository url (DERIVED IF NOT SPECIFIED)
                 GitTag = "${GIT_TAG)"                                       # Git tag in the git repo (DERIVED IF NOT SPECIFIED)
-                GitTotalCommittersCnt = "${GIT_TOTAL_COMMITTERS_CNT}"       # Total committers working on this repo 
+                GitTotalCommittersCnt = "${GIT_TOTAL_COMMITTERS_CNT}"       # Total committers working on this repo
                 GitUrl = "${GIT_URL}"                                       # Full url to the git repo (DERIVED IF NOT SPECIFIED)
                 License = ""                                                # License file location in the Git Repo (DERIVED IF NOT SPECIFIED)
                 operator = ""                                               # Operator name
@@ -153,7 +153,7 @@ Args:
                 --to_dom
 
 #### Parameter Descriptions
-    
+
     `--appautoinc` Application Auto Increment Version
     `--appname` Application Name
     `--appversion` Application Version
@@ -194,9 +194,9 @@ Args:
 """
 
 # To generate markdown use:
-# pydoc-markdown -I bin | awk '/dh.main/ {p=1}; p==0 {print}' 
+# pydoc-markdown -I bin | awk '/dh.main/ {p=1}; p==0 {print}'
 
-__version__ = '9.3.224'
+__version__ = "9.3.224"
 
 import json
 import os
@@ -219,44 +219,83 @@ from pydantic import NoneIsAllowedError
 
 
 @click.command()
-@click.argument('action', required=True)
-@click.option('--dhurl', help='DeployHub Url', envvar='DHURL', required=True)
-@click.option('--dhuser', help='DeployHub User', envvar='DHUSER', required=True)
-@click.option('--dhpass', help='DeployHub Password', envvar='DHPASS', required=True)
-@click.option('--appname', help='Application Name', envvar='COMPONENT_APPLICATION')
-@click.option('--appversion', help='Application Version', envvar='COMPONENT_APPLICATION_VERSION')
-@click.option('--appautoinc', help='Application Auto Increment Version', envvar='COMPONENT_APPLICATION_AUTOINC')
-@click.option('--deployenv', help='Deployment Environment')
-@click.option('--compname', help='Component Name', envvar='COMPONENT_NAME')
-@click.option('--compvariant', help='Component Variant', envvar='COMPONENT_VARIANT')
-@click.option('--compversion', help='Component Version', envvar='COMPONENT_VERSION')
-@click.option('--compautoinc', help='Component Auto Increment Version', envvar='COMPONENT_AUTOINC')
-@click.option('--deploydatasave', help='Name of the json file to save the new component and application versions names to')
-@click.option('--kvconfig', help='Directory containing the json and properties file', envvar='KVCONFIG')
-@click.option('--crdatasource', help='Change Request Data Source for the Component', envvar='CR_DATASOURCE')
-@click.option('--changerequest', help='Change Request for Component, use multiple time for each Change Request Id', multiple=True)
-@click.option('--deploydata', help='The json file that contains the application, environment and log details', envvar='DEPLOY_DATA')
-@click.option('--from_domain', help='Move from domain')
-@click.option('--task', help='Task to use for move')
-@click.option('--envvars', help='Env Variables TOML file')
-@click.option('--envvars_sh', help='Env Variables Output sh file')
-@click.option('--docker', 'kind', flag_value='docker', default=True, help='Component Item Type')
-@click.option('--file', 'kind', flag_value='file')
-@click.option('--compattr', help='Component Attributes, use multiple time for each attr', multiple=True)
-@click.option('--envs', help='Environments to Associate App to, use multiple time for each env', multiple=True)
-@click.option('--importfile', help='File to Import')
-@click.option('--fromdom', help='From Domain')
-@click.option('--todom', help='To Domain')
-@click.option('--cluster_json', help='json from kubectl get deploy -n default -o json')
-@click.option('--msname', help='New microservice being added to the cluster')
-@click.option('--msbranch', help='New microservice branch being added to the cluster')
-@click.option('--deppkg', help='File name for the Safety, CycloneDx json scan data, use multiple time for each file.  Parameter format is: <type>@<filename> where type=safety, cyclonedx', multiple=True)
-@click.option('--logdeployment', is_flag=True, help='Records a deployment by a external program')
-@click.option('--consumes', help='json file listing end points being consumed')
-@click.option('--provides', help='json file listing end points being provided')
-@click.option('--rsp', help='Response File for Parameters')
-@click.option('--cert', help='Customer SSL Certificate File')
-def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, deployenv, envs, compattr, kvconfig, deploydata, deploydatasave, from_domain, task, envvars, envvars_sh, importfile, fromdom, todom, crdatasource, changerequest, cluster_json, msname, msbranch, deppkg, logdeployment, consumes, provides, rsp, cert):
+@click.argument("action", required=True)
+@click.option("--dhurl", help="DeployHub Url", envvar="DHURL", required=True)
+@click.option("--dhuser", help="DeployHub User", envvar="DHUSER", required=True)
+@click.option("--dhpass", help="DeployHub Password", envvar="DHPASS", required=True)
+@click.option("--appname", help="Application Name", envvar="COMPONENT_APPLICATION")
+@click.option("--appversion", help="Application Version", envvar="COMPONENT_APPLICATION_VERSION")
+@click.option("--appautoinc", help="Application Auto Increment Version", envvar="COMPONENT_APPLICATION_AUTOINC")
+@click.option("--deployenv", help="Deployment Environment")
+@click.option("--compname", help="Component Name", envvar="COMPONENT_NAME")
+@click.option("--compvariant", help="Component Variant", envvar="COMPONENT_VARIANT")
+@click.option("--compversion", help="Component Version", envvar="COMPONENT_VERSION")
+@click.option("--compautoinc", help="Component Auto Increment Version", envvar="COMPONENT_AUTOINC")
+@click.option("--deploydatasave", help="Name of the json file to save the new component and application versions names to")
+@click.option("--kvconfig", help="Directory containing the json and properties file", envvar="KVCONFIG")
+@click.option("--crdatasource", help="Change Request Data Source for the Component", envvar="CR_DATASOURCE")
+@click.option("--changerequest", help="Change Request for Component, use multiple time for each Change Request Id", multiple=True)
+@click.option("--deploydata", help="The json file that contains the application, environment and log details", envvar="DEPLOY_DATA")
+@click.option("--from_domain", help="Move from domain")
+@click.option("--task", help="Task to use for move")
+@click.option("--envvars", help="Env Variables TOML file")
+@click.option("--envvars_sh", help="Env Variables Output sh file")
+@click.option("--docker", "kind", flag_value="docker", default=True, help="Component Item Type")
+@click.option("--file", "kind", flag_value="file")
+@click.option("--compattr", help="Component Attributes, use multiple time for each attr", multiple=True)
+@click.option("--envs", help="Environments to Associate App to, use multiple time for each env", multiple=True)
+@click.option("--importfile", help="File to Import")
+@click.option("--fromdom", help="From Domain")
+@click.option("--todom", help="To Domain")
+@click.option("--cluster_json", help="json from kubectl get deploy -n default -o json")
+@click.option("--msname", help="New microservice being added to the cluster")
+@click.option("--msbranch", help="New microservice branch being added to the cluster")
+@click.option(
+    "--deppkg", help="File name for the Safety, CycloneDx json scan data, use multiple time for each file.  Parameter format is: <type>@<filename> where type=safety, cyclonedx", multiple=True
+)
+@click.option("--logdeployment", is_flag=True, help="Records a deployment by a external program")
+@click.option("--consumes", help="json file listing end points being consumed")
+@click.option("--provides", help="json file listing end points being provided")
+@click.option("--rsp", help="Response File for Parameters")
+@click.option("--cert", help="Customer SSL Certificate File")
+def main(  # noqa: C901
+    dhurl,
+    dhuser,
+    dhpass,
+    action,
+    appname,
+    appversion,
+    appautoinc,
+    compname,
+    compvariant,
+    compversion,
+    compautoinc,
+    kind,
+    deployenv,
+    envs,
+    compattr,
+    kvconfig,
+    deploydata,
+    deploydatasave,
+    from_domain,
+    task,
+    envvars,
+    envvars_sh,
+    importfile,
+    fromdom,
+    todom,
+    crdatasource,
+    changerequest,
+    cluster_json,
+    msname,
+    msbranch,
+    deppkg,
+    logdeployment,
+    consumes,
+    provides,
+    rsp,
+    cert,
+):
     """
     ACTION: deploy, updatecomp, approve, move, envscript, kv, cluster, export or import for the type of action to perform.
 
@@ -297,27 +336,27 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
     """
 
     attrs = {}
-    if (rsp is None):
+    if rsp is None:
         rsp = "component.toml"
 
-    if (os.path.exists(rsp)):
+    if os.path.exists(rsp):
         file = open(rsp)
-        lines = line = file.read()
+        lines = file.read()
         file.close()
         mapping = os.environ
 
-        if (mapping.get('BLDDATE', None) is None):
+        if mapping.get("BLDDATE", None) is None:
             now = datetime.now()
-            mapping['BLDDATE'] = now.strftime("%c")
+            mapping["BLDDATE"] = now.strftime("%c")
         else:
-            mapping['BLDDATE'] = mapping.get('BLDDATE').strip('"')
+            mapping["BLDDATE"] = mapping.get("BLDDATE").strip('"')
 
         template = Template(lines)
         lines = template.safe_substitute(**mapping)
 
         vardict = qtoml.loads(lines)
 
-        attrvars = vardict.get('Attributes', {})
+        attrvars = vardict.get("Attributes", {})
         for key, val in attrvars.items():
             vardict[key] = val
 
@@ -327,85 +366,95 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
         vardict = qtoml.loads(lines)
 
-        if (appname is None):
-            appname = vardict.get('Application', None)
+        if appname is None:
+            appname = vardict.get("Application", None)
 
-        if (appversion is None):
-            appversion = vardict.get('Application_Version', None)
+        if appversion is None:
+            appversion = vardict.get("Application_Version", None)
 
-        if (deployenv is None):
-            deployenv = vardict.get('DeployEnv', None)
+        if deployenv is None:
+            deployenv = vardict.get("DeployEnv", None)
 
-        if (compname is None):
-            compname = vardict.get('Name', None)
+        if compname is None:
+            compname = vardict.get("Name", None)
 
-        if (compvariant is None):
-            compvariant = vardict.get('Variant', None)
+        if compvariant is None:
+            compvariant = vardict.get("Variant", None)
 
-        if (compversion is None):
-            compversion = vardict.get('Version', None)
+        if compversion is None:
+            compversion = vardict.get("Version", None)
 
-        attrs = vardict.get('Attributes', {})
+        attrs = vardict.get("Attributes", {})
 
         pprint(vardict)
 
-    if (dhapi.is_not_empty(compvariant)):
-        compvariant = compvariant.replace('/', '_')
+    if dhapi.is_not_empty(compvariant):
+        compvariant = compvariant.replace("/", "_")
 
-    if (action.lower() == "kv" or action.lower() == "deploy" or action.lower() == "cluster" or action.lower() == "updatecomp" or action.lower() == "approve" or action.lower() == "export" or action.lower() == "import" or action.lower() == "assign" or action.lower() == "envscript"):
-        if (dhapi.is_empty(dhurl)):
+    if (
+        action.lower() == "kv"
+        or action.lower() == "deploy"
+        or action.lower() == "cluster"
+        or action.lower() == "updatecomp"
+        or action.lower() == "approve"
+        or action.lower() == "export"
+        or action.lower() == "import"
+        or action.lower() == "assign"
+        or action.lower() == "envscript"
+    ):
+        if dhapi.is_empty(dhurl):
             print("--dhurl is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(dhuser)):
+        if dhapi.is_empty(dhuser):
             print("--dhuser is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(dhpass)):
+        if dhapi.is_empty(dhpass):
             print("--dhpass is required")
             sys.exit(1)
 
         errors = []
 
-        if (dhapi.is_not_empty(cert)):
+        if dhapi.is_not_empty(cert):
             dhapi.sslcerts(dhurl, cert)
 
         cookies = dhapi.login(dhurl, dhuser, dhpass, errors)
 
         if cookies is None:
-            if (errors):
+            if errors:
                 print(errors[0])
             sys.exit(1)
 
-    if (action.lower() == "deploy"):
+    if action.lower() == "deploy":
         # Deploy Application to Environment
-        if (dhapi.is_empty(dhurl)):
+        if dhapi.is_empty(dhurl):
             print("--dhurl is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(dhuser)):
+        if dhapi.is_empty(dhuser):
             print("--dhuser is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(dhpass)):
+        if dhapi.is_empty(dhpass):
             print("--dhpass is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(appversion)):
+        if dhapi.is_empty(appversion):
             appversion = ""
 
         retcode = 0
-        if (dhapi.is_empty(deploydata)):
-            if (dhapi.is_empty(appname) and dhapi.is_empty(compname)):
+        if dhapi.is_empty(deploydata):
+            if dhapi.is_empty(appname) and dhapi.is_empty(compname):
                 print("--appname is required")
                 sys.exit(1)
 
             applist = []
-            if (dhapi.is_not_empty(appname)):
-                if (dhapi.is_not_empty(appname) and dhapi.is_empty(appversion)):
-                    parts = appname.split(';')
-                    if (len(parts) == 3):
-                        appname = parts[0] + ';' + parts[1]
+            if dhapi.is_not_empty(appname):
+                if dhapi.is_not_empty(appname) and dhapi.is_empty(appversion):
+                    parts = appname.split(";")
+                    if len(parts) == 3:
+                        appname = parts[0] + ";" + parts[1]
                         appversion = parts[2]
 
                 data = dhapi.get_application(dhurl, cookies, appname, appversion, True)
@@ -413,50 +462,50 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 appname = data[1]
                 applist.append({"appid": appid, "appname": appname, "deployenv": deployenv, "circleci_pipeline": ""})
 
-                if (dhapi.is_empty(deployenv)):
+                if dhapi.is_empty(deployenv):
                     print("--deployenv is required")
                     sys.exit(1)
 
-            if (dhapi.is_empty(appname) and dhapi.is_not_empty(compname)):
+            if dhapi.is_empty(appname) and dhapi.is_not_empty(compname):
                 data = dhapi.get_component(dhurl, cookies, compname, "", "", True, True)
                 parent_compid = data[0]
                 data = dhapi.get_component_fromid(dhurl, cookies, parent_compid)
 
-                if (data is not None and 'result' in data):
-                    result = data['result']
-                    if (result.get('applications', None) is not None):
-                        data = result.get('applications', None)
+                if data is not None and "result" in data:
+                    result = data["result"]
+                    if result.get("applications", None) is not None:
+                        data = result.get("applications", None)
                         for app in data:
-                            appname = app.get('name', '')
-                            appid = app.get('id', '')
+                            appname = app.get("name", "")
+                            appid = app.get("id", "")
                             appdata = dhapi.get_application(dhurl, cookies, appname, "latest", True)
                             latest_appid = appdata[0]
 
-                            if (appid == latest_appid):
+                            if appid == latest_appid:
                                 app_attrs = dhapi.get_application_attrs(dhurl, cookies, appid)
 
                                 deployenv = ""
                                 pipeline = ""
                                 for entry in app_attrs:
-                                    if ('DeployEnv' in entry):
-                                        deployenv = entry['DeployEnv']
-                                    if ('CircleCI_Pipeline' in entry):
-                                        pipeline = entry['CircleCI_Pipeline']
+                                    if "DeployEnv" in entry:
+                                        deployenv = entry["DeployEnv"]
+                                    if "CircleCI_Pipeline" in entry:
+                                        pipeline = entry["CircleCI_Pipeline"]
 
-                                if (dhapi.is_not_empty(deployenv)):
+                                if dhapi.is_not_empty(deployenv):
                                     applist.append({"appid": appid, "appname": appname, "deployenv": deployenv, "circleci_pipeline": pipeline})
 
             for entry in applist:
-                appid = entry['appid']
-                appname = entry['appname']
-                deployenv = entry['deployenv']
-                pipeline = entry['circleci_pipeline']
+                appid = entry["appid"]
+                appname = entry["appname"]
+                deployenv = entry["deployenv"]
+                pipeline = entry["circleci_pipeline"]
 
-                print('Deploying ' + appname + ' to ' + deployenv)
+                print("Deploying " + appname + " to " + deployenv)
                 data = dhapi.deploy_application_by_appid(dhurl, cookies, appid, deployenv)
 
                 deployid = data[0]
-                if (deployid < 0):
+                if deployid < 0:
                     print(data[1])
                     sys.exit(1)
 
@@ -464,16 +513,16 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 data = dhapi.get_logs(dhurl, cookies, deployid)
 
                 print(data[1])
-                if (data[0]):
+                if data[0]:
                     print("Successful")
-                    if (dhapi.is_not_empty(pipeline)):
+                    if dhapi.is_not_empty(pipeline):
                         data = dhapi.run_circleci_pipeline(pipeline)
                         pprint(data)
                 else:
                     print("Failed")
                     retcode = retcode + 1
 
-            if (retcode == 0):
+            if retcode == 0:
                 sys.exit(0)
             else:
                 sys.exit(1)
@@ -483,77 +532,77 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 payload = fin_data.read()
 
             data = {}
-            if (dhapi.is_not_empty(payload)):
+            if dhapi.is_not_empty(payload):
                 data = json.loads(payload)
 
-            if (dhapi.is_empty(appname)):
-                appname = data.get('application', '')
+            if dhapi.is_empty(appname):
+                appname = data.get("application", "")
             else:
-                data['application'] = appname
+                data["application"] = appname
 
-            if (dhapi.is_empty(appversion)):
-                appversion = data.get('appversion', '')
+            if dhapi.is_empty(appversion):
+                appversion = data.get("appversion", "")
             else:
-                data['appversion'] = appversion
+                data["appversion"] = appversion
 
-            if (kvconfig is None):
-                kvconfig = data.get('kvconfig', '')
+            if kvconfig is None:
+                kvconfig = data.get("kvconfig", "")
 
-            pipeline = data.get('circleci_pipeline', '')
+            pipeline = data.get("circleci_pipeline", "")
 
             appversion = dhapi.clean_name(appversion)
-            data['appversion'] = appversion
+            data["appversion"] = appversion
 
             full_appname = appname
-            if (dhapi.is_not_empty(appversion)):
+            if dhapi.is_not_empty(appversion):
                 full_appname = full_appname + ";" + appversion
 
             res = dhapi.get_application(dhurl, cookies, full_appname, "latest", False)
             latest_appid = res[0]
-            if (latest_appid > 0):
+            if latest_appid > 0:
                 full_appname = dhapi.get_application_name(dhurl, cookies, latest_appid)
-            data['application'] = full_appname
-            data.pop('appversion', None)
+            data["application"] = full_appname
+            data.pop("appversion", None)
 
-            compname = data.get('config_component', None)
-            compvariant = data.get('environment', '')
+            compname = data.get("config_component", None)
+            compvariant = data.get("environment", "")
             compversion = ""
 
-            if (compname is None):
-                complist = data.get('compversion', [])
-                if (len(complist) > 0):
+            if compname is None:
+                complist = data.get("compversion", [])
+                if len(complist) > 0:
                     compname = complist[0]
                     compvariant = ""
                     compversion = ""
 
-            if (dhapi.is_empty(deployenv)):
-                environment = data.get('environment', '')
+            if dhapi.is_empty(deployenv):
+                environment = data.get("environment", "")
             else:
                 environment = deployenv
-                data['environment'] = environment
+                data["environment"] = environment
 
-            if (not logdeployment):
-                data['skipdeploy'] = 'Y'
+            if not logdeployment:
+                data["skipdeploy"] = "Y"
 
-            with open(deploydata, 'w') as fpsave:
+            with open(deploydata, "w") as fpsave:
                 json.dump(data, fpsave)
 
             # Check if just logging deployment
-            if (logdeployment):
+            if logdeployment:
                 data = dhapi.log_deploy_application(dhurl, cookies, deploydata)
-                deployid = data.get('deployid', -1)
-                appname = data.get('application', appname)
+                deployid = data.get("deployid", -1)
+                appname = data.get("application", appname)
                 print("Logged Deployment for " + appname + " to " + environment)
             else:
                 data = dhapi.log_deploy_application(dhurl, cookies, deploydata)
-                appid = data.get('appid', -1)
-                appname = data.get('application', appname)
+                appid = data.get("appid", -1)
+                appname = data.get("application", appname)
 
-                print('Deploying ' + appname + ' to ' + deployenv)
+                print("Deploying " + appname + " to " + deployenv)
                 data = dhapi.deploy_application_by_appid(dhurl, cookies, appid, deployenv)
 
                 deployid = data[0]
-                if (deployid < 0):
+                if deployid < 0:
                     print(data[1])
                     sys.exit(1)
 
@@ -561,9 +610,9 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 data = dhapi.get_logs(dhurl, cookies, deployid)
 
                 print(data[1])
-                if (data[0]):
+                if data[0]:
                     print("Successful")
-                    if (dhapi.is_not_empty(pipeline)):
+                    if dhapi.is_not_empty(pipeline):
                         data = dhapi.run_circleci_pipeline(pipeline)
                         pprint(data)
                 else:
@@ -571,95 +620,96 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                     retcode = retcode + 1
 
             lcompattr = {}
-            for attr in (compattr):
-                key, value = attr.split(':', 1)
+            for attr in compattr:
+                key, value = attr.split(":", 1)
                 lcompattr[key.lower()] = value
 
-            helmrepo = lcompattr.get('chartrepo', '')
-            chartname = lcompattr.get('chart')
-            chartversion = lcompattr.get('chartversion', '')
-            chartvalues = lcompattr.get('chartvalues', '')
-            helmrepouser = lcompattr.get('helmrepouser', '')
-            helmrepopass = lcompattr.get('helmrepopass', '')
-            helmrepourl = lcompattr.get('chartrepourl', '')
-            dockeruser = lcompattr.get('dockeruser', lcompattr.get('helmrepouser', ''))
-            dockerpass = lcompattr.get('dockerpass', lcompattr.get('helmrepopass', ''))
-            helmtemplate = lcompattr.get('helmtemplate', '')
-            helmopts = lcompattr.get('helmopts', '')
+            helmrepo = lcompattr.get("chartrepo", "")
+            chartname = lcompattr.get("chart")
+            chartversion = lcompattr.get("chartversion", "")
+            chartvalues = lcompattr.get("chartvalues", "")
+            helmrepouser = lcompattr.get("helmrepouser", "")
+            helmrepopass = lcompattr.get("helmrepopass", "")
+            helmrepourl = lcompattr.get("chartrepourl", "")
+            dockeruser = lcompattr.get("dockeruser", lcompattr.get("helmrepouser", ""))
+            dockerpass = lcompattr.get("dockerpass", lcompattr.get("helmrepopass", ""))
+            helmtemplate = lcompattr.get("helmtemplate", "")
+            helmopts = lcompattr.get("helmopts", "")
 
-            if (deployid > 0 and dhapi.is_not_empty(helmtemplate) and dhapi.is_not_empty(helmrepo) and dhapi.is_not_empty(helmrepourl)):
+            if deployid > 0 and dhapi.is_not_empty(helmtemplate) and dhapi.is_not_empty(helmrepo) and dhapi.is_not_empty(helmrepourl):
                 # fetch component and get attributes
-                dhapi.upload_helm(dhurl, cookies, compname, chartname, chartversion, chartvalues, helmrepo, helmrepouser, helmrepopass, helmrepourl, helmopts, deployid, dockeruser, dockerpass, helmtemplate)
+                dhapi.upload_helm(
+                    dhurl, cookies, compname, chartname, chartversion, chartvalues, helmrepo, helmrepouser, helmrepopass, helmrepourl, helmopts, deployid, dockeruser, dockerpass, helmtemplate
+                )
 
-#            os.remove(deploydata)
+            #            os.remove(deploydata)
 
-            if ('.' in compvariant):
-                compvariant = compvariant.split('.')[-1]
+            if "." in compvariant:
+                compvariant = compvariant.split(".")[-1]
 
-            if (compautoinc is None):
+            if compautoinc is None:
                 compautoinc = "Y"
 
-            if (compname is not None and dhapi.is_not_empty(kvconfig)):
-                print('Load config from ' + kvconfig)
+            if compname is not None and dhapi.is_not_empty(kvconfig):
+                print("Load config from " + kvconfig)
                 dhapi.set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, environment, crdatasource, changerequest)
 
-            if (retcode == 0):
+            if retcode == 0:
                 sys.exit(0)
             else:
                 sys.exit(1)
 
-    elif (action.lower() == "updatecomp"):
-
-        if (dhapi.is_empty(dhurl)):
+    elif action.lower() == "updatecomp":
+        if dhapi.is_empty(dhurl):
             print("--dhurl is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(dhuser)):
+        if dhapi.is_empty(dhuser):
             print("--dhuser is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(dhpass)):
+        if dhapi.is_empty(dhpass):
             print("--dhpass is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(compname)):
+        if dhapi.is_empty(compname):
             print("--compname is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(compvariant)):
+        if dhapi.is_empty(compvariant):
             compvariant = ""
 
-        if (dhapi.is_empty(compvariant) and "-v" in compversion):
+        if dhapi.is_empty(compvariant) and "-v" in compversion:
             compvariant = compversion.split("-v")[0]
             compversion = "v" + compversion.split("-v")[1]
 
-        if (dhapi.is_empty(compvariant) and "-V" in compversion):
+        if dhapi.is_empty(compvariant) and "-V" in compversion:
             compvariant = compversion.split("-V")[0]
             compversion = "v" + compversion.split("-V")[1]
 
         saveappver = ""
-        if (dhapi.is_not_empty(appversion)):
+        if dhapi.is_not_empty(appversion):
             saveappver = appversion
 
         deploydata_dict = {}
-        deploydata_dict['application'] = ""
-        deploydata_dict['compversion'] = []
-        deploydata_dict['rc'] = 0
+        deploydata_dict["application"] = ""
+        deploydata_dict["compversion"] = []
+        deploydata_dict["rc"] = 0
 
-        if (dhapi.is_not_empty(deploydatasave)):
+        if dhapi.is_not_empty(deploydatasave):
             payload = ""
-            if (os.path.isfile(deploydatasave)):
+            if os.path.isfile(deploydatasave):
                 with open(deploydatasave, "r") as fin_data:
                     payload = fin_data.read()
 
             data = {}
-            if (dhapi.is_not_empty(payload)):
+            if dhapi.is_not_empty(payload):
                 data = json.loads(payload)
-                deploydata_dict['application'] = data['application']
-                worklist = deploydata_dict['compversion']
-                worklist.extend(data['compversion'])
-                deploydata_dict['compversion'] = worklist
-                deploydata_dict['rc'] = data['rc']
+                deploydata_dict["application"] = data["application"]
+                worklist = deploydata_dict["compversion"]
+                worklist.extend(data["compversion"])
+                deploydata_dict["compversion"] = worklist
+                deploydata_dict["rc"] = data["rc"]
 
         retcode = 0
         cnt = 1
@@ -667,48 +717,48 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             data = dhapi.get_component(dhurl, cookies, compname, "", "", True, True)
             parent_compid = data[0]
 
-            if (parent_compid < 0):
+            if parent_compid < 0:
                 data = dhapi.get_component(dhurl, cookies, compname, compvariant, "", True, True)
                 parent_compid = data[0]
 
             # create component version
 
-            if (parent_compid < 0):
+            if parent_compid < 0:
                 print("Creating Parent Component")
                 parent_compid = dhapi.new_component_version(dhurl, cookies, compname, compvariant, "", kind, None, compautoinc)
 
             print("Creating Component")
             shortname = compname
-            if ('.' in shortname):
-                shortname = shortname.split('.')[-1]
-                    
+            if "." in shortname:
+                shortname = shortname.split(".")[-1]
+
             compid = dhapi.new_component_version(dhurl, cookies, compname, compvariant, compversion, kind, None, compautoinc)
             compname = dhapi.get_component_name(dhurl, cookies, compid)
             compversion = ""
             compvariant = ""
 
-            worklist = deploydata_dict['compversion']
+            worklist = deploydata_dict["compversion"]
             worklist.append(compname)
-            deploydata_dict['compversion'] = worklist
+            deploydata_dict["compversion"] = worklist
 
             print("Creation Done: " + compname)
 
             print("Updating Component Attributes\n")
             for attr in compattr:
-                if (':' in attr):
-                    key = attr.split(':')[0]
-                    value = ':'.join(attr.split(':')[1:])
+                if ":" in attr:
+                    key = attr.split(":")[0]
+                    value = ":".join(attr.split(":")[1:])
                 else:
                     key = attr
                     value = ""
 
-                if ("@sha256:" in value):
+                if "@sha256:" in value:
                     value = value.split("@sha256:")[1]
 
-                if (value.startswith('@')):
+                if value.startswith("@"):
                     value = value[1:]
-                    if (os.path.exists(value)):
-                        value = open(value, 'r').read().replace('\n', '')
+                    if os.path.exists(value):
+                        value = open(value, "r").read().replace("\n", "")
                         attrs[key] = value
                     else:
                         attrs[key] = ""
@@ -718,96 +768,97 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             now = datetime.now()
             date_time = now.strftime("%c")
 
-            attrs['BuildUrl'] = attrs.get('BuildUrl', os.getenv('BUILD_URL', os.getenv('GITHUB_SERVER_URL', '') + '/' + os.getenv('GITHUB_REPOSITORY', '') + '/actions/runs/' + os.getenv('GITHUB_RUN_ID', '')))
-            attrs['BuildId'] = attrs.get('BuildId', os.getenv('BUILD_ID', os.getenv('BUILD_NUMBER', os.getenv('BUILD_NUM', os.getenv('GITHUB_RUN_ID', '')))))
-            attrs['BuildNumber'] = attrs.get('BuildNumber', os.getenv('BUILD_NUMBER', os.getenv('BUILD_NUM', os.getenv('GITHUB_RUN_NUMBER', ''))))
-            attrs['DockerBuildDate'] = attrs.get('DockerBuildDate', date_time)
+            attrs["BuildUrl"] = attrs.get(
+                "BuildUrl", os.getenv("BUILD_URL", os.getenv("GITHUB_SERVER_URL", "") + "/" + os.getenv("GITHUB_REPOSITORY", "") + "/actions/runs/" + os.getenv("GITHUB_RUN_ID", ""))
+            )
+            attrs["BuildId"] = attrs.get("BuildId", os.getenv("BUILD_ID", os.getenv("BUILD_NUMBER", os.getenv("BUILD_NUM", os.getenv("GITHUB_RUN_ID", "")))))
+            attrs["BuildNumber"] = attrs.get("BuildNumber", os.getenv("BUILD_NUMBER", os.getenv("BUILD_NUM", os.getenv("GITHUB_RUN_NUMBER", ""))))
+            attrs["DockerBuildDate"] = attrs.get("DockerBuildDate", date_time)
 
-            attrs['DockerRepo'] = attrs.get('DockerRepo', os.getenv('DOCKERREPO', os.getenv('IMAGE_TAG', '')))
-            attrs['DockerSha'] = attrs.get('DockerSha', os.getenv('DOCKERSHA', os.getenv('DIGEST', '')))
-            attrs['DockerTag'] = attrs.get('DockerTag', os.getenv('DOCKERTAG', os.getenv('IMAGE_TAG', '')))
+            attrs["DockerRepo"] = attrs.get("DockerRepo", os.getenv("DOCKERREPO", os.getenv("IMAGE_TAG", "")))
+            attrs["DockerSha"] = attrs.get("DockerSha", os.getenv("DOCKERSHA", os.getenv("DIGEST", "")))
+            attrs["DockerTag"] = attrs.get("DockerTag", os.getenv("DOCKERTAG", os.getenv("IMAGE_TAG", "")))
 
+            if attrs.get("DockerRepo", None) is not None:
+                dockerrepo = attrs.get("DockerRepo")
+                if ":" in dockerrepo:
+                    parts = dockerrepo.split(":")
+                    attrs["DockerRepo"] = parts[0]
+                    if attrs.get("DockerTag", None) in None:
+                        attrs["DockerTag"] = parts[1]
 
-            if (attrs.get('DockerRepo', None) is not None):
-                dockerrepo = attrs.get('DockerRepo')
-                if (':' in dockerrepo):
-                    parts = dockerrepo.split(':')
-                    attrs['DockerRepo'] = parts[0]
-                    if (attrs.get('DockerTag', None) in None):
-                        attrs['DockerTag'] = parts[1]
+            attrs["GitBranch"] = attrs.get("GitBranch", os.getenv("GIT_BRANCH", ""))
+            attrs["GitBranchCreateCommit"] = attrs.get("GitBranchCreateCommit", os.getenv("GIT_BRANCH_CREATE_COMMIT", ""))
+            attrs["GitBranchCreateTimestamp"] = attrs.get("GitBranchCreateTimestamp", os.getenv("GIT_BRANCH_CREATE_TIMESTAMP", ""))
+            attrs["GitBranchParent"] = attrs.get("GitBranchParent", os.getenv("GIT_BRANCH_PARENT", ""))
+            attrs["GitCommit"] = attrs.get("GitCommit", os.getenv("GIT_COMMIT", os.getenv("SHORT_SHA", "")))
+            attrs["GitCommitAuthors"] = attrs.get("GitCommitAuthors", os.getenv("GIT_COMMIT_AUTHORS", ""))
+            attrs["GitCommittersCnt"] = attrs.get("GitCommittersCnt", os.getenv("GIT_COMMITTERS_CNT", ""))
+            attrs["GitCommitTimestamp"] = attrs.get("GitCommitTimestamp", os.getenv("GIT_COMMIT_TIMESTAMP", ""))
+            attrs["GitContribPercentage"] = attrs.get("GitContribPercentage", os.getenv("GIT_CONTRIB_PERCENTAGE", ""))
+            attrs["GitLinesAdded"] = attrs.get("GitLinesAdded", os.getenv("GIT_LINES_ADDED", ""))
+            attrs["GitLinesDeleted"] = attrs.get("GitLinesDeleted", os.getenv("GIT_LINES_DELETED", ""))
+            attrs["GitLinesTotal"] = attrs.get("GitLinesTotal", os.getenv("GIT_LINES_TOTAL", ""))
+            attrs["GitOrg"] = attrs.get("GitOrg", os.getenv("GIT_ORG", ""))
 
-            attrs['GitBranch'] = attrs.get('GitBranch', os.getenv('GIT_BRANCH', ''))
-            attrs['GitBranchCreateCommit'] = attrs.get('GitBranchCreateCommit', os.getenv('GIT_BRANCH_CREATE_COMMIT', ''))
-            attrs['GitBranchCreateTimestamp'] = attrs.get('GitBranchCreateTimestamp', os.getenv('GIT_BRANCH_CREATE_TIMESTAMP', ''))
-            attrs['GitBranchParent'] = attrs.get('GitBranchParent', os.getenv('GIT_BRANCH_PARENT', ''))
-            attrs['GitCommit'] = attrs.get('GitCommit', os.getenv('GIT_COMMIT', os.getenv('SHORT_SHA', '')))
-            attrs['GitCommitAuthors'] = attrs.get('GitCommitAuthors', os.getenv('GIT_COMMIT_AUTHORS', ''))
-            attrs['GitCommittersCnt'] = attrs.get('GitCommittersCnt', os.getenv('GIT_COMMITTERS_CNT', ''))
-            attrs['GitCommitTimestamp'] = attrs.get('GitCommitTimestamp', os.getenv('GIT_COMMIT_TIMESTAMP', ''))                
-            attrs['GitContribPercentage'] = attrs.get('GitContribPercentage', os.getenv('GIT_CONTRIB_PERCENTAGE', ''))
-            attrs['GitLinesAdded'] = attrs.get('GitLinesAdded', os.getenv('GIT_LINES_ADDED', ''))
-            attrs['GitLinesDeleted'] = attrs.get('GitLinesDeleted', os.getenv('GIT_LINES_DELETED', ''))
-            attrs['GitLinesTotal'] = attrs.get('GitLinesTotal', os.getenv('GIT_LINES_TOTAL', ''))   
-            attrs['GitOrg'] = attrs.get('GitOrg', os.getenv('GIT_ORG', ''))
+            if attrs.get("GitRepo", None) is None:
+                if "/" in os.getenv("GIT_URL", ""):
+                    attrs["GitRepo"] = "/".join(os.getenv("GIT_URL", "").split("/")[-2:]).replace(".git", "")
 
-            if (attrs.get('GitRepo', None) is None):
-                if ('/' in os.getenv('GIT_URL', '')):
-                    attrs['GitRepo'] = "/".join(os.getenv('GIT_URL', '').split('/')[-2:]).replace(".git", "")
-
-            attrs['GitRepo'] = attrs.get('GitRepo', os.getenv('GIT_REPO', ''))
-            attrs['GitRepoProject'] = attrs.get('GitRepoProject', os.getenv('GIT_REPO_PROJECT', ''))
+            attrs["GitRepo"] = attrs.get("GitRepo", os.getenv("GIT_REPO", ""))
+            attrs["GitRepoProject"] = attrs.get("GitRepoProject", os.getenv("GIT_REPO_PROJECT", ""))
 
             gittag = attrs.get("GitTag", None)
-            if (dhapi.is_empty(gittag) and attrs.get('GitBranch', None) is not None):
-                attrs['GitTag'] = attrs.get('GitBranch', os.getenv('GIT_BRANCH', ''))
+            if dhapi.is_empty(gittag) and attrs.get("GitBranch", None) is not None:
+                attrs["GitTag"] = attrs.get("GitBranch", os.getenv("GIT_BRANCH", ""))
 
-            attrs['GitTotalCommittersCnt'] = attrs.get('GitTotalCommittersCnt', os.getenv('GIT_TOTAL_COMMITTERS_CNT', ''))
-            attrs['GitUrl'] = attrs.get('GitUrl', os.getenv('GIT_URL', ''))
+            attrs["GitTotalCommittersCnt"] = attrs.get("GitTotalCommittersCnt", os.getenv("GIT_TOTAL_COMMITTERS_CNT", ""))
+            attrs["GitUrl"] = attrs.get("GitUrl", os.getenv("GIT_URL", ""))
 
-            attrs['JobTriggeredBy'] = attrs.get('JobTriggeredBy', attrs.get('JobTriggerdBy', ''))
+            attrs["JobTriggeredBy"] = attrs.get("JobTriggeredBy", attrs.get("JobTriggerdBy", ""))
 
             lcompattr = {}
             for key, val in attrs.items():
                 lcompattr[key.lower()] = val
 
             chartpath = None
-            if (lcompattr.get('chart', None) is None):
-                if (os.path.exists('helm/' + shortname + '/Chart.yaml')):
-                    attrs['Chart'] = 'helm/' + shortname
-                    chartpath  = 'helm/' + shortname + '/Chart.yaml'
-                elif (os.path.exists('helm/' + shortname + '/Chart.yml')):
-                    attrs['Chart'] = 'helm/' + shortname
-                    chartpath  = 'helm/' + shortname + '/Chart.yml'
-                elif (os.path.exists('chart/' + shortname + '/Chart.yaml')):
-                    attrs['Chart'] = 'chart/' + shortname
-                    chartpath  = 'chart/' + shortname + '/Chart.yaml'
-                elif (os.path.exists('chart/' + shortname + '/Chart.yml')):
-                    attrs['Chart'] = 'chart/' + shortname
-                    chartpath  = 'chart/' + shortname + '/Chart.yml'
-                elif (os.path.exists('charts/' + shortname + '/Chart.yaml')):
-                    attrs['Chart'] = 'charts/' + shortname
-                    chartpath  = 'charts/' + shortname + '/Chart.yaml'
-                elif (os.path.exists('charts/' + shortname + '/Chart.yml')):
-                    attrs['Chart'] = 'charts/' + shortname
-                    chartpath  = 'charts/' + shortname + '/Chart.yml'
+            if lcompattr.get("chart", None) is None:
+                if os.path.exists("helm/" + shortname + "/Chart.yaml"):
+                    attrs["Chart"] = "helm/" + shortname
+                    chartpath = "helm/" + shortname + "/Chart.yaml"
+                elif os.path.exists("helm/" + shortname + "/Chart.yml"):
+                    attrs["Chart"] = "helm/" + shortname
+                    chartpath = "helm/" + shortname + "/Chart.yml"
+                elif os.path.exists("chart/" + shortname + "/Chart.yaml"):
+                    attrs["Chart"] = "chart/" + shortname
+                    chartpath = "chart/" + shortname + "/Chart.yaml"
+                elif os.path.exists("chart/" + shortname + "/Chart.yml"):
+                    attrs["Chart"] = "chart/" + shortname
+                    chartpath = "chart/" + shortname + "/Chart.yml"
+                elif os.path.exists("charts/" + shortname + "/Chart.yaml"):
+                    attrs["Chart"] = "charts/" + shortname
+                    chartpath = "charts/" + shortname + "/Chart.yaml"
+                elif os.path.exists("charts/" + shortname + "/Chart.yml"):
+                    attrs["Chart"] = "charts/" + shortname
+                    chartpath = "charts/" + shortname + "/Chart.yml"
 
-            if (attrs.get('Chart', None) is not None and chartpath  is not None):
+            if attrs.get("Chart", None) is not None and chartpath is not None:
                 chartdata = yaml.safe_load(Path(chartpath).read_text())
-                attrs['ChartVersion'] = chartdata.get('version', '')
+                attrs["ChartVersion"] = chartdata.get("version", "")
 
-            attrs.pop('Readme', None)
-            attrs.pop('readme', None)
-            attrs.pop('README', None)
-            attrs.pop('ReadMe', None)
-            attrs.pop('Swagger', None)
-            attrs.pop('swagger', None)
-            attrs.pop('SWAGGER', None)
-            attrs.pop('License', None)
-            attrs.pop('license', None)
-            attrs.pop('LICENSE', None)
-            attrs.pop('GradleLicense', None)
-            attrs.pop('gradlelicense', None)
-            attrs.pop('GRADLELICENSE', None)
+            attrs.pop("Readme", None)
+            attrs.pop("readme", None)
+            attrs.pop("README", None)
+            attrs.pop("ReadMe", None)
+            attrs.pop("Swagger", None)
+            attrs.pop("swagger", None)
+            attrs.pop("SWAGGER", None)
+            attrs.pop("License", None)
+            attrs.pop("license", None)
+            attrs.pop("LICENSE", None)
+            attrs.pop("GradleLicense", None)
+            attrs.pop("gradlelicense", None)
+            attrs.pop("GRADLELICENSE", None)
 
             pprint(attrs)
             print("")
@@ -817,73 +868,73 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             data = dhapi.update_component_attrs(dhurl, cookies, compname, compvariant, compversion, attrs, crdatasource, changerequest)
             print("Attribute Update Done")
 
-            if (lcompattr.get('readme', None) is None):
-                if (os.path.exists('README')):
-                    lcompattr['readme'] = 'README'
-                elif (os.path.exists('README.md')):
-                    lcompattr['readme'] = 'README.md'
-                elif (os.path.exists('readme')):
-                    lcompattr['readme'] = 'readme'
-                elif (os.path.exists('readme.md')):
-                    lcompattr['readme'] = 'readme.md'
+            if lcompattr.get("readme", None) is None:
+                if os.path.exists("README"):
+                    lcompattr["readme"] = "README"
+                elif os.path.exists("README.md"):
+                    lcompattr["readme"] = "README.md"
+                elif os.path.exists("readme"):
+                    lcompattr["readme"] = "readme"
+                elif os.path.exists("readme.md"):
+                    lcompattr["readme"] = "readme.md"
 
-            if (lcompattr.get('license', None) is None):
-                if (os.path.exists('LICENSE')):
-                    lcompattr['license'] = 'LICENSE'
-                elif (os.path.exists('LICENSE.md')):
-                    lcompattr['license'] = 'LICENSE.md'
-                elif (os.path.exists('license')):
-                    lcompattr['license'] = 'license'
-                elif (os.path.exists('license.md')):
-                    lcompattr['license'] = 'license.md'
+            if lcompattr.get("license", None) is None:
+                if os.path.exists("LICENSE"):
+                    lcompattr["license"] = "LICENSE"
+                elif os.path.exists("LICENSE.md"):
+                    lcompattr["license"] = "LICENSE.md"
+                elif os.path.exists("license"):
+                    lcompattr["license"] = "license"
+                elif os.path.exists("license.md"):
+                    lcompattr["license"] = "license.md"
 
-            if (lcompattr.get('swagger', None) is None):
-                if (os.path.exists('swagger.yaml')):
-                    lcompattr['swagger'] = 'swagger.yaml'
-                elif (os.path.exists('swagger.yml')):
-                    lcompattr['swagger'] = 'swagger.yml'
-                elif (os.path.exists('swagger.json')):
-                    lcompattr['swagger'] = 'swagger.json'
+            if lcompattr.get("swagger", None) is None:
+                if os.path.exists("swagger.yaml"):
+                    lcompattr["swagger"] = "swagger.yaml"
+                elif os.path.exists("swagger.yml"):
+                    lcompattr["swagger"] = "swagger.yml"
+                elif os.path.exists("swagger.json"):
+                    lcompattr["swagger"] = "swagger.json"
 
-            if (lcompattr.get('readme', None) is not None):
-                if (os.path.exists(lcompattr.get('readme'))):
-                    dhapi.post_textfile(dhurl, cookies, compid, lcompattr.get('readme', ''), 'readme')
+            if lcompattr.get("readme", None) is not None:
+                if os.path.exists(lcompattr.get("readme")):
+                    dhapi.post_textfile(dhurl, cookies, compid, lcompattr.get("readme", ""), "readme")
                 else:
-                    print("WARNING: ReadMe not found:"  + lcompattr.get('readme'))
+                    print("WARNING: ReadMe not found:" + lcompattr.get("readme"))
 
-            if (lcompattr.get('license', None) is not None):
-                if (os.path.exists(lcompattr.get('license'))):
-                    dhapi.post_textfile(dhurl, cookies, compid, lcompattr.get('license', ''), 'license')
+            if lcompattr.get("license", None) is not None:
+                if os.path.exists(lcompattr.get("license")):
+                    dhapi.post_textfile(dhurl, cookies, compid, lcompattr.get("license", ""), "license")
                 else:
-                    print("WARNING: License not found:"  + lcompattr.get('license'))
+                    print("WARNING: License not found:" + lcompattr.get("license"))
 
-            if (lcompattr.get('swagger', None) is not None):
-                if (os.path.exists(lcompattr.get('swagger'))):
-                    dhapi.post_textfile(dhurl, cookies, compid, lcompattr.get('swagger', ''), 'swagger')
+            if lcompattr.get("swagger", None) is not None:
+                if os.path.exists(lcompattr.get("swagger")):
+                    dhapi.post_textfile(dhurl, cookies, compid, lcompattr.get("swagger", ""), "swagger")
                 else:
-                    print("WARNING: Swagger not found:"  + lcompattr.get('swagger'))
+                    print("WARNING: Swagger not found:" + lcompattr.get("swagger"))
 
             glic = None
-            if (lcompattr.get('gradlelicense', None) is not None):
-                if (os.path.exists(lcompattr.get('gradlelicense'))):
+            if lcompattr.get("gradlelicense", None) is not None:
+                if os.path.exists(lcompattr.get("gradlelicense")):
                     # Opening JSON file
-                    with open(lcompattr.get('gradlelicense')) as gradle_license:
+                    with open(lcompattr.get("gradlelicense")) as gradle_license:
                         glic = json.load(gradle_license)
                 else:
-                    print("WARNING: Gradle License not found:"  + lcompattr.get('gradlelicense'))
+                    print("WARNING: Gradle License not found:" + lcompattr.get("gradlelicense"))
 
-            if (deppkg):
-                for filename in (deppkg):
+            if deppkg:
+                for filename in deppkg:
                     dhapi.update_deppkgs(dhurl, cookies, compid, filename, glic)
 
-            if (consumes is not None):
+            if consumes is not None:
                 file = open(consumes)
                 payload = file.read().replace("\n", " ")
                 file.close()
                 print("Adding Consuming End Points")
                 dhapi.post_json(dhurl + "/dmadminweb/API2/consumes/" + str(compid), payload, cookies)
 
-            if (provides is not None):
+            if provides is not None:
                 file = open(provides)
                 payload = file.read().replace("\n", " ")
                 file.close()
@@ -893,46 +944,46 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             applist = []
 
             print("AppName=" + str(appname) + " AppAutoInc=" + str(appautoinc))
-            if (dhapi.is_empty(appname) and dhapi.is_not_empty(appautoinc)):  # derive appname and inc
+            if dhapi.is_empty(appname) and dhapi.is_not_empty(appautoinc):  # derive appname and inc
                 data = dhapi.get_component_fromid(dhurl, cookies, parent_compid)
 
-                if (data is not None and 'result' in data):
-                    result = data['result']
-                    if (result.get('applications', None) is not None):
-                        data = result.get('applications', None)
+                if data is not None and "result" in data:
+                    result = data["result"]
+                    if result.get("applications", None) is not None:
+                        data = result.get("applications", None)
                         for app in data:
-                            appname = app.get('domain', '') + "." + app.get('name', '')
-                            appid = app.get('id', '')
+                            appname = app.get("domain", "") + "." + app.get("name", "")
+                            appid = app.get("id", "")
                             appdata = dhapi.get_application_fromid(dhurl, cookies, appid, "latest")
                             latest_appid = appdata[0]
                             # latest_appname = appdata[1]
-                            if (appid == latest_appid):
-                                if (appname is not None):
+                            if appid == latest_appid:
+                                if appname is not None:
                                     applist.append(appname)
             else:
-                if (dhapi.is_not_empty(appname)):
+                if dhapi.is_not_empty(appname):
                     applist.append(appname)
 
             for appname in applist:
                 print(appname)
-                if (dhapi.is_not_empty(saveappver)):
+                if dhapi.is_not_empty(saveappver):
                     appversion = saveappver
                 else:
                     appversion = ""
 
-                if (dhapi.is_empty(appversion)):
-                    parts = appname.split(';')
-                    if (len(parts) == 3):
-                        appname = parts[0] + ';' + parts[1]
+                if dhapi.is_empty(appversion):
+                    parts = appname.split(";")
+                    if len(parts) == 3:
+                        appname = parts[0] + ";" + parts[1]
                         appversion = parts[2]
 
-                if (dhapi.is_empty(appversion)):
-                    parts = appname.split(';')
-                    if (len(parts) == 3):
-                        appname = parts[0] + ';' + parts[1]
+                if dhapi.is_empty(appversion):
+                    parts = appname.split(";")
+                    if len(parts) == 3:
+                        appname = parts[0] + ";" + parts[1]
                         appversion = parts[2]
 
-                if (dhapi.is_empty(appversion)):
+                if dhapi.is_empty(appversion):
                     appversion = ""
 
                 print("Application Version Definition:'" + str(appname) + "' '" + appversion + "' AppAutoInc:" + str(appautoinc))
@@ -941,27 +992,27 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
                 appname = dhapi.get_application_name(dhurl, cookies, appid)
                 print("Using Application Version: " + appname)
 
-                deploydata_dict['application'] = appname
+                deploydata_dict["application"] = appname
 
                 print("Assigning Component Version to Application Version " + appname)
 
                 data = dhapi.add_compver_to_appver(dhurl, cookies, appid, compid)
                 print("Assignment Done")
 
-                if (dhapi.is_not_empty(deployenv)):
-                    print('Deploying ' + appname + ' to ' + deployenv)
+                if dhapi.is_not_empty(deployenv):
+                    print("Deploying " + appname + " to " + deployenv)
                     data = dhapi.deploy_application_by_appid(dhurl, cookies, appid, deployenv)
 
                     deployid = data[0]
-                    if (deployid < 0):
+                    if deployid < 0:
                         print(data[1])
                         sys.exit(1)
 
-                    print('Fetching Logs for ' + str(deployid))
+                    print("Fetching Logs for " + str(deployid))
                     data = dhapi.get_logs(dhurl, cookies, deployid)
 
                     print(data[1])
-                    if (data[0]):
+                    if data[0]:
                         print("Successful")
                     else:
                         print("Failed")
@@ -974,116 +1025,114 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
             cnt = cnt + 1
 
-            if (compname is None):  # leave loop if no more components defined in env
+            if compname is None:  # leave loop if no more components defined in env
                 break
 
-        if (dhapi.is_not_empty(deploydatasave)):
+        if dhapi.is_not_empty(deploydatasave):
             # pprint(deploydata_dict)
-            with open(deploydatasave, 'w') as fpsave:
+            with open(deploydatasave, "w") as fpsave:
                 json.dump(deploydata_dict, fpsave)
 
-        if (retcode == 0):
+        if retcode == 0:
             sys.exit(0)
         else:
             sys.exit(1)
-    elif (action.lower() == "kv"):
-
-        if (dhapi.is_empty(dhurl)):
+    elif action.lower() == "kv":
+        if dhapi.is_empty(dhurl):
             print("--dhurl is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(dhuser)):
+        if dhapi.is_empty(dhuser):
             print("--dhuser is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(dhpass)):
+        if dhapi.is_empty(dhpass):
             print("--dhpass is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(kvconfig) and dhapi.is_empty(deploydata)):
+        if dhapi.is_empty(kvconfig) and dhapi.is_empty(deploydata):
             print("--kvconfig is required")
             sys.exit(1)
 
-        if (dhapi.is_not_empty(deploydata)):
+        if dhapi.is_not_empty(deploydata):
             with open(deploydata, "r") as fin_data:
                 payload = fin_data.read()
 
             data = None
-            if (dhapi.is_not_empty(payload)):
+            if dhapi.is_not_empty(payload):
                 data = json.loads(payload)
 
-            appname = data.get('application', '')
-            appversion = data.get('appversion', '')
-            compname = data.get('config_component', None)
-            compvariant = data.get('environment', '')
-            compversion = ''
-            environment = data.get('environment', '')
+            appname = data.get("application", "")
+            appversion = data.get("appversion", "")
+            compname = data.get("config_component", None)
+            compvariant = data.get("environment", "")
+            compversion = ""
+            environment = data.get("environment", "")
 
-            if (kvconfig is None):
-                kvconfig = data.get('kvconfig', '')
+            if kvconfig is None:
+                kvconfig = data.get("kvconfig", "")
 
-            print('Config for ' + appname + ' to ' + compvariant)
+            print("Config for " + appname + " to " + compvariant)
 
-        if (dhapi.is_empty(compname)):
+        if dhapi.is_empty(compname):
             print("--compname is required")
             sys.exit(1)
 
-        if ('.' in compvariant):
-            compvariant = compvariant.split('.')[-1]
+        if "." in compvariant:
+            compvariant = compvariant.split(".")[-1]
 
-        if (compautoinc is None):
+        if compautoinc is None:
             compautoinc = "Y"
 
         dhapi.set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, environment, crdatasource, changerequest)
 
-    elif (action.lower() == "assign"):
-
-        if (dhapi.is_empty(dhurl)):
+    elif action.lower() == "assign":
+        if dhapi.is_empty(dhurl):
             print("--dhurl is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(dhuser)):
+        if dhapi.is_empty(dhuser):
             print("--dhuser is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(dhpass)):
+        if dhapi.is_empty(dhpass):
             print("--dhpass is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(appname)):
+        if dhapi.is_empty(appname):
             print("--appname is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(compname)):
+        if dhapi.is_empty(compname):
             print("--compname is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(compvariant)):
+        if dhapi.is_empty(compvariant):
             compvariant = ""
 
-        if (dhapi.is_empty(compvariant) and "-v" in compversion):
+        if dhapi.is_empty(compvariant) and "-v" in compversion:
             compvariant = compversion.split("-v")[0]
             compversion = "v" + compversion.split("-v")[1]
 
-        if (dhapi.is_empty(compvariant) and "-V" in compversion):
+        if dhapi.is_empty(compvariant) and "-V" in compversion:
             compvariant = compversion.split("-V")[0]
             compversion = "v" + compversion.split("-V")[1]
 
         saveappver = ""
-        if (dhapi.is_not_empty(appversion)):
+        if dhapi.is_not_empty(appversion):
             saveappver = appversion
 
         assign_completed = []
 
         deploydata_dict = {}
 
-        if (dhapi.is_not_empty(deploydatasave)):
+        if dhapi.is_not_empty(deploydatasave):
             payload = ""
-            if (os.path.isfile(deploydatasave)):
+            if os.path.isfile(deploydatasave):
                 with open(deploydatasave, "r") as fin_data:
                     payload = fin_data.read()
 
-                if (dhapi.is_not_empty(payload)):
+                if dhapi.is_not_empty(payload):
                     deploydata_dict = json.loads(payload)
 
         cnt = 1
@@ -1091,49 +1140,48 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
             # create component version
             [compid, name] = dhapi.get_component(dhurl, cookies, compname, compvariant, compversion, True, False)
 
-            if (compid > 0):
+            if compid > 0:
                 print("Found " + name)
 
-                if (dhapi.is_not_empty(saveappver)):
+                if dhapi.is_not_empty(saveappver):
                     appversion = saveappver
 
-                if (dhapi.is_empty(appversion)):
-                    parts = appname.split(';')
-                    if (len(parts) == 3):
-                        appname = parts[0] + ';' + parts[1]
+                if dhapi.is_empty(appversion):
+                    parts = appname.split(";")
+                    if len(parts) == 3:
+                        appname = parts[0] + ";" + parts[1]
                         appversion = parts[2]
 
-                if (dhapi.is_empty(appversion)):
-                    parts = appname.split(';')
-                    if (len(parts) == 3):
-                        appname = parts[0] + ';' + parts[1]
+                if dhapi.is_empty(appversion):
+                    parts = appname.split(";")
+                    if len(parts) == 3:
+                        appname = parts[0] + ";" + parts[1]
                         appversion = parts[2]
 
-                if (dhapi.is_empty(appversion)):
+                if dhapi.is_empty(appversion):
                     appversion = ""
 
                 data = dhapi.get_application(dhurl, cookies, appname, appversion, True)
                 appid = data[0]
 
-                if (appid < 0):
-                    print("Creating Application Version '" +
-                          str(appname) + "' '" + appversion + "'")
+                if appid < 0:
+                    print("Creating Application Version '" + str(appname) + "' '" + appversion + "'")
                     data = dhapi.new_application(dhurl, cookies, appname, appversion, appautoinc, envs, compid)
                     appid = data[0]
                     appname = dhapi.get_application_name(dhurl, cookies, appid)
                     print("Creation Done: " + appname)
 
-                if (appname not in [assign_completed]):
+                if appname not in [assign_completed]:
                     dhapi.assign_app_to_env(dhurl, cookies, appname, envs)
                     assign_completed.append(appname)
 
                 full_appname = dhapi.get_application_name(dhurl, cookies, appid)
                 full_compname = dhapi.get_component_name(dhurl, cookies, compid)
                 print("Assigning Component Version " + name + " to Application Version " + full_appname)
-                deploydata_dict['application'] = full_appname
-                worklist = deploydata_dict.get('compversion', [])
+                deploydata_dict["application"] = full_appname
+                worklist = deploydata_dict.get("compversion", [])
                 worklist.extend([full_compname])
-                deploydata_dict['compversion'] = worklist
+                deploydata_dict["compversion"] = worklist
 
                 data = dhapi.add_compver_to_appver(dhurl, cookies, appid, compid)
                 print("Assignment Done")
@@ -1145,105 +1193,105 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
             cnt = cnt + 1
 
-            if (compname is None):  # leave loop if no more components defined in env
+            if compname is None:  # leave loop if no more components defined in env
                 break
 
-        if (dhapi.is_not_empty(deploydatasave)):
+        if dhapi.is_not_empty(deploydatasave):
             # pprint(deploydata_dict)
-            with open(deploydatasave, 'w') as fpsave:
+            with open(deploydatasave, "w") as fpsave:
                 json.dump(deploydata_dict, fpsave)
 
-    elif (action.lower() == "approve"):
-        if (dhapi.is_empty(dhurl)):
+    elif action.lower() == "approve":
+        if dhapi.is_empty(dhurl):
             print("--dhurl is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(dhuser)):
+        if dhapi.is_empty(dhuser):
             print("--dhuser is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(dhpass)):
+        if dhapi.is_empty(dhpass):
             print("--dhpass is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(appname)):
+        if dhapi.is_empty(appname):
             print("--appname is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(appversion)):
-            parts = appname.split(';')
-            if (len(parts) == 3):
-                appname = parts[0] + ';' + parts[1]
+        if dhapi.is_empty(appversion):
+            parts = appname.split(";")
+            if len(parts) == 3:
+                appname = parts[0] + ";" + parts[1]
                 appversion = parts[2]
 
-        print('Approving ' + appname + ' ' + appversion)
+        print("Approving " + appname + " " + appversion)
         data = dhapi.approve_application(dhurl, cookies, appname, appversion)
         print(data[1])
-    elif (action.lower() == "move"):
-        if (dhapi.is_empty(appname)):
+    elif action.lower() == "move":
+        if dhapi.is_empty(appname):
             print("--appname is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(from_domain)):
+        if dhapi.is_empty(from_domain):
             print("--from_domain is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(task)):
+        if dhapi.is_empty(task):
             print("--task is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(appversion)):
-            parts = appname.split(';')
-            if (len(parts) == 3):
-                appname = parts[0] + ';' + parts[1]
+        if dhapi.is_empty(appversion):
+            parts = appname.split(";")
+            if len(parts) == 3:
+                appname = parts[0] + ";" + parts[1]
                 appversion = parts[2]
 
-        print('Moving ' + appname + ' ' + appversion + ' from ' + from_domain)
+        print("Moving " + appname + " " + appversion + " from " + from_domain)
         data = dhapi.move_application(dhurl, cookies, appname, appversion, from_domain, task)
         print(data[1])
-    elif (action.lower() == "cluster"):
-        if (dhapi.is_empty(appname)):
+    elif action.lower() == "cluster":
+        if dhapi.is_empty(appname):
             print("--appname is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(appversion)):
-            parts = appname.split(';')
-            if (len(parts) == 3):
-                appname = parts[0] + ';' + parts[1]
+        if dhapi.is_empty(appversion):
+            parts = appname.split(";")
+            if len(parts) == 3:
+                appname = parts[0] + ";" + parts[1]
                 appversion = parts[2]
 
-        if (dhapi.is_empty(cluster_json)):
+        if dhapi.is_empty(cluster_json):
             print("--json is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(todom)):
+        if dhapi.is_empty(todom):
             print("--tomdom is required")
             sys.exit(1)
 
-        print('Syncing cluster from ' + cluster_json)
+        print("Syncing cluster from " + cluster_json)
         dhapi.import_cluster(dhurl, cookies, todom, appname, appversion, appautoinc, deployenv, crdatasource, [], cluster_json, msname, msbranch)
 
-    elif (action.lower() == "envscript"):
-        if (dhapi.is_empty(envvars)):
+    elif action.lower() == "envscript":
+        if dhapi.is_empty(envvars):
             print("--envvars is required")
             sys.exit(1)
 
-        print('Creating env shell script from ' + envvars)
+        print("Creating env shell script from " + envvars)
         envscript(dhurl, cookies, envvars, envvars_sh)
-    elif (action.lower() == "export"):
-        if (dhapi.is_empty(dhurl)):
+    elif action.lower() == "export":
+        if dhapi.is_empty(dhurl):
             print("--dhurl is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(dhuser)):
+        if dhapi.is_empty(dhuser):
             print("--dhuser is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(dhpass)):
+        if dhapi.is_empty(dhpass):
             print("--dhpass is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(fromdom)):
+        if dhapi.is_empty(fromdom):
             print("--fromdom is required")
             sys.exit(1)
 
@@ -1264,32 +1312,32 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
 
         jstr = json.dumps(allobjs, indent=2)
         print(jstr)
-    elif (action.lower() == "import"):
-        if (dhapi.is_empty(dhurl)):
+    elif action.lower() == "import":
+        if dhapi.is_empty(dhurl):
             print("--dhurl is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(dhuser)):
+        if dhapi.is_empty(dhuser):
             print("--dhuser is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(dhpass)):
+        if dhapi.is_empty(dhpass):
             print("--dhpass is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(fromdom)):
+        if dhapi.is_empty(fromdom):
             print("--fromdom is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(todom)):
+        if dhapi.is_empty(todom):
             print("--todom is required")
             sys.exit(1)
 
-        if (dhapi.is_empty(importfile)):
+        if dhapi.is_empty(importfile):
             print("--importfile is required")
             sys.exit(1)
 
-        file = open(importfile, 'r')
+        file = open(importfile, "r")
         all_of_it = file.read()
         file.close()
         jstr = re.sub(fromdom, todom, all_of_it, flags=re.IGNORECASE)
@@ -1313,7 +1361,7 @@ def main(dhurl, dhuser, dhpass, action, appname, appversion, appautoinc, compnam
         sys.exit(1)
 
 
-def envscript(dhurl, cookies, envvars, envvars_sh):
+def envscript(dhurl, cookies, envvars, envvars_sh):  # noqa: C901
     """
     Add the variabes from the envvars toml file to the shell script.
 
@@ -1327,154 +1375,161 @@ def envscript(dhurl, cookies, envvars, envvars_sh):
         no data returned.  Output is in the shell script file.
     """
 
-    if (dhapi.is_empty(envvars_sh)):
-        envvars_sh = 'cloudbuild.sh'
+    if dhapi.is_empty(envvars_sh):
+        envvars_sh = "cloudbuild.sh"
 
-    fp_script = open(envvars_sh, 'a')
+    fp_script = open(envvars_sh, "a")
 
-    lines = subprocess.run(['cat', envvars], check=False, stdout=subprocess.PIPE).stdout.decode('utf-8')
+    lines = subprocess.run(["cat", envvars], check=False, stdout=subprocess.PIPE).stdout.decode("utf-8")
 
     mapping = os.environ
 
-    if (mapping.get('BLDDATE', None) is None):
+    if mapping.get("BLDDATE", None) is None:
         now = datetime.now()
-        mapping['BLDDATE'] = now.strftime("%c")
+        mapping["BLDDATE"] = now.strftime("%c")
     else:
-        mapping['BLDDATE'] = mapping.get('BLDDATE').strip('"')
+        mapping["BLDDATE"] = mapping.get("BLDDATE").strip('"')
 
     # if the buildnum, git_repo, git_url, git_commit_time, git_lines not in os.environ and not in attrvars and not in export then export
     run_fetch = True
-    if (mapping.get('SHORT_SHA', None) is None):
-        mapping['SHORT_SHA'] = dhapi.run_git("git log --oneline -n 1 | cut -d' '  -f1")
+    if mapping.get("SHORT_SHA", None) is None:
+        mapping["SHORT_SHA"] = dhapi.run_git("git log --oneline -n 1 | cut -d' '  -f1")
 
-    if (mapping.get('GIT_COMMIT', None) is None):
-        mapping['GIT_COMMIT'] = dhapi.run_git("git log --oneline -n 1 | cut -d' '  -f1")
+    if mapping.get("GIT_COMMIT", None) is None:
+        mapping["GIT_COMMIT"] = dhapi.run_git("git log --oneline -n 1 | cut -d' '  -f1")
 
-    if (mapping.get('BUILDNUM', None) is None):
-        if (run_fetch):
-            dhapi.run_git('git fetch --unshallow')
+    if mapping.get("BUILDNUM", None) is None:
+        if run_fetch:
+            dhapi.run_git("git fetch --unshallow")
             run_fetch = False
-        mapping['BUILDNUM'] = dhapi.run_git('git log --oneline | wc -l | tr -d " "')
+        mapping["BUILDNUM"] = dhapi.run_git('git log --oneline | wc -l | tr -d " "')
 
-    if (mapping.get('GIT_REPO', None) is None):
-        if (run_fetch):
-            dhapi.run_git('git fetch --unshallow')
+    if mapping.get("GIT_REPO", None) is None:
+        if run_fetch:
+            dhapi.run_git("git fetch --unshallow")
             run_fetch = False
-        mapping['GIT_REPO'] = dhapi.run_git("git config --get remote.origin.url | awk -F/ '{print $(NF-1)\"/\"$NF}'| sed 's/.git$//'")
+        mapping["GIT_REPO"] = dhapi.run_git("git config --get remote.origin.url | awk -F/ '{print $(NF-1)\"/\"$NF}'| sed 's/.git$//'")
 
-    if (mapping.get('GIT_REPO_PROJECT', None) is None):
-        if (run_fetch):
-            dhapi.run_git('git fetch --unshallow')
+    if mapping.get("GIT_REPO_PROJECT", None) is None:
+        if run_fetch:
+            dhapi.run_git("git fetch --unshallow")
             run_fetch = False
-        mapping['GIT_REPO_PROJECT'] = dhapi.run_git("git config --get remote.origin.url | awk -F/ '{print $(NF-1)}'")
+        mapping["GIT_REPO_PROJECT"] = dhapi.run_git("git config --get remote.origin.url | awk -F/ '{print $(NF-1)}'")
 
-    if (mapping.get('GIT_ORG', None) is None):
-        if (run_fetch):
-            dhapi.run_git('git fetch --unshallow')
+    if mapping.get("GIT_ORG", None) is None:
+        if run_fetch:
+            dhapi.run_git("git fetch --unshallow")
             run_fetch = False
-        mapping['GIT_ORG'] = dhapi.run_git("git config --get remote.origin.url | awk -F/ '{print $NF}'| sed 's/.git$//'")
+        mapping["GIT_ORG"] = dhapi.run_git("git config --get remote.origin.url | awk -F/ '{print $NF}'| sed 's/.git$//'")
 
-    if (mapping.get('GIT_URL', None) is None):
-        if (run_fetch):
-            dhapi.run_git('git fetch --unshallow')
+    if mapping.get("GIT_URL", None) is None:
+        if run_fetch:
+            dhapi.run_git("git fetch --unshallow")
             run_fetch = 0
-        mapping['GIT_URL'] = dhapi.run_git("git config --get remote.origin.url")
+        mapping["GIT_URL"] = dhapi.run_git("git config --get remote.origin.url")
 
-    if (mapping.get('GIT_BRANCH', None) is None):
-        if (run_fetch):
-            dhapi.run_git('git fetch --unshallow')
+    if mapping.get("GIT_BRANCH", None) is None:
+        if run_fetch:
+            dhapi.run_git("git fetch --unshallow")
             run_fetch = 0
-        mapping['GIT_BRANCH'] = dhapi.run_git("git rev-parse --abbrev-ref HEAD")
+        mapping["GIT_BRANCH"] = dhapi.run_git("git rev-parse --abbrev-ref HEAD")
 
-    if (mapping.get('GIT_COMMIT_TIMESTAMP', None) is None):
-        if (run_fetch):
-            dhapi.run_git('git fetch --unshallow')
+    if mapping.get("GIT_COMMIT_TIMESTAMP", None) is None:
+        if run_fetch:
+            dhapi.run_git("git fetch --unshallow")
             run_fetch = 0
-        mapping['GIT_COMMIT_TIMESTAMP'] = dhapi.run_git("git log --pretty='format:%cd' " + mapping.get('SHORT_SHA', '')  + " | head -1")
+        mapping["GIT_COMMIT_TIMESTAMP"] = dhapi.run_git("git log --pretty='format:%cd' " + mapping.get("SHORT_SHA", "") + " | head -1")
 
-    if (mapping.get('GIT_BRANCH_PARENT', None) is None):
-        if (run_fetch):
-            dhapi.run_git('git fetch --unshallow')
+    if mapping.get("GIT_BRANCH_PARENT", None) is None:
+        if run_fetch:
+            dhapi.run_git("git fetch --unshallow")
             run_fetch = 0
-        mapping['GIT_BRANCH_PARENT'] = dhapi.run_git("git show-branch -a 2>/dev/null | sed \"s/].*//\" | grep \"\\*\" | grep -v \"$(git rev-parse --abbrev-ref HEAD)\" | head -n1 | sed \"s/^.*\\[//\"")
-        print(mapping['GIT_BRANCH_PARENT'])
+        mapping["GIT_BRANCH_PARENT"] = dhapi.run_git('git show-branch -a 2>/dev/null | sed "s/].*//" | grep "\\*" | grep -v "$(git rev-parse --abbrev-ref HEAD)" | head -n1 | sed "s/^.*\\[//"')
+        print(mapping["GIT_BRANCH_PARENT"])
 
-    if (mapping.get('GIT_BRANCH_CREATE_COMMIT', None) is None):
-        if (run_fetch):
-            dhapi.run_git('git fetch --unshallow')
+    if mapping.get("GIT_BRANCH_CREATE_COMMIT", None) is None:
+        if run_fetch:
+            dhapi.run_git("git fetch --unshallow")
             run_fetch = 0
-        mapping['GIT_BRANCH_CREATE_COMMIT'] = dhapi.run_git("git log --oneline --reverse " +  mapping.get('GIT_BRANCH_PARENT', 'main') + ".." + mapping.get('GIT_BRANCH') + " | head -1 | awk -F' ' '{print $1}'")
+        mapping["GIT_BRANCH_CREATE_COMMIT"] = dhapi.run_git(
+            "git log --oneline --reverse " + mapping.get("GIT_BRANCH_PARENT", "main") + ".." + mapping.get("GIT_BRANCH") + " | head -1 | awk -F' ' '{print $1}'"
+        )
 
-    if (mapping.get('GIT_BRANCH_CREATE_TIMESTAMP', None) is None):
-        if (run_fetch):
-            dhapi.run_git('git fetch --unshallow')
+    if mapping.get("GIT_BRANCH_CREATE_TIMESTAMP", None) is None:
+        if run_fetch:
+            dhapi.run_git("git fetch --unshallow")
             run_fetch = 0
-        mapping['GIT_BRANCH_CREATE_TIMESTAMP'] = dhapi.run_git("git log --pretty='format:%cd' " + mapping.get('GIT_BRANCH_CREATE_COMMIT', 'HEAD') + " | head -1")
+        mapping["GIT_BRANCH_CREATE_TIMESTAMP"] = dhapi.run_git("git log --pretty='format:%cd' " + mapping.get("GIT_BRANCH_CREATE_COMMIT", "HEAD") + " | head -1")
 
-    if (mapping.get('GIT_COMMIT_AUTHORS', None) is None):
-        if (run_fetch):
-            dhapi.run_git('git fetch --unshallow')
+    if mapping.get("GIT_COMMIT_AUTHORS", None) is None:
+        if run_fetch:
+            dhapi.run_git("git fetch --unshallow")
             run_fetch = 0
-        mapping['GIT_COMMIT_AUTHORS'] = dhapi.run_git("git rev-list --remotes --pretty --since='" + mapping.get('GIT_BRANCH_CREATE_TIMESTAMP','') + "' --until='" + mapping.get('GIT_COMMIT_TIMESTAMP','') + "' | grep -i 'Author:' | grep -v dependabot | awk -F'[:<>]' '{print $3}' | sed 's/^ //' | sed 's/ $//' | sort -u | tr '\n' ',' | sed 's/,$//'")
+        mapping["GIT_COMMIT_AUTHORS"] = dhapi.run_git(
+            "git rev-list --remotes --pretty --since='"
+            + mapping.get("GIT_BRANCH_CREATE_TIMESTAMP", "")
+            + "' --until='"
+            + mapping.get("GIT_COMMIT_TIMESTAMP", "")
+            + "' | grep -i 'Author:' | grep -v dependabot | awk -F'[:<>]' '{print $3}' | sed 's/^ //' | sed 's/ $//' | sort -u | tr '\n' ',' | sed 's/,$//'"
+        )
 
-    if (mapping.get('GIT_LINES_TOTAL', None) is None):
-        if (run_fetch):
-            dhapi.run_git('git fetch --unshallow')
+    if mapping.get("GIT_LINES_TOTAL", None) is None:
+        if run_fetch:
+            dhapi.run_git("git fetch --unshallow")
             run_fetch = 0
-        mapping['GIT_LINES_TOTAL'] = dhapi.run_git("wc -l $(git ls-files) | grep total | awk -F' ' '{print $1}'")
+        mapping["GIT_LINES_TOTAL"] = dhapi.run_git("wc -l $(git ls-files) | grep total | awk -F' ' '{print $1}'")
 
-    if (mapping.get('BASENAME', None) is None):
-        mapping['BASENAME'] = os.path.basename(os.getcwd())
+    if mapping.get("BASENAME", None) is None:
+        mapping["BASENAME"] = os.path.basename(os.getcwd())
 
     template = Template(lines)
     lines = template.safe_substitute(**mapping)
 
     vardict = qtoml.loads(lines)
 
-    attrvars = vardict.get('Attributes', {})
+    attrvars = vardict.get("Attributes", {})
     for key, val in attrvars.items():
         vardict[key] = val
 
-    if (mapping.get('GIT_TOTAL_COMMITTERS_CNT', None) is None and attrvars.get('TotalCommittersCnt', attrvars.get('GitTotalCommittersCnt', None)) is not None):
-        mapping['GIT_TOTAL_COMMITTERS_CNT'] = attrvars.get('TotalCommittersCnt', attrvars.get('GitTotalCommittersCnt', None))
+    if mapping.get("GIT_TOTAL_COMMITTERS_CNT", None) is None and attrvars.get("TotalCommittersCnt", attrvars.get("GitTotalCommittersCnt", None)) is not None:
+        mapping["GIT_TOTAL_COMMITTERS_CNT"] = attrvars.get("TotalCommittersCnt", attrvars.get("GitTotalCommittersCnt", None))
 
-    if (mapping.get('GIT_COMMITTERS_CNT', None) is None and mapping.get('GIT_COMMIT_AUTHORS', None) is not None):
-        mapping['GIT_COMMITTERS_CNT'] = str(len(mapping.get('GIT_COMMIT_AUTHORS').split(',')))
-    
-    if (mapping.get('GIT_COMMITTERS_CNT', None) is not None and mapping.get('GIT_TOTAL_COMMITTERS_CNT', None) is not None):
-        mapping['GIT_CONTRIB_PERCENTAGE'] = str(round(int(mapping.get('GIT_COMMITTERS_CNT')) / int(mapping.get('GIT_TOTAL_COMMITTERS_CNT')) * 100))
-    else: 
-        mapping['GIT_CONTRIB_PERCENTAGE'] = '0'
+    if mapping.get("GIT_COMMITTERS_CNT", None) is None and mapping.get("GIT_COMMIT_AUTHORS", None) is not None:
+        mapping["GIT_COMMITTERS_CNT"] = str(len(mapping.get("GIT_COMMIT_AUTHORS").split(",")))
 
+    if mapping.get("GIT_COMMITTERS_CNT", None) is not None and mapping.get("GIT_TOTAL_COMMITTERS_CNT", None) is not None:
+        mapping["GIT_CONTRIB_PERCENTAGE"] = str(round(int(mapping.get("GIT_COMMITTERS_CNT")) / int(mapping.get("GIT_TOTAL_COMMITTERS_CNT")) * 100))
+    else:
+        mapping["GIT_CONTRIB_PERCENTAGE"] = "0"
 
-    export_vars = vardict.get('Export', {})
+    export_vars = vardict.get("Export", {})
 
     for key, val in mapping.items():
-        if (export_vars.get(key, None) is None):
+        if export_vars.get(key, None) is None:
             export_vars[key] = val
 
-        if (vardict.get(key, None) is None):
+        if vardict.get(key, None) is None:
             vardict[key] = val
 
-    compname = vardict.get('Name', None)
-    compvariant = vardict.get('Variant', None)
+    compname = vardict.get("Name", None)
+    compvariant = vardict.get("Variant", None)
 
-    if (compname is not None):
+    if compname is not None:
         gitcommit = dhapi.get_previous_commit(dhurl, cookies, compname, compvariant)
-        if (dhapi.is_not_empty(gitcommit)):
-            if (run_fetch):
-                dhapi.run_git('git fetch --unshallow')
+        if dhapi.is_not_empty(gitcommit):
+            if run_fetch:
+                dhapi.run_git("git fetch --unshallow")
                 run_fetch = 0
-            export_vars['GIT_PREVIOUS_COMPONENT_COMMIT'] = gitcommit
-            export_vars['GIT_LINES_ADDED'] = dhapi.run_git("git diff --stat " + mapping.get('SHORT_SHA', '') + " " + gitcommit + ' | grep changed | cut -d" " -f5')
-            export_vars['GIT_LINES_DELETED'] = dhapi.run_git("git diff --stat " + mapping.get('SHORT_SHA', '') + " " + gitcommit + ' | grep changed | cut -d" " -f7')
+            export_vars["GIT_PREVIOUS_COMPONENT_COMMIT"] = gitcommit
+            export_vars["GIT_LINES_ADDED"] = dhapi.run_git("git diff --stat " + mapping.get("SHORT_SHA", "") + " " + gitcommit + ' | grep changed | cut -d" " -f5')
+            export_vars["GIT_LINES_DELETED"] = dhapi.run_git("git diff --stat " + mapping.get("SHORT_SHA", "") + " " + gitcommit + ' | grep changed | cut -d" " -f7')
         else:
-            export_vars['GIT_PREVIOUS_COMPONENT_COMMIT'] = ""
-            export_vars['GIT_LINES_ADDED'] = "0"
-            export_vars['GIT_LINES_DELETED'] = "0"
+            export_vars["GIT_PREVIOUS_COMPONENT_COMMIT"] = ""
+            export_vars["GIT_LINES_ADDED"] = "0"
+            export_vars["GIT_LINES_DELETED"] = "0"
 
-    if (mapping.get('BASENAME', None) is not None):
-        export_vars['BASENAME'] = mapping['BASENAME']
+    if mapping.get("BASENAME", None) is not None:
+        export_vars["BASENAME"] = mapping["BASENAME"]
 
     for key in sorted(export_vars):
         line = export_vars[key]
@@ -1483,7 +1538,7 @@ def envscript(dhurl, cookies, envvars, envvars_sh):
 
         template = Template(line)
         line = template.safe_substitute(**mapping)
-        fp_script.write("export " + key + "=\"" + line + "\"\n")
+        fp_script.write("export " + key + '="' + line + '"\n')
 
     fp_script.close()
     os.chmod(envvars_sh, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
@@ -1508,7 +1563,7 @@ def filterdict(dhurl, cookies, objtype, fromdom, allobjs):
     objlist = []
     for obj in data.get(objtype, []):
         objname = obj.get("objname", "")
-        if (fromdom.lower() in objname.lower()):
+        if fromdom.lower() in objname.lower():
             objlist.append(obj)
 
     allobjs[objtype] = objlist
@@ -1536,5 +1591,5 @@ def importdict(dhurl, cookies, objtype, allobjs):
         pprint(data)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
