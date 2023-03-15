@@ -205,8 +205,6 @@ import re
 import stat
 import subprocess
 import sys
-import time
-from cmath import exp
 from datetime import datetime
 from pprint import pprint
 from string import Template
@@ -215,7 +213,6 @@ import click
 import qtoml
 import yaml
 from deployhub import dhapi
-from pydantic import NoneIsAllowedError
 
 
 @click.command()
@@ -340,7 +337,7 @@ def main(  # noqa: C901
         rsp = "component.toml"
 
     if os.path.exists(rsp):
-        file = open(rsp)
+        file = open(rsp, mode="r", encoding="utf-8")
         lines = file.read()
         file.close()
         mapping = os.environ
@@ -528,7 +525,7 @@ def main(  # noqa: C901
                 sys.exit(1)
         else:
             payload = ""
-            with open(deploydata, "r") as fin_data:
+            with open(deploydata, mode="r", encoding="utf-8") as fin_data:
                 payload = fin_data.read()
 
             data = {}
@@ -584,7 +581,7 @@ def main(  # noqa: C901
             if not logdeployment:
                 data["skipdeploy"] = "Y"
 
-            with open(deploydata, "w") as fpsave:
+            with open(deploydata, mode="w", encoding="utf-8") as fpsave:
                 json.dump(data, fpsave)
 
             # Check if just logging deployment
@@ -699,7 +696,7 @@ def main(  # noqa: C901
         if dhapi.is_not_empty(deploydatasave):
             payload = ""
             if os.path.isfile(deploydatasave):
-                with open(deploydatasave, "r") as fin_data:
+                with open(deploydatasave, mode="r", encoding="utf-8") as fin_data:
                     payload = fin_data.read()
 
             data = {}
@@ -758,7 +755,7 @@ def main(  # noqa: C901
                 if value.startswith("@"):
                     value = value[1:]
                     if os.path.exists(value):
-                        value = open(value, "r").read().replace("\n", "")
+                        value = open(value, mode="r", encoding="utf-8").read().replace("\n", "")
                         attrs[key] = value
                     else:
                         attrs[key] = ""
@@ -784,7 +781,7 @@ def main(  # noqa: C901
                 if ":" in dockerrepo:
                     parts = dockerrepo.split(":")
                     attrs["DockerRepo"] = parts[0]
-                    if attrs.get("DockerTag", None) in None:
+                    if attrs.get("DockerTag", None) is None:
                         attrs["DockerTag"] = parts[1]
 
             attrs["GitBranch"] = attrs.get("GitBranch", os.getenv("GIT_BRANCH", ""))
@@ -843,7 +840,7 @@ def main(  # noqa: C901
                     chartpath = "charts/" + shortname + "/Chart.yml"
 
             if attrs.get("Chart", None) is not None and chartpath is not None:
-                chartdata = yaml.safe_load(Path(chartpath).read_text())
+                chartdata = yaml.safe_load(Path(chartpath).read_text(encoding="utf-8"))
                 attrs["ChartVersion"] = chartdata.get("version", "")
 
             attrs.pop("Readme", None)
@@ -918,7 +915,7 @@ def main(  # noqa: C901
             if lcompattr.get("gradlelicense", None) is not None:
                 if os.path.exists(lcompattr.get("gradlelicense")):
                     # Opening JSON file
-                    with open(lcompattr.get("gradlelicense")) as gradle_license:
+                    with open(lcompattr.get("gradlelicense"), mode="r", encoding="utf-8") as gradle_license:
                         glic = json.load(gradle_license)
                 else:
                     print("WARNING: Gradle License not found:" + lcompattr.get("gradlelicense"))
@@ -928,14 +925,14 @@ def main(  # noqa: C901
                     dhapi.update_deppkgs(dhurl, cookies, compid, filename, glic)
 
             if consumes is not None:
-                file = open(consumes)
+                file = open(consumes, mode="r", encoding="utf-8")
                 payload = file.read().replace("\n", " ")
                 file.close()
                 print("Adding Consuming End Points")
                 dhapi.post_json(dhurl + "/dmadminweb/API2/consumes/" + str(compid), payload, cookies)
 
             if provides is not None:
-                file = open(provides)
+                file = open(provides, mode="r", encoding="utf-8")
                 payload = file.read().replace("\n", " ")
                 file.close()
                 print("Adding Providing End Points")
@@ -1030,7 +1027,7 @@ def main(  # noqa: C901
 
         if dhapi.is_not_empty(deploydatasave):
             # pprint(deploydata_dict)
-            with open(deploydatasave, "w") as fpsave:
+            with open(deploydatasave, mode="w", encoding="utf-8") as fpsave:
                 json.dump(deploydata_dict, fpsave)
 
         if retcode == 0:
@@ -1055,7 +1052,7 @@ def main(  # noqa: C901
             sys.exit(1)
 
         if dhapi.is_not_empty(deploydata):
-            with open(deploydata, "r") as fin_data:
+            with open(deploydata, mode="r", encoding="utf-8") as fin_data:
                 payload = fin_data.read()
 
             data = None
@@ -1129,7 +1126,7 @@ def main(  # noqa: C901
         if dhapi.is_not_empty(deploydatasave):
             payload = ""
             if os.path.isfile(deploydatasave):
-                with open(deploydatasave, "r") as fin_data:
+                with open(deploydatasave, mode="r", encoding="utf-8") as fin_data:
                     payload = fin_data.read()
 
                 if dhapi.is_not_empty(payload):
@@ -1198,7 +1195,7 @@ def main(  # noqa: C901
 
         if dhapi.is_not_empty(deploydatasave):
             # pprint(deploydata_dict)
-            with open(deploydatasave, "w") as fpsave:
+            with open(deploydatasave, mode="w", encoding="utf-8") as fpsave:
                 json.dump(deploydata_dict, fpsave)
 
     elif action.lower() == "approve":
@@ -1337,7 +1334,7 @@ def main(  # noqa: C901
             print("--importfile is required")
             sys.exit(1)
 
-        file = open(importfile, "r")
+        file = open(importfile, mode="r", encoding="utf-8")
         all_of_it = file.read()
         file.close()
         jstr = re.sub(fromdom, todom, all_of_it, flags=re.IGNORECASE)
@@ -1378,7 +1375,7 @@ def envscript(dhurl, cookies, envvars, envvars_sh):  # noqa: C901
     if dhapi.is_empty(envvars_sh):
         envvars_sh = "cloudbuild.sh"
 
-    fp_script = open(envvars_sh, "a")
+    fp_script = open(envvars_sh, mode="a", encoding="utf-8")
 
     lines = subprocess.run(["cat", envvars], check=False, stdout=subprocess.PIPE).stdout.decode("utf-8")
 
@@ -1497,7 +1494,7 @@ def envscript(dhurl, cookies, envvars, envvars_sh):  # noqa: C901
     if mapping.get("GIT_COMMITTERS_CNT", None) is None and mapping.get("GIT_COMMIT_AUTHORS", None) is not None:
         mapping["GIT_COMMITTERS_CNT"] = str(len(mapping.get("GIT_COMMIT_AUTHORS").split(",")))
 
-    if mapping.get("GIT_COMMITTERS_CNT", None) is not None and mapping.get("GIT_TOTAL_COMMITTERS_CNT", None) is not None:
+    if mapping.get("GIT_COMMITTERS_CNT", None) is not None and mapping.get("GIT_TOTAL_COMMITTERS_CNT", None) is not None and str(mapping.get("GIT_TOTAL_COMMITTERS_CNT", 0)) != "0":
         mapping["GIT_CONTRIB_PERCENTAGE"] = str(round(int(mapping.get("GIT_COMMITTERS_CNT")) / int(mapping.get("GIT_TOTAL_COMMITTERS_CNT")) * 100))
     else:
         mapping["GIT_CONTRIB_PERCENTAGE"] = "0"
