@@ -1494,7 +1494,12 @@ def envscript(dhurl, cookies, envvars, envvars_sh):  # noqa: C901
     if mapping.get("GIT_COMMITTERS_CNT", None) is None and mapping.get("GIT_COMMIT_AUTHORS", None) is not None:
         mapping["GIT_COMMITTERS_CNT"] = str(len(mapping.get("GIT_COMMIT_AUTHORS").split(",")))
 
-    if mapping.get("GIT_COMMITTERS_CNT", None) is not None and mapping.get("GIT_TOTAL_COMMITTERS_CNT", None) is not None and str(mapping.get("GIT_TOTAL_COMMITTERS_CNT", 0)) != "0":
+    if (
+        mapping.get("GIT_COMMITTERS_CNT", None) is not None
+        and mapping.get("GIT_TOTAL_COMMITTERS_CNT", None) is not None
+        and str(mapping.get("GIT_TOTAL_COMMITTERS_CNT", 0)) != "0"
+        and str(mapping.get("GIT_TOTAL_COMMITTERS_CNT", "") != "")
+    ):
         mapping["GIT_CONTRIB_PERCENTAGE"] = str(round(int(mapping.get("GIT_COMMITTERS_CNT")) / int(mapping.get("GIT_TOTAL_COMMITTERS_CNT")) * 100))
     else:
         mapping["GIT_CONTRIB_PERCENTAGE"] = "0"
