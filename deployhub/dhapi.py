@@ -158,7 +158,7 @@ def is_not_empty(my_string):
 
 def sslcerts(dhurl, customcert):
     try:
-        requests.get(dhurl, timeout=3000)
+        requests.get(dhurl, timeout=30)
     except requests.exceptions.SSLError:
         print("Adding custom certs to certifi store...")
         cafile = certifi.where()
