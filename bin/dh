@@ -1383,8 +1383,12 @@ def envscript(dhurl, cookies, envvars, envvars_sh):  # noqa: C901
 
     fp_script = None
 
+<<<<<<< HEAD
     if dhapi.is_not_empty(envvars_sh):
         fp_script = open(envvars_sh, mode="a", encoding="utf-8")
+=======
+    fp_script = open(envvars_sh, mode="a", encoding="utf-8")
+>>>>>>> 2dc4f6b (fix div by 0)
 
     lines = subprocess.run(["cat", envvars], check=False, stdout=subprocess.PIPE).stdout.decode("utf-8")
 
@@ -1514,12 +1518,16 @@ def envscript(dhurl, cookies, envvars, envvars_sh):  # noqa: C901
     if mapping.get("GIT_COMMITTERS_CNT", None) is None and mapping.get("GIT_COMMIT_AUTHORS", None) is not None:
         mapping["GIT_COMMITTERS_CNT"] = str(len(mapping.get("GIT_COMMIT_AUTHORS").split(",")))
 
+<<<<<<< HEAD
     if (
         mapping.get("GIT_COMMITTERS_CNT", None) is not None
         and mapping.get("GIT_TOTAL_COMMITTERS_CNT", None) is not None
         and str(mapping.get("GIT_TOTAL_COMMITTERS_CNT", 0)) != "0"
         and str(mapping.get("GIT_TOTAL_COMMITTERS_CNT", "") != "")
     ):
+=======
+    if mapping.get("GIT_COMMITTERS_CNT", None) is not None and mapping.get("GIT_TOTAL_COMMITTERS_CNT", None) is not None and str(mapping.get("GIT_TOTAL_COMMITTERS_CNT", 0)) != "0":
+>>>>>>> 2dc4f6b (fix div by 0)
         mapping["GIT_CONTRIB_PERCENTAGE"] = str(round(int(mapping.get("GIT_COMMITTERS_CNT")) / int(mapping.get("GIT_TOTAL_COMMITTERS_CNT")) * 100))
     else:
         mapping["GIT_CONTRIB_PERCENTAGE"] = "0"
