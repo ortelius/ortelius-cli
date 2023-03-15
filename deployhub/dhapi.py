@@ -155,7 +155,7 @@ def is_not_empty(my_string):
 
 def sslcerts(dhurl, customcert):
     try:
-        requests.get(dhurl)
+        requests.get(dhurl, timeout=30)
     except requests.exceptions.SSLError:
         print("Adding custom certs to certifi store...")
         cafile = certifi.where()
@@ -1286,9 +1286,7 @@ def get_component_from_tag(dhurl, cookies, image_tag):
     if data is None:
         return -1
 
-    id = data.get("id", -1)
-
-    return id
+    return data.get("id", -1)
 
 
 def new_application(dhurl, cookies, appname, appversion, appautoinc, envs, compid):
@@ -1506,7 +1504,7 @@ def clone_repo(project):
         print("features.toml not found")
         return data
 
-    with open("features.toml", "r") as fin:
+    with open("features.toml", mode="r", encoding="utf-8") as fin:
         tmpstr = fin.read()
         data = qtoml.loads(tmpstr)
     return data
@@ -1533,7 +1531,7 @@ def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, depl
         appversion = ""
 
     if os.path.exists(cluster_json):
-        stream = open(cluster_json, "r")
+        stream = open(cluster_json, mode="r", encoding="utf-8")
         values = json.load(stream)
         newvals.update(values)
         stream.close()
@@ -1695,7 +1693,7 @@ def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, depl
             deploy["application"] = appid
             deploy["environment"] = deployenv
             deploy["rc"] = 0
-            with open(deploydata, "w") as fp:
+            with open(deploydata, mode="w", encoding="utf-8") as fp:
                 json.dump(deploy, fp)
             fp.close()
             log_deploy_application(dhurl, cookies, deploydata)
@@ -1740,7 +1738,7 @@ def log_deploy_application(dhurl, cookies, deploydata):
     url = dhurl + "/dmadminweb/API/deploy"
 
     payload = ""
-    with open(deploydata, "r") as fin_data:
+    with open(deploydata, mode="r", encoding="utf-8") as fin_data:
         payload = fin_data.read()
 
     data = {}
@@ -1829,7 +1827,7 @@ def upload_helm(dhurl, cookies, fullcompname, chart, chartversion, chartvalues, 
     content_list = []
 
     if os.path.isfile("helm/" + chartvalues):
-        my_file = open("helm/" + chartvalues, "r")
+        my_file = open("helm/" + chartvalues, mode="r", encoding="utf-8")
         content_list = my_file.readlines()
         my_file.close()
 
@@ -1843,7 +1841,7 @@ def upload_helm(dhurl, cookies, fullcompname, chart, chartversion, chartvalues, 
     content_list = list(filter(lambda x: "tenant" not in x, content_list))
 
     if is_not_empty(chartvalues):
-        my_file = open("helm/" + chartvalues, "w")
+        my_file = open("helm/" + chartvalues, mode="w", encoding="utf-8")
         my_file.writelines(content_list)
         my_file.close()
 
@@ -1980,7 +1978,7 @@ def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, comp
 
         repo = "/".join(kvconfig.split("/")[:2])
         kvconfig = "/".join(kvconfig.split("/")[1:])
-        gitdir = kvconfig.split("/")[0]
+        gitdir = kvconfig.split("/", maxsplit=1)[0]
         kvconfig = "/".join(kvconfig.split("/")[1:])
 
         pwd = os.getcwd()
@@ -2170,7 +2168,7 @@ def update_deppkgs(dhurl, cookies, compid, filename, glic):
     filetype = parts[0].lower()
     filename = parts[1]
 
-    with open(filename, "r") as fin_data:
+    with open(filename, mode="r", encoding="utf-8") as fin_data:
         data = json.load(fin_data)
 
         if glic is not None:
