@@ -1573,6 +1573,10 @@ def envscript(dhurl, cookies, envvars, envvars_sh):  # noqa: C901
 
         if fp_script is not None:
             fp_script.write("export " + key + '="' + line + '"\n')
+<<<<<<< HEAD
+=======
+        
+>>>>>>> d14a494 (add signature and signed-off-by)
         os.environ[key] = line
 
     if fp_script is not None:
