@@ -740,6 +740,8 @@ def main(  # noqa: C901
 
             print("Creation Done: " + compname)
 
+            envscript(dhurl, cookies, rsp, None)
+
             print("Updating Component Attributes\n")
             for attr in compattr:
                 if ":" in attr:
@@ -797,6 +799,12 @@ def main(  # noqa: C901
             attrs["GitLinesDeleted"] = attrs.get("GitLinesDeleted", os.getenv("GIT_LINES_DELETED", ""))
             attrs["GitLinesTotal"] = attrs.get("GitLinesTotal", os.getenv("GIT_LINES_TOTAL", ""))
             attrs["GitOrg"] = attrs.get("GitOrg", os.getenv("GIT_ORG", ""))
+            attrs["GitSignedOffBy"] = attrs.get("GitSignedOffBy", os.getenv("GIT_SIGNED_OFF_BY", ""))
+
+            if str(attrs.get("GitVerifyCommit", os.getenv("GIT_VERIFY_COMMIT", "")) == "1":
+                attrs["GitVerifyCommit"] = "Y"
+            else:
+                attrs["GitVerifyCommit"] = "N"
 
             if attrs.get("GitRepo", None) is None:
                 if "/" in os.getenv("GIT_URL", ""):
@@ -1378,10 +1386,11 @@ def envscript(dhurl, cookies, envvars, envvars_sh):  # noqa: C901
         no data returned.  Output is in the shell script file.
     """
 
-    if dhapi.is_empty(envvars_sh):
-        envvars_sh = "cloudbuild.sh"
 
-    fp_script = open(envvars_sh, mode="a", encoding="utf-8")
+    fp_script = None
+
+    if dhapi.is_not_empty(envvars_sh):
+        fp_script = open(envvars_sh, mode="a", encoding="utf-8")
 
     lines = subprocess.run(["cat", envvars], check=False, stdout=subprocess.PIPE).stdout.decode("utf-8")
 
@@ -1400,6 +1409,12 @@ def envscript(dhurl, cookies, envvars, envvars_sh):  # noqa: C901
 
     if mapping.get("GIT_COMMIT", None) is None:
         mapping["GIT_COMMIT"] = dhapi.run_git("git log --oneline -n 1 | cut -d' '  -f1")
+
+    if mapping.get("GIT_VERIFY_COMMIT", None) is None:
+        mapping["GIT_VERIFY_COMMIT"] = dhapi.run_git("git verify-commit " + mapping.get("GIT_COMMIT","") + " 2>&1 | grep -i 'Signature made' | wc -l")
+
+    if mapping.get("GIT_SIGNED_OFF_BY", None) is None:
+        mapping["GIT_SIGNED_OFF_BY"] = dhapi.run_git("git log -1 " + mapping.get("GIT_COMMIT","") + " | grep 'Signed-off-by:' | cut -d: -f2 | sed 's/^[ \t]*//;s/[ \t]*$//'")
 
     if mapping.get("BUILDNUM", None) is None:
         if run_fetch:
@@ -1546,10 +1561,18 @@ def envscript(dhurl, cookies, envvars, envvars_sh):  # noqa: C901
 
         template = Template(line)
         line = template.safe_substitute(**mapping)
-        fp_script.write("export " + key + '="' + line + '"\n')
 
-    fp_script.close()
-    os.chmod(envvars_sh, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+        if fp_script is not None:
+            fp_script.write("export " + key + '="' + line + '"\n')
+        
+        os.environ[key] = line
+
+    if fp_script is not None:
+        fp_script.close()
+        os.chmod(envvars_sh, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+
+    for key in sorted(mapping):
+        os.environ[key] = mapping.get(key, "")
 
 
 def filterdict(dhurl, cookies, objtype, fromdom, allobjs):
