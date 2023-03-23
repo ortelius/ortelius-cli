@@ -16,7 +16,7 @@ The CLI Python script interacts with the Ortelius REST APIs to perform:
 - Upload Swagger and SBOM files to _Component Version_
 
 
-## CLI Prerequisites 
+## CLI Prerequisites
 
 1. [Install Python 3.8 or newer](https://www.python.org/downloads/)
 2. Install Ortelius CLI
@@ -24,7 +24,7 @@ The CLI Python script interacts with the Ortelius REST APIs to perform:
    `pip install --upgrade ortelius-cli`
 
 ## Get Started with a POC
-Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc.pdf) to get started. This POC provides you the steps to incorporate Ortelius into your Pipeline, with SBOM generation. 
+Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc.pdf) to get started. This POC provides you the steps to incorporate Ortelius into your Pipeline, with SBOM generation.
 
 
 ## Ortelius' CLI using the dhapi module.
@@ -33,7 +33,7 @@ Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc
 
 
   ACTION - one of the following
-  
+
 - `deploy` - deploy the _Application_ to the _Environment_
   Usage:
   --dhurl
@@ -42,7 +42,7 @@ Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc
   --appname
   --appversion (optional)
   --deployenv
-  
+
 - `approve` - approve the _Application Version_
   Usage:
   --dhurl
@@ -50,7 +50,7 @@ Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc
   --dhpass
   --appname
   --appversion (optional)
-  
+
 - `move` - move the _Application Version_ using the supplied task
   Usage:
   --dhurl
@@ -60,7 +60,7 @@ Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc
   --appversion (optional)
   --from_domain
   --task
-  
+
 - `updatecomp` - create/replace the _Component Version_ for the _Application Version_ with SBOM (CycloneDX or SPDX formats).
   Usage:
   --dhurl
@@ -135,7 +135,7 @@ Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc
   ServiceOwnerPhone = ""                                      # Phone number for the Owner of the Service
   Swagger = ""                                                # Swagger/OpenApi file location in the Git Repo (DERIVED IF NOT SPECIFIED)
   ```
-  
+
 - `assign` - assigns a _Component Version_ to an _Application Version_
   Usage:
   --dhurl
@@ -146,7 +146,7 @@ Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc
   --compversion (optional)
   --appname
   --appversion (optional)
-  
+
 - `kv` - assigns the key/values pairs to the _Component Version_
   Usage:
   --dhurl
@@ -156,19 +156,19 @@ Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc
   --compvariant (optional)
   --compversion (optional)
   --kvconfig
-  
+
 - `envscript` - creates a bash file from the _Component_ toml file
   Usage:
   --envvars
   --envvars_sh
-  
+
 - `export` - exports a _Domain_ including all objects to stdout
   Usage:
   --dhurl
   --dhuser
   --dhpass
   --from_dom
-  
+
 - `import` - imports the export file into the new _Domain_
   Usage:
   --dhurl
@@ -176,11 +176,11 @@ Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc
   --dhpass
   --from_dom
   --to_dom
-  
+
 #### Parameter Usage
-  
+
   | Parameter| Descriptions |
-  | --- | --- | 
+  | --- | --- |
   | appautoinc | _Application_ Auto Increment Version |
   | appname | _Application_ Name |
   | appversion | _Application Version_ |
@@ -217,4 +217,3 @@ Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc
   | rsp | Response File for Parameters, ie component.toml |
   | task | Task to use for move |
   | todom | To _Domain_ |
-
