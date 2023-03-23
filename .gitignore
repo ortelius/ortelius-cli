@@ -1,5 +1,4 @@
 # Byte-compiled / optimized / DLL files
-.vscode/
 __pycache__/
 *.py[cod]
 *$py.class
@@ -129,4 +128,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+#DS_Store
 .DS_Store
+**/.DS_Store
+
+# MegaLinter
+megalinter-reports/

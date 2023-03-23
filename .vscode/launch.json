@@ -1,0 +1,81 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+
+  // just kv update
+  // "args": ["kv", "--dhuser", "stella99", "--dhpass", "123456", "--dhurl", "http://192.168.3.116:8181", "--deploydata", "/Users/steve/Downloads/config-only.json"],
+
+  // package deploy
+  // "args": ["deploy", "--dhuser", "stella99", "--dhpass", "123456", "--dhurl", "http://192.168.3.116:8181", "--deploydata", "/Users/steve/Downloads/deploy-package.json"],
+
+  // hotfix deploy
+  // "args": ["deploy", "--dhuser", "stella99", "--dhpass", "123456", "--dhurl", "http://192.168.3.116:8181", "--deploydata", "/Users/steve/Downloads/deploy-hotfix.json"],
+
+  // deploy comp
+  // "args": ["deploy", "--dhuser", "stella99", "--dhpass", "123456", "--dhurl", "http://192.168.3.116:8181", "--compname", "GLOBAL.Online Store Company.Store Services.Ad Service.adservice", "--compversion", "v1.2.2.166-ga2e427f", "--appautoinc", "Y",  "--compattr", "GitBranch:master", "--compattr", "GitCommit:a2e427fe30fdf49c39f927425e26f8cfaed6a38e", "--compattr", "GitRepo:ortelius/store-cartservice", "--compattr", "GitTag:master", "--compattr", "GitUrl:git@github.com:ortelius/store-cartservice.git"],
+
+  // comp deploy
+  // "args": ["deploy", "--dhuser", "stella77", "--dhpass", "123456", "--dhurl", "https://console.deployhub.com", "--compname", "GLOBAL.SF Tech.Online Store Company.Purchase Processing.Cart Service.cartservice", "--compversion", "v1_2_2_150_gaf700a7"],
+
+  // numerix
+  //  "args": ["deploy", "--dhuser", "stella99", "--dhpass", "123456", "--dhurl", "http://192.168.3.116:8181", "--deploydata", "/Users/steve/Downloads/deploy-package-hotfix-config.json", "--compautoinc", "y"],
+
+  // "args": ["deploy", "--dhuser", "stella99", "--dhpass", "123456", "--dhurl", "http://192.168.3.116:8181", "--deploydata", "/Users/steve/Downloads/deploy-package-hotfix-config.json", "--compautoinc", "y"],
+
+  // "args": ["import", "--dhurl", "http://192.168.3.116:8181", "--dhuser", "admin", "--dhpass", "admin", "--fromdom", "GLOBAL.Test_Project", "--todom", "GLOBAL.Test_Project2", "--importfile", "/Users/steve/Downloads/export.json"],
+
+  // "args": [ "updatecomp",  "--dhurl", "http://localhost:8181", "--dhuser", "admin", "--dhpass", "Littlebear01", "--compname", "GLOBAL.Online Store Company.Store Services.Email Service.emailservice", "--compversion", "v1_2_2_16_g1e9e5ac", "--compattr", "FOO:BAR", "--docker", "--crdatasource", "GOBAL.jira", "--changerequest", "HS-1", "--changerequest", "HS-2"],
+
+  // "args": ["import", "--dhurl", "http://192.168.3.116:8181", "--dhuser", "admin", "--dhpass", "Littlebear01", "--fromdom", "GLOBAL.Test_Project", "--todom", "GLOBAL.Test_Project2", "--importfile", "/Users/steve/Downloads/export-ct.json"],
+
+  // "args": [ "updatecomp",  "--dhurl", "http://localhost:8181", "--dhuser", "admin", "--dhpass", "Littlebear01", "--compname", "GLOBAL.Online Store Company.Store Services.Email Service.emailservice",  "--compversion",  "v1_2_2_25-g7b7dd32", "--docker", "--crdatasource", "GLOBAL.jira", "--appautoinc", "Y", "--changerequest", "HS-1,HS-2", "--compattr", "DockerRepo:quay.io/hipsterstore/emailservice", "--compattr", "DockerTag:v1_2_2_25-g7b7dd32", "--compattr", "DockerSha:f3cf20457e71c44edffa17ea04939d61585d692877e40b52879c4f7bba3dfca4" ],
+
+  // "args": [ "cluster",  "--dhurl", "https://console.deployhub.com", "--dhuser", "bodhi", "--dhpass", "123456", "--appname", "GLOBAL.Steve Test Co.Bodhi.Vintage LLC.citest", "--todom", "GLOBAL.Steve Test Co.Bodhi.Vintage LLC", "--cluster_json", "~/Downloads/cm-output.json", "--appautoinc", "Y", "--msbranch", "master", "--msname", "hello-world-e6a4e22"],
+
+  // "args": ["kv", "--dhuser", "stella99", "--dhpass", "123456", "--dhurl", "http://192.168.3.109:8181", "--deploydata", "/Users/steve/Downloads/config-only.json"],
+
+  // "args": ["updatecomp", "--dhurl", "http://localhost:8181", "--dhuser", "admin", "--dhpass", "admin", "--compname", "GLOBAL.homevisit.pms-homevisit-toolbox-spws-web",  "--compvariant", "feature-sbx", "--compversion", "v9.0.0.19-g52b98fd", "--compautoinc", "Y", "--compattr", "GitCommit:52b98fd", "--compattr", "GitUrl:https://github.com/corelogic/pms-homevisit-toolbox-spws-web.git", "--compattr", "GitBranch:feature/sbx", "--compattr", "BuildId:19", "--compattr", "BuildUrl:https://jenkins.solutions.corelogic.com/real-estate-us/job/homevisit/job/pms-homevisit-toolbox-spws-web/job/feature%252Fsbx/19/" ],
+
+  //             "args": [ "cluster",  "--dhurl", "https://console.deployhub.com", "--dhuser", "bodhi", "--dhpass", "123456", "--appname", "GLOBAL.Steve Test Co.Bodhi.Vintage LLC.citest", "--todom", "GLOBAL.Steve Test Co.Bodhi.Vintage LLC", "--cluster_json", "~/Downloads/rollouts.json", "--appautoinc", "Y", "--msbranch", "master", "--msname", "hello-world-3ee8c98", "--deployenv", "GLOBAL.Steve Test Co.Bodhi.Vintage LLC.TestEnv"],
+
+  // "args": ["deploy", "--dhurl", "http://localhost:8181", "--dhuser", "admin", "--dhpass", "admin", "--deploydata", "/tmp/deploy.toml", "--deployenv", "GLOBAL.homevisit.Dev.CI", "--compattr", "ChartRepo:bitnami", "--compattr", "ChartRepoUrl:https://charts.bitnami.com/bitnami", "--compattr", "Chart:bitnami/wordpress", "--compattr", "ChartVersion:9.3.6", "--compattr", "HelmRepoUser:", "--compattr", "HelmRepoPass:", "--compattr", "DockerUser:sbtaylor15", "--compattr", "DockerPass:G0p!1966" ],
+
+  //             "args": ["deploy", "--dhurl", "http://localhost:8181", "--dhuser", "admin", "--dhpass", "admin", "--deploydata", "/tmp/deploy.toml", "--deployenv", "GLOBAL.homevisit.Dev.CI", "--compattr", "ChartRepo:bitnami", "--compattr", "ChartRepoUrl:https://charts.bitnami.com/bitnami", "--compattr", "Chart:bitnami/wordpress", "--compattr", "ChartVersion:9.3.6", "--compattr", "HelmRepoUser:", "--compattr", "HelmRepoPass:", "--compattr", "DockerUser:sbtaylor15", "--compattr", "DockerPass:G0p!1966", "--compattr", "HelmTemplate:/tmp/wp.yaml" ],
+
+  //  "args": ["deploy", "--dhurl", "http://localhost:8181", "--dhuser", "admin", "--dhpass", "admin", "--appname", "GLOBAL.Keylane.Obex.Obex Platform", "--appversion", "v32_0_100", "--deployenv", "GLOBAL.Keylane.Obex.Obex_Platform.dev.ci-environment", "--deploydata", "/tmp/compdata.json"],
+
+  //             "args": ["updatecomp", "--dhurl", "http://localhost", "--dhuser", "admin", "--dhpass", "admin", "--appname", "GLOBAL.homevisit.homevisit-app", "--compname", "GLOBAL.homevisit.pms-homevisit-authentication-service", "--compvariant", "develop", "--compversion", "v9.0.0.62-g75d73df", "--deploydatasave", "/tmp/deploy.toml", "--compattr", "GitCommit:adb3722", "--compattr", "GitUrl:git@github.com:ortelius/store-emailservice.git", "--compattr", "GitRepo:ortelius/store-emailservice", "--compattr", "GitBranch:master", "--compattr", "BuildId:55", "--compattr", "BuildUrl:http://rocket:28080/job/store-emailservice/55/", "--compattr", "ChartNamespace:", "--compattr", "DockerBuildDate:Mon Jun 14 17:50:57 MDT 2021", "--compattr", "DockerSha:07f264d1250d7187a56afbff213dbaf149bec083b89f3cda2ee75e4bd88842f5", "--compattr", "DockerRepo:quay.io/hipsterstore/emailservice", "--compattr", "DockerTag:master-v1.2.0.55-gadb3722", "--compattr", "CustomAction:GLOBAL.HelmChart", "--compattr", "ServiceOwner:Abraham Ortelius", "--compattr", "ServiceOwnerEmail:request-info@ortelius.io", "--compattr", "ServiceOwnerPhone:505-559-4455", "--compattr", "ChartRepo:bitnami", "--compattr", "ChartRepoUrl:https://charts.bitnami.com/bitnami", "--compattr", "Chart:bitnami/wordpress", "--compattr", "ChartVersion:9.3.6",  "--compattr", "Readme:/Users/steve/git/ortelius/README.md", "--compattr", "Swagger:https://idratherbewriting.com/learnapidoc/docs/rest_api_specifications/openapi_openweathermap.yml", "--deppkg", "/Users/steve/git/ortelius-ms-dep-pkg-cud/component.json"],
+
+  // "args": ["deploy", "--dhurl", "http://localhost:8181", "--dhuser", "admin", "--dhpass", "admin", "--appname", "GLOBAL.Keylane.Obex.Obex Platform", "--appversion", "v32_0_100", "--deployenv", "GLOBAL.Keylane.Obex.Obex_Platform.dev.ci-environment", "--deploydata", "/tmp/compdata.json"],
+
+  // "args": ["updatecomp", "--dhurl", "http://localhost:8181", "--dhuser", "admin", "--dhpass", "admin", "--deploydatasave", "/tmp/compdata.json", "--appname", "GLOBAL.Keylane.Obex.Obex Platform", "--appversion", "43.7.0", "--appautoinc", "Y", "--compname", "GLOBAL.Keylane.Obex.nap", "--compvariant", "master", "--compversion", "v1.0.0.657-g475ab6ce", "--compattr", "artifactory_resource_url:https://artifactory.schantz.com/artifactory/obex-nap/deploy-environments/43.7.0/deploy-environments-43.7.0.tar.gz", "--compattr", "GitCommit:475ab6ce", "--compattr", "GitUrl:https://obex-jenkins:xxx@git.schantz.com/scm/ad/nap-openshift.git", "--compattr", "GitRepo:ad/nap-openshift", "--compattr", "GitBranch:master", "--compattr", "BuildId:656", "--compattr", "BuildNumber:656", "--compattr", "BuildUrl:https://jenkins.obex.schantz.com/job/Advice/job/nap-openshift/job/master/656/", "--compattr", "CustomAction:GLOBAL.NapHelmUpgrade", "--compattr", "Chart:artifactory/nap", "--compattr", "ChartVersion:43.7.0", "--compattr", "ChartNamespace:ap-dev", "--compattr", "ChartRepo:artifactory", "--compattr", "ChartRepoUrl:https://artifactory.schantz.com/artifactory/helm", "--compattr", "DockerBuildDate:Mon Dec 6 19:56:45 UTC 2021"],
+
+  // "args": ["updatecomp", "--dhurl", "http://localhost:8181", "--dhuser", "admin", "--dhpass", "admin", "--rsp", "/Users/steve/git/hipsterstore/store-shippingservice/component.toml"],
+
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: Current File",
+      "type": "python",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "args": [
+        "updatecomp",
+        "--dhurl",
+        "https://console.deployhub.com",
+        "--dhuser",
+        "ortelius",
+        "--dhpass",
+        "ortelius",
+        "--rsp",
+        "/Users/steve/Downloads/oag-full-component.toml",
+        "--deppkg",
+        "cyclonedx@/Users/steve/Downloads/gradle.json",
+        "--deploydatasave",
+        "/tmp/depdata.json"
+      ]
+    }
+  ]
+}
