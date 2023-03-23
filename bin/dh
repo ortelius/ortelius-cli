@@ -892,6 +892,12 @@ def main(  # noqa: C901
                     lcompattr["swagger"] = "swagger.yml"
                 elif os.path.exists("swagger.json"):
                     lcompattr["swagger"] = "swagger.json"
+                elif os.path.exists("openapi.json"):
+                    lcompattr["swagger"] = "openapi.json"
+                elif os.path.exists("openapi.yaml"):
+                    lcompattr["swagger"] = "openapi.yaml"
+                elif os.path.exists("openapi.yml"):
+                    lcompattr["swagger"] = "openapi.yml"
 
             if lcompattr.get("readme", None) is not None:
                 if os.path.exists(lcompattr.get("readme")):
