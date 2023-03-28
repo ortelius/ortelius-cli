@@ -14,7 +14,11 @@ setup(
     author="Steve Taylor",
     author_email="steve@deployhub.com",
     name="ortelius-cli",
+<<<<<<< HEAD
     version="9.3.238",
+=======
+    version="9.3.231",
+>>>>>>> d0075da (Bump version: 9.3.230 → 9.3.231)
     packages=[
         "deployhub",
     ],
