@@ -73,7 +73,7 @@ Args:
                 BuildId = "${BUILDID}"                                      # Identifier for the CI job (DERIVED IF NOT SPECIFIED)
                 BuildNumber = "${BUILD_NUM}"                                # Build number for the CI job (DERIVED IF NOT SPECIFIED)
                 BuildUrl = "${BUILD_URL}"                                   # Build url for the CI job (DERIVED IF NOT SPECIFIED)
-                Chart = "$CHART}"                                           # Helm Chart for the component
+                Chart = "${CHART}"                                           # Helm Chart for the component
                 ChartNamespace = ""                                         # Name space for the component to be deployed to
                 ChartRepo = ""                                              # Helm Chart Repo Name
                 ChartRepoUrl = ""                                           # Helm Chart Repo Url
@@ -774,7 +774,7 @@ def main(  # noqa: C901
             attrs["BuildNumber"] = attrs.get("BuildNumber", os.getenv("BUILD_NUMBER", os.getenv("BUILD_NUM", os.getenv("GITHUB_RUN_NUMBER", ""))))
             attrs["DockerBuildDate"] = attrs.get("DockerBuildDate", date_time)
 
-            attrs["DockerRepo"] = attrs.get("DockerRepo", os.getenv("DOCKERREPO", os.getenv("IMAGE_TAG", "")))
+            attrs["DockerRepo"] = attrs.get("DockerRepo", os.getenv("DOCKERREPO", os.getenv("IMAGE_REPO", "")))
             attrs["DockerSha"] = attrs.get("DockerSha", os.getenv("DOCKERSHA", os.getenv("DIGEST", "")))
             attrs["DockerTag"] = attrs.get("DockerTag", os.getenv("DOCKERTAG", os.getenv("IMAGE_TAG", "")))
 
