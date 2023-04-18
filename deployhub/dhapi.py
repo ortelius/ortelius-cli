@@ -72,7 +72,7 @@ def get_json(url, cookies):
 
     """
     try:
-        res = requests.get(url, cookies=cookies, timeout=30)
+        res = requests.get(url, cookies=cookies, timeout=300)
         if res is None:
             return None
         if res.status_code != 200:
@@ -98,7 +98,7 @@ def post_json(url, payload, cookies):
         string: The json string.
     """
     try:
-        res = requests.post(url, data=payload, cookies=cookies, headers={"Content-Type": "application/json"}, timeout=30)
+        res = requests.post(url, data=payload, cookies=cookies, headers={"Content-Type": "application/json"}, timeout=300)
         if res is None:
             return None
         if res.status_code != 200:
@@ -158,7 +158,7 @@ def is_not_empty(my_string):
 
 def sslcerts(dhurl, customcert):
     try:
-        requests.get(dhurl, timeout=30)
+        requests.get(dhurl, timeout=300)
     except requests.exceptions.SSLError:
         print("Adding custom certs to certifi store...")
         cafile = certifi.where()
@@ -186,7 +186,7 @@ def login(dhurl, user, password, errors):
         string: the cookies to be used in subsequent API calls.
     """
     try:
-        result = requests.post(dhurl + "/dmadminweb/API/login", data={"user": user, "pass": password}, timeout=30)
+        result = requests.post(dhurl + "/dmadminweb/API/login", data={"user": user, "pass": password}, timeout=300)
         cookies = result.cookies
         if result.status_code == 200:
             data = result.json()
@@ -2089,3 +2089,4 @@ def run_git(cmd):
         retval = line.decode("utf-8").strip()
         break
     return retval
+
