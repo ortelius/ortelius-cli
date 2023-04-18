@@ -198,7 +198,11 @@ Args:
 # To generate markdown use:
 # pydoc-markdown -I bin | awk '/dh.main/ {p=1}; p==0 {print}'
 
+<<<<<<< HEAD
 __version__ = "9.3.238"
+=======
+__version__ = "9.3.233"
+>>>>>>> 35a13ed (Bump version: 9.3.232 → 9.3.233)
 
 import json
 import os
