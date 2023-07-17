@@ -23,6 +23,6 @@ setup(
     long_description=open("doc/dh.md").read(),
     long_description_content_type="text/markdown",
     python_requires=">=3.6",
-    install_requires=["click", "qtoml", "PyYAML", "requests", "configobj", "flatten_dict", "pydantic", "certifi"],
+    install_requires=["click", "qtoml", "pyyaml==6", "requests", "configobj", "flatten_dict", "pydantic", "certifi"],
     include_package_data=True,
 )
