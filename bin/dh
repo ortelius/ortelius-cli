@@ -334,6 +334,7 @@ def main(  # noqa: C901
         import: imports the export file into the new domain\n
     """
 
+    cookies = ""
     attrs = {}
     if rsp is None:
         rsp = "component.toml"
@@ -348,7 +349,7 @@ def main(  # noqa: C901
             now = datetime.now()
             mapping["BLDDATE"] = now.strftime("%c")
         else:
-            mapping["BLDDATE"] = mapping.get("BLDDATE").strip('"')
+            mapping["BLDDATE"] = mapping.get("BLDDATE", "").strip('"')
 
         template = Template(lines)
         lines = template.safe_substitute(**mapping)
@@ -623,17 +624,17 @@ def main(  # noqa: C901
                 key, value = attr.split(":", 1)
                 lcompattr[key.lower()] = value
 
-            helmrepo = lcompattr.get("chartrepo", "")
-            chartname = lcompattr.get("chart")
-            chartversion = lcompattr.get("chartversion", "")
-            chartvalues = lcompattr.get("chartvalues", "")
-            helmrepouser = lcompattr.get("helmrepouser", "")
-            helmrepopass = lcompattr.get("helmrepopass", "")
-            helmrepourl = lcompattr.get("chartrepourl", "")
-            dockeruser = lcompattr.get("dockeruser", lcompattr.get("helmrepouser", ""))
-            dockerpass = lcompattr.get("dockerpass", lcompattr.get("helmrepopass", ""))
-            helmtemplate = lcompattr.get("helmtemplate", "")
-            helmopts = lcompattr.get("helmopts", "")
+            lcompattr.get("chartrepo", "")
+            lcompattr.get("chart")
+            lcompattr.get("chartversion", "")
+            lcompattr.get("chartvalues", "")
+            lcompattr.get("helmrepouser", "")
+            lcompattr.get("helmrepopass", "")
+            lcompattr.get("chartrepourl", "")
+            lcompattr.get("dockeruser", lcompattr.get("helmrepouser", ""))
+            lcompattr.get("dockerpass", lcompattr.get("helmrepopass", ""))
+            lcompattr.get("helmtemplate", "")
+            lcompattr.get("helmopts", "")
 
             if "." in compvariant:
                 compvariant = compvariant.split(".")[-1]
