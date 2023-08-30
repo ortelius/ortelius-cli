@@ -533,7 +533,7 @@ def main(  # noqa: C901
 
             data = {}
             if dhapi.is_not_empty(payload):
-                data = json.loads(payload)                           
+                data = json.loads(payload)
 
             if dhapi.is_empty(appname):
                 appname = data.get("application", "")
