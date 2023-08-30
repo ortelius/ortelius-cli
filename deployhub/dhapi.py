@@ -1,5 +1,8 @@
 """DeployHub RESTapi interface for Python."""
 
+# pylint: disable=E0401,E0611
+# pyright: reportMissingImports=false,reportMissingModuleSource=false
+
 # To generate markdown use:
 # pydoc-markdown -I deployhub > doc/deployhub.md
 
@@ -69,11 +72,7 @@ def get_json(url, cookies):
 
     """
     try:
-<<<<<<< HEAD
         res = requests.get(url, cookies=cookies, verify=False, timeout=30)
-=======
-        res = requests.get(url, cookies=cookies, timeout=300)
->>>>>>> 881d5fa (run kubectl to get imagetags)
         if res is None:
             return None
         if res.status_code != 200:
@@ -99,11 +98,7 @@ def post_json(url, payload, cookies):
         string: The json string.
     """
     try:
-<<<<<<< HEAD
         res = requests.post(url, data=payload, cookies=cookies, headers={"Content-Type": "application/json"}, verify=False, timeout=30)
-=======
-        res = requests.post(url, data=payload, cookies=cookies, headers={"Content-Type": "application/json"}, timeout=300)
->>>>>>> 881d5fa (run kubectl to get imagetags)
         if res is None:
             return None
         if res.status_code != 200:
@@ -191,11 +186,7 @@ def login(dhurl, user, password, errors):
         string: the cookies to be used in subsequent API calls.
     """
     try:
-<<<<<<< HEAD
         result = requests.post(dhurl + "/dmadminweb/API/login", data={"user": user, "pass": password}, verify=False, timeout=30)
-=======
-        result = requests.post(dhurl + "/dmadminweb/API/login", data={"user": user, "pass": password}, timeout=300)
->>>>>>> 881d5fa (run kubectl to get imagetags)
         cookies = result.cookies
         if result.status_code == 200:
             data = result.json()
@@ -1804,137 +1795,6 @@ def get_script_path():
     return os.path.dirname(os.path.realpath(sys.argv[0]))
 
 
-def upload_helm(dhurl, cookies, fullcompname, chart, chartversion, chartvalues, helmrepo, helmrepouser, helmrepopass, helmrepourl, helmopts, deployid, dockeruser, dockerpass, helmtemplate):
-    """
-    Gather the helm chart and values and upload to the deployment log
-
-    Args:
-        dhurl (string): url to the server
-        cookies (string): cookies from login
-        fullcompname (string): full name of the component including variant and version
-        chart (string): name of the chart.  "chart org/chart name"
-        chartversion (string): version of the chart. "" for no version
-        chartvalues (string):  path name to the values file for the chart
-        helmrepo (string): name of the helm repo
-        helmrepouser (string): username to use to login to a private repo
-        helmrepopass (string): password for the helmrepouser
-        helmrepourl (string): url for the helm repo
-        helmopts (string): additional helm options used for the deployment
-        deployid (int):  deployment id to associate the helm capture to
-        dockeruser (string): docker repo user used to get the image digest
-        dockerpass (string): password for the dockeruser
-        helmtemplate (string): path name to the file that contains the helm template output
-
-    Returns:
-        Void
-    """
-    my_env = os.environ.copy()
-
-    if not os.path.exists("helm"):
-        os.makedirs("helm")
-
-    print("Starting Helm Capture for Deployment #" + str(deployid))
-    os.makedirs(os.path.dirname("helm/" + chartvalues), exist_ok=True)
-
-    content_list = []
-
-    if os.path.isfile("helm/" + chartvalues):
-        my_file = open("helm/" + chartvalues, mode="r", encoding="utf-8")
-        content_list = my_file.readlines()
-        my_file.close()
-
-    content_list = list(filter(lambda x: "pwd" not in x, content_list))
-    content_list = list(filter(lambda x: "pass" not in x, content_list))
-    content_list = list(filter(lambda x: "userid" not in x, content_list))
-    content_list = list(filter(lambda x: "username" not in x, content_list))
-    content_list = list(filter(lambda x: "aws_access_key_id" not in x, content_list))
-    content_list = list(filter(lambda x: "aws_secret_access_key" not in x, content_list))
-    content_list = list(filter(lambda x: "serviceprincipal" not in x, content_list))
-    content_list = list(filter(lambda x: "tenant" not in x, content_list))
-
-    if is_not_empty(chartvalues):
-        my_file = open("helm/" + chartvalues, mode="w", encoding="utf-8")
-        my_file.writelines(content_list)
-        my_file.close()
-
-    os.chdir("helm")
-
-    upload = {}
-    upload["files"] = []
-    upload["component"] = fullcompname
-    upload["deployid"] = deployid
-    upload["helmrepo"] = helmrepo
-    upload["helmrepourl"] = helmrepourl
-
-    if "/" not in chart:
-        chart = "library/" + chart
-
-    upload["chartorg"] = chart.split("/")[0]
-    upload["chartname"] = chart.split("/")[1]
-    upload["chartversion"] = chartversion
-
-    my_env["chartname"] = upload["chartname"]
-    my_env["chartorg"] = upload["chartorg"]
-    my_env["chartvalues"] = chartvalues
-    my_env["chartversion"] = upload["chartversion"]
-    my_env["dockerpass"] = dockerpass
-    my_env["dockeruser"] = dockeruser
-    my_env["helmopts"] = helmopts
-    my_env["helmrepo"] = upload["helmrepo"]
-    my_env["helmrepopass"] = helmrepopass
-    my_env["helmrepourl"] = upload["helmrepourl"]
-    my_env["helmrepouser"] = helmrepouser
-    my_env["helmtemplate"] = helmtemplate
-
-    pid = subprocess.Popen(get_script_path() + "/helminfo.sh", env=my_env, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    jstr = ""
-    for line in pid.stdout.readlines():
-        line = line.decode("utf-8")
-        jstr = jstr + line
-
-    pid.wait()
-    print("# Helminfo Output")
-    # pprint(jstr)
-    dobj = json.loads(jstr)
-    upload["chartdigest"] = dobj.get("chartdigest", "")
-    upload["images"] = dobj.get("images", [])
-
-    start_dir = "."
-
-    filelist = []
-    for root, d_names, f_names in os.walk(start_dir):  # pylint: disable=W0612
-        for fname in f_names:
-            if ".DS_Store" not in fname:
-                filelist.append(os.path.join(root, fname))
-
-    filelist.sort()
-
-    for fname in filelist:
-        contents = {}
-        contents["filename"] = fname
-
-        file1 = open(fname, "rb")
-        data = file1.read()
-        file1.close()
-
-        # second: base64 encode read data
-        # result: bytes (again)
-        base64_bytes = base64.b64encode(data)
-
-        # third: decode these bytes to text
-        # result: string (in utf-8)
-        base64_string = base64_bytes.decode("utf-8")
-
-        contents["data"] = base64_string
-        upload["files"].append(contents)
-
-    print("# Helminfo Upload")
-    # pprint(upload)
-    data = post_json(dhurl + "/dmadminweb/API/uploadhelm", json.dumps(upload), cookies)
-    # pprint(data)
-    print("Finished Helm Capture for Deployment #" + str(deployid))
-
-
 def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, env, crdatasource, crlist):
     """
     Update the attributes for the component based on the properties files found in the cloned directory.
@@ -2215,4 +2075,3 @@ def run_git(cmd):
         retval = line.decode("utf-8").strip()
         break
     return retval
-
