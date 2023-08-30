@@ -1409,7 +1409,7 @@ def envscript(dhurl, cookies, envvars, envvars_sh):  # noqa: C901
 
     if mapping.get("GIT_SIGNED_OFF_BY", None) is None:
         mapping["GIT_SIGNED_OFF_BY"] = dhapi.run_git(
-            "git log -1 " + mapping.get("GIT_COMMIT", "") + " | grep 'Signed-off-by:' | cut -d: -f2 | sed 's/^[ \t]*//;s/[ \t]*$//' | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g;'"
+            "git log -1 " + mapping.get("GIT_COMMIT", "") + " | grep 'Signed-off-by:' | cut -d: -f2 | sed 's/^[ \t]*//;s/[ \t]*$//' | sed 's/&/&amp;/g; s/</&lt;/g; s/>/&gt;/g;'"
         )
 
     if mapping.get("BUILDNUM", None) is None:
