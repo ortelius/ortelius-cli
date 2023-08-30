@@ -2075,3 +2075,4 @@ def run_git(cmd):
         retval = line.decode("utf-8").strip()
         break
     return retval
+
