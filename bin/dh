@@ -774,7 +774,7 @@ def main(  # noqa: C901
             attrs["DockerTag"] = attrs.get("DockerTag", os.getenv("DOCKERTAG", os.getenv("IMAGE_TAG", "")))
 
             if attrs.get("DockerRepo", None) is not None:
-                dockerrepo = attrs.get("DockerRepo")
+                dockerrepo = attrs.get("DockerRepo", "")
                 if ":" in dockerrepo:
                     parts = dockerrepo.split(":")
                     attrs["DockerRepo"] = parts[0]
@@ -1064,7 +1064,7 @@ def main(  # noqa: C901
             with open(deploydata, mode="r", encoding="utf-8") as fin_data:
                 payload = fin_data.read()
 
-            data = None
+            data = {}
             if dhapi.is_not_empty(payload):
                 data = json.loads(payload)
 
