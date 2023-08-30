@@ -16,7 +16,7 @@ The CLI Python script interacts with the Ortelius REST APIs to perform:
 - Upload Swagger and SBOM files to _Component Version_
 
 
-## CLI Prerequisites 
+## CLI Prerequisites
 
 1. [Install Python 3.8 or newer](https://www.python.org/downloads/)
 2. Install Ortelius CLI
@@ -24,10 +24,10 @@ The CLI Python script interacts with the Ortelius REST APIs to perform:
    `pip install --upgrade ortelius-cli`
 
 ## Get Started with a POC
-Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc.pdf) to get started. This POC provides you the steps to incorporate Ortelius into your Pipeline, with SBOM generation. 
+Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc.pdf) to get started. This POC provides you the steps to incorporate Ortelius into your Pipeline, with SBOM generation.
 
 
-## Ortelius' CLI using the dhapi module.
+## Ortelius' CLI using the dhapi module
 
 **Arguments**:
 
@@ -74,7 +74,7 @@ Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc
   --deppkg cyclonedx@<cyclonedx json sbom file> (optional)
   --deppkg spdx@<spdx json sbom file> (optional)
 
-  ##### Component TOML Definition for --rsp parameter
+##### Component TOML Definition for --rsp parameter
 
   ```toml
   # Application Name and Version to create an associate the Component Version to
@@ -179,24 +179,24 @@ Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc
   
 #### Parameter Usage
   
-  | Parameter| Descriptions |
-  | --- | --- | 
-  | appautoinc | _Application_ Auto Increment Version |
-  | appname | _Application_ Name |
-  | appversion | _Application Version_ |
-  | cert | Customer SSL Certificate File |
-  | changerequest | Change Request for _Component_, use multiple time for each Change Request Id |
-  | cluster_json | json from kubectl get deploy -n default -o json |
-  | compattr | _Component_ attributes, use multiple time for each attr |
-  | compautoinc | _Component_ auto increment version |
-  | compname | _Component_ Name |
-  | compvariant | _Component_ Variant |
-  | compversion | _Component Version_ |
-  | consumes | json file that lists the endpoints the _Component_ consumes.  [ {"verb", "get", "path": "/weather"}] |
-  | crdatasource | Change Request Data Source for the _Component_ |
-  | deploydata | The json file that contains the _Application_, _Environment_ and log details |
-  | deploydatasave | Name of the json file to save the new _Component_ and _Application Versions_ names to |
-  | deployenv | Deployment _Environment_ |
+  | Parameter      | Descriptions                                                                                         |
+  |----------------|------------------------------------------------------------------------------------------------------|
+  | appautoinc     | _Application_ Auto Increment Version                                                                 |
+  | appname        | _Application_ Name                                                                                   |
+  | appversion     | _Application Version_                                                                                |
+  | cert           | Customer SSL Certificate File                                                                        |
+  | changerequest  | Change Request for _Component_, use multiple time for each Change Request Id                         |
+  | cluster_json   | json from kubectl get deploy -n default -o json                                                      |
+  | compattr       | _Component_ attributes, use multiple time for each attr                                              |
+  | compautoinc    | _Component_ auto increment version                                                                   |
+  | compname       | _Component_ Name                                                                                     |
+  | compvariant    | _Component_ Variant                                                                                  |
+  | compversion    | _Component Version_                                                                                  |
+  | consumes       | json file that lists the endpoints the _Component_ consumes.  [ {"verb", "get", "path": "/weather"}] |
+  | crdatasource   | Change Request Data Source for the _Component_                                                       |
+  | deploydata     | The json file that contains the _Application_, _Environment_ and log details                         |
+  | deploydatasave | Name of the json file to save the new _Component_ and _Application Versions_ names to                |
+  | deployenv      | Deployment _Environment_                                                                             |
   | deppkg | File name for the Safety, CycloneDx, SPDX json scan data, use multiple time for each file.  Parameter format is: <type>@<filename> where type=safety, cyclonedx, spdx
   | dhpass | Ortelius Password |
   | dhurl | Ortelius Url |

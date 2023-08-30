@@ -200,14 +200,12 @@ __version__ = "9.3.225"
 
 import json
 import os
-from pathlib import Path
 import re
 import stat
 import subprocess
 import sys
-import time
-from cmath import exp
 from datetime import datetime
+from pathlib import Path
 from pprint import pprint
 from string import Template
 
@@ -215,7 +213,6 @@ import click
 import qtoml
 import yaml
 from deployhub import dhapi
-from pydantic import NoneIsAllowedError
 
 
 @click.command()
