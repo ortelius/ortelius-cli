@@ -1,3 +1,1 @@
-[
-    {"verb": "get", "path": "/msapi/validateuser"}
-]
+[{ "verb": "get", "path": "/msapi/validateuser" }]

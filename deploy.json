@@ -1,1 +1,5 @@
-{"application": 976, "environment": "GLOBAL.Steve Test Co.Bodhi.Vintage LLC.TestEnv", "rc": 0}
+{
+  "application": "GLOBAL.ortelius.saas.ortelius",
+  "environment": "GLOBAL.ortelius.saas.Local Kind Cluster",
+  "compversion": ["GLOBAL.ortelius.saas.aaa", "GLOBAL.ortelius.saas.bbb"]
+}

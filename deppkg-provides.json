@@ -1,4 +1,4 @@
 [
-    {"verb": "post", "path": "/msapi/deppkg/cyclonedx"},
-    {"verb": "post", "path": "/msapi/deppkg/safety"}
+  { "verb": "post", "path": "/msapi/deppkg/cyclonedx" },
+  { "verb": "post", "path": "/msapi/deppkg/safety" }
 ]

@@ -69,7 +69,7 @@ def get_json(url, cookies):
 
     """
     try:
-        res = requests.get(url, cookies=cookies)
+        res = requests.get(url, cookies=cookies, verify=False, timeout=30)
         if res is None:
             return None
         if res.status_code != 200:
@@ -95,7 +95,7 @@ def post_json(url, payload, cookies):
         string: The json string.
     """
     try:
-        res = requests.post(url, data=payload, cookies=cookies, headers={"Content-Type": "application/json"})
+        res = requests.post(url, data=payload, cookies=cookies, headers={"Content-Type": "application/json"}, verify=False, timeout=30)
         if res is None:
             return None
         if res.status_code != 200:
@@ -183,7 +183,7 @@ def login(dhurl, user, password, errors):
         string: the cookies to be used in subsequent API calls.
     """
     try:
-        result = requests.post(dhurl + "/dmadminweb/API/login", data={"user": user, "pass": password})
+        result = requests.post(dhurl + "/dmadminweb/API/login", data={"user": user, "pass": password}, verify=False, timeout=30)
         cookies = result.cookies
         if result.status_code == 200:
             data = result.json()
@@ -2137,7 +2137,7 @@ def post_textfile(dhurl, cookies, compid, filename, file_type):
         file_data = open(filename, "rb").read()
     else:
         try:
-            res = requests.get(filename)
+            res = requests.get(filename, verify=False, timeout=30)
             if res.status_code == 200:
                 file_data = res.content
         except requests.exceptions.ConnectionError:

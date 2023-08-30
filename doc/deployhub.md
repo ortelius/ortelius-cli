@@ -15,7 +15,7 @@ DeployHub RESTapi interface for Python.
 fspath(path)
 ```
 
-See https://www.python.org/dev/peps/pep-0519/`os` for details.
+See <https://www.python.org/dev/peps/pep-0519/>`os` for details.
 
 <a name="dhapi.get_json"></a>
 #### get\_json
