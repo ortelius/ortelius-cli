@@ -18,7 +18,7 @@ setup(
     packages=[
         "deployhub",
     ],
-    scripts=["bin/dh", "bin/helminfo.sh"],
+    scripts=["bin/dh"],
     license="Apache-2.0",
     long_description=open("doc/dh.md").read(),
     long_description_content_type="text/markdown",
