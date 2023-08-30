@@ -233,7 +233,6 @@ from deployhub import dhapi
 @click.option("--crdatasource", help="Change Request Data Source for the Component", envvar="CR_DATASOURCE")
 @click.option("--changerequest", help="Change Request for Component, use multiple time for each Change Request Id", multiple=True)
 @click.option("--deploydata", help="The json file that contains the application, environment and log details", envvar="DEPLOY_DATA")
-@click.option("--namespace", help="The Kubernetes namespace to map a image tag to an application version")
 @click.option("--from_domain", help="Move from domain")
 @click.option("--task", help="Task to use for move")
 @click.option("--envvars", help="Env Variables TOML file")
@@ -293,7 +292,6 @@ def main(  # noqa: C901
     provides,
     rsp,
     cert,
-    namespace,
 ):
     """
     ACTION: deploy, updatecomp, approve, move, envscript, kv, cluster, export or import for the type of action to perform.
@@ -532,26 +530,7 @@ def main(  # noqa: C901
 
             data = {}
             if dhapi.is_not_empty(payload):
-                data = json.loads(payload)
-
-            if dhapi.is_not_empty(namespace):
-                data['imagetags'] = []
-                pid = subprocess.Popen("kubectl get pods -A -o json", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-                payload = ""
-                for line in pid.stdout.readlines():
-                    payload = payload + line.decode("utf-8").strip()
-
-                if dhapi.is_not_empty(payload):
-                    cluster_json = json.loads(payload)
-                    items = cluster_json.get('items', [])
-                    for item in items:
-                        if (item['metadata']['namespace'] == namespace):
-                            containers = item['spec']['containers']
-                            imagetag = ""
-                            for img in containers:
-                                imagetag = img['image']
-                            data['imagetags'].append(imagetag)
-                            
+                data = json.loads(payload)                           
 
             if dhapi.is_empty(appname):
                 appname = data.get("application", "")
