@@ -199,10 +199,14 @@ Args:
 # pydoc-markdown -I bin | awk '/dh.main/ {p=1}; p==0 {print}'
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 __version__ = "9.3.238"
 =======
 __version__ = "9.3.233"
 >>>>>>> 35a13ed (Bump version: 9.3.232 → 9.3.233)
+=======
+__version__ = "9.3.237"
+>>>>>>> 2b87f61 (Bump version: 9.3.236 → 9.3.237)
 
 import json
 import os
