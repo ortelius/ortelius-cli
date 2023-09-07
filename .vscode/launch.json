@@ -1,0 +1,27 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: Current File",
+      "type": "python",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "cwd": "/Users/steve/Downloads/console_dh_keys",
+      "args": [
+        "updatecomp",
+        "--dhurl",
+        "https://console.deployhub.com",
+        "--dhuser",
+        "XXXXXX",
+        "--dhpass",
+        "XXXXXXX",
+        "--rsp",
+        "/Users/steve/Downloads/console_dh_keys/comptest.toml",
+        "--deppkg",
+        "cyclonedx@/Users/steve/Downloads/console_dh_keys/cyclonedx.json",
+        "--file"
+      ]
+    }
+  ]
+}

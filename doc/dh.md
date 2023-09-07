@@ -33,7 +33,7 @@ Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc
 
 
   ACTION - one of the following
-  
+
 - `deploy` - deploy the _Application_ to the _Environment_
   Usage:
   --dhurl
@@ -42,7 +42,7 @@ Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc
   --appname
   --appversion (optional)
   --deployenv
-  
+
 - `approve` - approve the _Application Version_
   Usage:
   --dhurl
@@ -50,7 +50,7 @@ Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc
   --dhpass
   --appname
   --appversion (optional)
-  
+
 - `move` - move the _Application Version_ using the supplied task
   Usage:
   --dhurl
@@ -60,7 +60,7 @@ Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc
   --appversion (optional)
   --from_domain
   --task
-  
+
 - `updatecomp` - create/replace the _Component Version_ for the _Application Version_ with SBOM (CycloneDX or SPDX formats).
   Usage:
   --dhurl
@@ -135,7 +135,7 @@ Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc
   ServiceOwnerPhone = ""                                      # Phone number for the Owner of the Service
   Swagger = ""                                                # Swagger/OpenApi file location in the Git Repo (DERIVED IF NOT SPECIFIED)
   ```
-  
+
 - `assign` - assigns a _Component Version_ to an _Application Version_
   Usage:
   --dhurl
@@ -146,7 +146,7 @@ Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc
   --compversion (optional)
   --appname
   --appversion (optional)
-  
+
 - `kv` - assigns the key/values pairs to the _Component Version_
   Usage:
   --dhurl
@@ -156,19 +156,19 @@ Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc
   --compvariant (optional)
   --compversion (optional)
   --kvconfig
-  
+
 - `envscript` - creates a bash file from the _Component_ toml file
   Usage:
   --envvars
   --envvars_sh
-  
+
 - `export` - exports a _Domain_ including all objects to stdout
   Usage:
   --dhurl
   --dhuser
   --dhpass
   --from_dom
-  
+
 - `import` - imports the export file into the new _Domain_
   Usage:
   --dhurl
@@ -176,7 +176,7 @@ Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc
   --dhpass
   --from_dom
   --to_dom
-  
+
 #### Parameter Usage
   
   | Parameter      | Descriptions                                                                                         |
@@ -217,4 +217,3 @@ Refer to the [Ortelius sample POC](https://docs.ortelius.io/Ortelius-General-Poc
   | rsp | Response File for Parameters, ie component.toml |
   | task | Task to use for move |
   | todom | To _Domain_ |
-
