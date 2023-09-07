@@ -72,7 +72,7 @@ def get_json(url, cookies):
 
     """
     try:
-        res = requests.get(url, cookies=cookies, timeout=30)
+        res = requests.get(url, cookies=cookies, timeout=300)
         if res is None:
             return None
         if res.status_code != 200:
@@ -98,7 +98,7 @@ def post_json(url, payload, cookies):
         string: The json string.
     """
     try:
-        res = requests.post(url, data=payload, cookies=cookies, headers={"Content-Type": "application/json"}, timeout=30)
+        res = requests.post(url, data=payload, cookies=cookies, headers={"Content-Type": "application/json"}, timeout=300)
         if res is None:
             return None
         if res.status_code != 200:
@@ -158,7 +158,7 @@ def is_not_empty(my_string):
 
 def sslcerts(dhurl, customcert):
     try:
-        requests.get(dhurl, timeout=300)
+        requests.get(dhurl, timeout=3000)
     except requests.exceptions.SSLError:
         print("Adding custom certs to certifi store...")
         cafile = certifi.where()
@@ -186,7 +186,7 @@ def login(dhurl, user, password, errors):
         string: the cookies to be used in subsequent API calls.
     """
     try:
-        result = requests.post(dhurl + "/dmadminweb/API/login", data={"user": user, "pass": password}, timeout=30)
+        result = requests.post(dhurl + "/dmadminweb/API/login", data={"user": user, "pass": password}, timeout=300)
         cookies = result.cookies
         if result.status_code == 200:
             data = result.json()
@@ -746,6 +746,11 @@ def new_component_version(dhurl, cookies, compname, compvariant, compversion, ki
 
     domain = ""
 
+    compname = compname.rstrip(";")
+    compvariant = compvariant.rstrip(";")
+    if compversion is not None:
+        compversion = compversion.rstrip(";")
+
     if "." in compname:
         parts = compname.split(".")
         if parts:
@@ -877,7 +882,10 @@ def new_docker_component(dhurl, cookies, compname, compvariant, compversion, par
     compid = 0
     # Create base version
     if parent_compid < 0:
-        data = get_json(dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname + ";" + compvariant), cookies)
+        if is_empty(compvariant):
+            data = get_json(dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname), cookies)
+        else:
+            data = get_json(dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname + ";" + compvariant), cookies)
         compid = data["result"]["id"]
     else:
         data = get_json(dhurl + "/dmadminweb/API/new/compver/" + str(parent_compid), cookies)
@@ -915,7 +923,10 @@ def new_file_component(dhurl, cookies, compname, compvariant, compversion, paren
 
     # Create base version
     if parent_compid < 0:
-        data = get_json(dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname + ";" + compvariant), cookies)
+        if is_empty(compvariant):
+            data = get_json(dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname), cookies)
+        else:
+            data = get_json(dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname + ";" + compvariant), cookies)
         compid = data["result"]["id"]
     else:
         data = get_json(dhurl + "/dmadminweb/API/new/compver/" + str(parent_compid), cookies)
@@ -2007,7 +2018,7 @@ def post_textfile(dhurl, cookies, compid, filename, file_type):
         file_data = open(filename, "rb").read()
     else:
         try:
-            res = requests.get(filename, timeout=30)
+            res = requests.get(filename, timeout=300)
             if res.status_code == 200:
                 file_data = res.content
         except requests.exceptions.ConnectionError:
@@ -2069,6 +2080,9 @@ def update_deppkgs(dhurl, cookies, compid, filename, glic):
 
 
 def run_git(cmd):
+    if "git " in cmd and not os.path.exists(".git"):
+        return ""
+    
     pid = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     retval = ""
     for line in pid.stdout.readlines():

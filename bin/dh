@@ -1512,7 +1512,10 @@ def envscript(dhurl, cookies, envvars, envvars_sh):  # noqa: C901
         if run_fetch:
             dhapi.run_git("git fetch --unshallow")
             run_fetch = 0
-        mapping["GIT_LINES_TOTAL"] = dhapi.run_git("wc -l $(git ls-files) | grep total | awk -F' ' '{print $1}'")
+        if os.path.exists(".git"):
+            mapping["GIT_LINES_TOTAL"] = dhapi.run_git("wc -l $(git ls-files) | grep total | awk -F' ' '{print $1}'")
+        else:
+            mapping["GIT_LINES_TOTAL"] = "0"
 
     if mapping.get("BASENAME", None) is None:
         mapping["BASENAME"] = os.path.basename(os.getcwd())
