@@ -158,7 +158,7 @@ def is_not_empty(my_string):
 
 def sslcerts(dhurl, customcert):
     try:
-        requests.get(dhurl, timeout=300)
+        requests.get(dhurl, timeout=3000)
     except requests.exceptions.SSLError:
         print("Adding custom certs to certifi store...")
         cafile = certifi.where()
@@ -2018,7 +2018,7 @@ def post_textfile(dhurl, cookies, compid, filename, file_type):
         file_data = open(filename, "rb").read()
     else:
         try:
-            res = requests.get(filename, timeout=30)
+            res = requests.get(filename, timeout=300)
             if res.status_code == 200:
                 file_data = res.content
         except requests.exceptions.ConnectionError:
