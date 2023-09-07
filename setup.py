@@ -14,15 +14,15 @@ setup(
     author="Steve Taylor",
     author_email="steve@deployhub.com",
     name="ortelius-cli",
-    version="9.3.235",
+    version="9.3.238",
     packages=[
         "deployhub",
     ],
-    scripts=["bin/dh", "bin/helminfo.sh"],
+    scripts=["bin/dh"],
     license="Apache-2.0",
     long_description=open("doc/dh.md").read(),
     long_description_content_type="text/markdown",
     python_requires=">=3.6",
-    install_requires=["click", "qtoml", "PyYAML", "requests", "configobj", "flatten_dict", "pydantic", "certifi"],
+    install_requires=["click", "qtoml", "pyyaml", "requests", "configobj", "flatten_dict", "pydantic", "certifi"],
     include_package_data=True,
 )

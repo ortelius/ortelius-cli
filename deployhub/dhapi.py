@@ -1,5 +1,8 @@
 """DeployHub RESTapi interface for Python."""
 
+# pylint: disable=E0401,E0611
+# pyright: reportMissingImports=false,reportMissingModuleSource=false
+
 # To generate markdown use:
 # pydoc-markdown -I deployhub > doc/deployhub.md
 
@@ -69,7 +72,7 @@ def get_json(url, cookies):
 
     """
     try:
-        res = requests.get(url, cookies=cookies, verify=False, timeout=30)
+        res = requests.get(url, cookies=cookies, timeout=300)
         if res is None:
             return None
         if res.status_code != 200:
@@ -95,7 +98,7 @@ def post_json(url, payload, cookies):
         string: The json string.
     """
     try:
-        res = requests.post(url, data=payload, cookies=cookies, headers={"Content-Type": "application/json"}, verify=False, timeout=30)
+        res = requests.post(url, data=payload, cookies=cookies, headers={"Content-Type": "application/json"}, timeout=300)
         if res is None:
             return None
         if res.status_code != 200:
@@ -155,7 +158,7 @@ def is_not_empty(my_string):
 
 def sslcerts(dhurl, customcert):
     try:
-        requests.get(dhurl)
+        requests.get(dhurl, timeout=3000)
     except requests.exceptions.SSLError:
         print("Adding custom certs to certifi store...")
         cafile = certifi.where()
@@ -166,7 +169,7 @@ def sslcerts(dhurl, customcert):
         with open("/tmp/customca.pem", "ab") as outfile:
             outfile.write(ca)
             outfile.write(customca)
-        os.environ["SSL_CERT_FILE"] = "/tmp/customca.pem"
+        os.environ["REQUESTS_CA_BUNDLE"] = "/tmp/customca.pem"
 
 
 def login(dhurl, user, password, errors):
@@ -183,7 +186,7 @@ def login(dhurl, user, password, errors):
         string: the cookies to be used in subsequent API calls.
     """
     try:
-        result = requests.post(dhurl + "/dmadminweb/API/login", data={"user": user, "pass": password}, verify=False, timeout=30)
+        result = requests.post(dhurl + "/dmadminweb/API/login", data={"user": user, "pass": password}, timeout=300)
         cookies = result.cookies
         if result.status_code == 200:
             data = result.json()
@@ -743,6 +746,11 @@ def new_component_version(dhurl, cookies, compname, compvariant, compversion, ki
 
     domain = ""
 
+    compname = compname.rstrip(";")
+    compvariant = compvariant.rstrip(";")
+    if compversion is not None:
+        compversion = compversion.rstrip(";")
+
     if "." in compname:
         parts = compname.split(".")
         if parts:
@@ -874,7 +882,10 @@ def new_docker_component(dhurl, cookies, compname, compvariant, compversion, par
     compid = 0
     # Create base version
     if parent_compid < 0:
-        data = get_json(dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname + ";" + compvariant), cookies)
+        if is_empty(compvariant):
+            data = get_json(dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname), cookies)
+        else:
+            data = get_json(dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname + ";" + compvariant), cookies)
         compid = data["result"]["id"]
     else:
         data = get_json(dhurl + "/dmadminweb/API/new/compver/" + str(parent_compid), cookies)
@@ -912,7 +923,10 @@ def new_file_component(dhurl, cookies, compname, compvariant, compversion, paren
 
     # Create base version
     if parent_compid < 0:
-        data = get_json(dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname + ";" + compvariant), cookies)
+        if is_empty(compvariant):
+            data = get_json(dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname), cookies)
+        else:
+            data = get_json(dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname + ";" + compvariant), cookies)
         compid = data["result"]["id"]
     else:
         data = get_json(dhurl + "/dmadminweb/API/new/compver/" + str(parent_compid), cookies)
@@ -1286,9 +1300,7 @@ def get_component_from_tag(dhurl, cookies, image_tag):
     if data is None:
         return -1
 
-    id = data.get("id", -1)
-
-    return id
+    return data.get("id", -1)
 
 
 def new_application(dhurl, cookies, appname, appversion, appautoinc, envs, compid):
@@ -1506,7 +1518,7 @@ def clone_repo(project):
         print("features.toml not found")
         return data
 
-    with open("features.toml", "r") as fin:
+    with open("features.toml", mode="r", encoding="utf-8") as fin:
         tmpstr = fin.read()
         data = qtoml.loads(tmpstr)
     return data
@@ -1533,7 +1545,7 @@ def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, depl
         appversion = ""
 
     if os.path.exists(cluster_json):
-        stream = open(cluster_json, "r")
+        stream = open(cluster_json, mode="r", encoding="utf-8")
         values = json.load(stream)
         newvals.update(values)
         stream.close()
@@ -1695,7 +1707,7 @@ def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, depl
             deploy["application"] = appid
             deploy["environment"] = deployenv
             deploy["rc"] = 0
-            with open(deploydata, "w") as fp:
+            with open(deploydata, mode="w", encoding="utf-8") as fp:
                 json.dump(deploy, fp)
             fp.close()
             log_deploy_application(dhurl, cookies, deploydata)
@@ -1740,7 +1752,7 @@ def log_deploy_application(dhurl, cookies, deploydata):
     url = dhurl + "/dmadminweb/API/deploy"
 
     payload = ""
-    with open(deploydata, "r") as fin_data:
+    with open(deploydata, mode="r", encoding="utf-8") as fin_data:
         payload = fin_data.read()
 
     data = {}
@@ -1792,137 +1804,6 @@ def run_circleci_pipeline(pipeline):
 
 def get_script_path():
     return os.path.dirname(os.path.realpath(sys.argv[0]))
-
-
-def upload_helm(dhurl, cookies, fullcompname, chart, chartversion, chartvalues, helmrepo, helmrepouser, helmrepopass, helmrepourl, helmopts, deployid, dockeruser, dockerpass, helmtemplate):
-    """
-    Gather the helm chart and values and upload to the deployment log
-
-    Args:
-        dhurl (string): url to the server
-        cookies (string): cookies from login
-        fullcompname (string): full name of the component including variant and version
-        chart (string): name of the chart.  "chart org/chart name"
-        chartversion (string): version of the chart. "" for no version
-        chartvalues (string):  path name to the values file for the chart
-        helmrepo (string): name of the helm repo
-        helmrepouser (string): username to use to login to a private repo
-        helmrepopass (string): password for the helmrepouser
-        helmrepourl (string): url for the helm repo
-        helmopts (string): additional helm options used for the deployment
-        deployid (int):  deployment id to associate the helm capture to
-        dockeruser (string): docker repo user used to get the image digest
-        dockerpass (string): password for the dockeruser
-        helmtemplate (string): path name to the file that contains the helm template output
-
-    Returns:
-        Void
-    """
-    my_env = os.environ.copy()
-
-    if not os.path.exists("helm"):
-        os.makedirs("helm")
-
-    print("Starting Helm Capture for Deployment #" + str(deployid))
-    os.makedirs(os.path.dirname("helm/" + chartvalues), exist_ok=True)
-
-    content_list = []
-
-    if os.path.isfile("helm/" + chartvalues):
-        my_file = open("helm/" + chartvalues, "r")
-        content_list = my_file.readlines()
-        my_file.close()
-
-    content_list = list(filter(lambda x: "pwd" not in x, content_list))
-    content_list = list(filter(lambda x: "pass" not in x, content_list))
-    content_list = list(filter(lambda x: "userid" not in x, content_list))
-    content_list = list(filter(lambda x: "username" not in x, content_list))
-    content_list = list(filter(lambda x: "aws_access_key_id" not in x, content_list))
-    content_list = list(filter(lambda x: "aws_secret_access_key" not in x, content_list))
-    content_list = list(filter(lambda x: "serviceprincipal" not in x, content_list))
-    content_list = list(filter(lambda x: "tenant" not in x, content_list))
-
-    if is_not_empty(chartvalues):
-        my_file = open("helm/" + chartvalues, "w")
-        my_file.writelines(content_list)
-        my_file.close()
-
-    os.chdir("helm")
-
-    upload = {}
-    upload["files"] = []
-    upload["component"] = fullcompname
-    upload["deployid"] = deployid
-    upload["helmrepo"] = helmrepo
-    upload["helmrepourl"] = helmrepourl
-
-    if "/" not in chart:
-        chart = "library/" + chart
-
-    upload["chartorg"] = chart.split("/")[0]
-    upload["chartname"] = chart.split("/")[1]
-    upload["chartversion"] = chartversion
-
-    my_env["chartname"] = upload["chartname"]
-    my_env["chartorg"] = upload["chartorg"]
-    my_env["chartvalues"] = chartvalues
-    my_env["chartversion"] = upload["chartversion"]
-    my_env["dockerpass"] = dockerpass
-    my_env["dockeruser"] = dockeruser
-    my_env["helmopts"] = helmopts
-    my_env["helmrepo"] = upload["helmrepo"]
-    my_env["helmrepopass"] = helmrepopass
-    my_env["helmrepourl"] = upload["helmrepourl"]
-    my_env["helmrepouser"] = helmrepouser
-    my_env["helmtemplate"] = helmtemplate
-
-    pid = subprocess.Popen(get_script_path() + "/helminfo.sh", env=my_env, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    jstr = ""
-    for line in pid.stdout.readlines():
-        line = line.decode("utf-8")
-        jstr = jstr + line
-
-    pid.wait()
-    print("# Helminfo Output")
-    # pprint(jstr)
-    dobj = json.loads(jstr)
-    upload["chartdigest"] = dobj.get("chartdigest", "")
-    upload["images"] = dobj.get("images", [])
-
-    start_dir = "."
-
-    filelist = []
-    for root, d_names, f_names in os.walk(start_dir):  # pylint: disable=W0612
-        for fname in f_names:
-            if ".DS_Store" not in fname:
-                filelist.append(os.path.join(root, fname))
-
-    filelist.sort()
-
-    for fname in filelist:
-        contents = {}
-        contents["filename"] = fname
-
-        file1 = open(fname, "rb")
-        data = file1.read()
-        file1.close()
-
-        # second: base64 encode read data
-        # result: bytes (again)
-        base64_bytes = base64.b64encode(data)
-
-        # third: decode these bytes to text
-        # result: string (in utf-8)
-        base64_string = base64_bytes.decode("utf-8")
-
-        contents["data"] = base64_string
-        upload["files"].append(contents)
-
-    print("# Helminfo Upload")
-    # pprint(upload)
-    data = post_json(dhurl + "/dmadminweb/API/uploadhelm", json.dumps(upload), cookies)
-    # pprint(data)
-    print("Finished Helm Capture for Deployment #" + str(deployid))
 
 
 def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, env, crdatasource, crlist):
@@ -1980,7 +1861,7 @@ def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, comp
 
         repo = "/".join(kvconfig.split("/")[:2])
         kvconfig = "/".join(kvconfig.split("/")[1:])
-        gitdir = kvconfig.split("/")[0]
+        gitdir = kvconfig.split("/", maxsplit=1)[0]
         kvconfig = "/".join(kvconfig.split("/")[1:])
 
         pwd = os.getcwd()
@@ -2137,7 +2018,7 @@ def post_textfile(dhurl, cookies, compid, filename, file_type):
         file_data = open(filename, "rb").read()
     else:
         try:
-            res = requests.get(filename, verify=False, timeout=30)
+            res = requests.get(filename, timeout=300)
             if res.status_code == 200:
                 file_data = res.content
         except requests.exceptions.ConnectionError:
@@ -2170,7 +2051,7 @@ def update_deppkgs(dhurl, cookies, compid, filename, glic):
     filetype = parts[0].lower()
     filename = parts[1]
 
-    with open(filename, "r") as fin_data:
+    with open(filename, mode="r", encoding="utf-8") as fin_data:
         data = json.load(fin_data)
 
         if glic is not None:
@@ -2199,9 +2080,13 @@ def update_deppkgs(dhurl, cookies, compid, filename, glic):
 
 
 def run_git(cmd):
+    if "git " in cmd and not os.path.exists(".git"):
+        return ""
+    
     pid = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     retval = ""
     for line in pid.stdout.readlines():
         retval = line.decode("utf-8").strip()
         break
     return retval
+
