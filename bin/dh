@@ -554,7 +554,7 @@ def main(  # noqa: C901
                             for img in containers:
                                 imagetag = img['image']
                             data['imagetags'].append(imagetag)
-                            
+
 
             if dhapi.is_empty(appname):
                 appname = data.get("application", "")

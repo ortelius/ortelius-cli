@@ -2082,11 +2082,10 @@ def update_deppkgs(dhurl, cookies, compid, filename, glic):
 def run_git(cmd):
     if "git " in cmd and not os.path.exists(".git"):
         return ""
-    
+
     pid = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     retval = ""
     for line in pid.stdout.readlines():
         retval = line.decode("utf-8").strip()
         break
     return retval
-
