@@ -16,7 +16,6 @@ import time
 import urllib
 from pathlib import Path
 from pprint import pprint
-from urllib.parse import urlparse
 
 import certifi
 import configobj
@@ -28,7 +27,7 @@ from flatten_dict import flatten
 
 def url_validator(url):
     try:
-        urlparse(url)
+        urllib.parse.urlparse(url)
         return True
     except BaseException:
         return False
@@ -212,7 +211,7 @@ def deploy_application_by_appid(dhurl, cookies, appid, env):
     Returns:
         list: [deployment_id (int) -1 for error, message (string)].
     """
-    data = get_json(dhurl + "/dmadminweb/API/deploy?app=" + str(appid) + "&env=" + urllib.parse.quote(env) + "&wait=N", cookies)
+    data = get_json(dhurl + "/dmadminweb/API/deploy?app=" + str(appid) + "&env=" + urllib.parse.urlencode()(env) + "&wait=N", cookies)
 
     if data is None:
         return [-1, "Deployment Failed"]

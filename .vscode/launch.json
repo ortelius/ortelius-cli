@@ -13,13 +13,13 @@
         "--dhurl",
         "https://console.deployhub.com",
         "--dhuser",
-        "XXXXXX",
+        "ortelius",
         "--dhpass",
-        "XXXXXXX",
+        "ortelius",
         "--rsp",
-        "/Users/steve/Downloads/console_dh_keys/comptest.toml",
+        "/Users/steve/Downloads/console_dh_keys/component.toml",
         "--deppkg",
-        "cyclonedx@/Users/steve/Downloads/console_dh_keys/cyclonedx.json",
+        "cyclonedx@/Users/steve/Downloads/console_dh_keys/example_jsonformat_Cyclonedx_NG_syft_result.json",
         "--file"
       ]
     }

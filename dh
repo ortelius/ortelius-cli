@@ -423,7 +423,7 @@ def main(  # noqa: C901
 
         cookies = dhapi.login(dhurl, dhuser, dhpass, errors)
 
-        if dhapi.is_empty(cookies):
+        if cookies is None:
             if errors:
                 print(errors[0])
             sys.exit(1)
@@ -924,31 +924,31 @@ def main(  # noqa: C901
                     lcompattr["swagger"] = "openapi.yml"
 
             if lcompattr.get("readme", None) is not None:
-                if os.path.exists(lcompattr.get("readme")):
+                if os.path.exists(lcompattr.get("readme", "")):
                     dhapi.post_textfile(dhurl, cookies, compid, lcompattr.get("readme", ""), "readme")
                 else:
-                    print("WARNING: ReadMe not found:" + lcompattr.get("readme"))
+                    print("WARNING: ReadMe not found:" + lcompattr.get("readme", ""))
 
             if lcompattr.get("license", None) is not None:
-                if os.path.exists(lcompattr.get("license")):
+                if os.path.exists(lcompattr.get("license", "")):
                     dhapi.post_textfile(dhurl, cookies, compid, lcompattr.get("license", ""), "license")
                 else:
-                    print("WARNING: License not found:" + lcompattr.get("license"))
+                    print("WARNING: License not found:" + lcompattr.get("license", ""))
 
             if lcompattr.get("swagger", None) is not None:
-                if os.path.exists(lcompattr.get("swagger")):
+                if os.path.exists(lcompattr.get("swagger", "")):
                     dhapi.post_textfile(dhurl, cookies, compid, lcompattr.get("swagger", ""), "swagger")
                 else:
-                    print("WARNING: Swagger not found:" + lcompattr.get("swagger"))
+                    print("WARNING: Swagger not found:" + lcompattr.get("swagger", ""))
 
             glic = None
             if lcompattr.get("gradlelicense", None) is not None:
-                if os.path.exists(lcompattr.get("gradlelicense")):
+                if os.path.exists(lcompattr.get("gradlelicense", "")):
                     # Opening JSON file
-                    with open(lcompattr.get("gradlelicense"), mode="r", encoding="utf-8") as gradle_license:
+                    with open(lcompattr.get("gradlelicense", ""), mode="r", encoding="utf-8") as gradle_license:
                         glic = json.load(gradle_license)
                 else:
-                    print("WARNING: Gradle License not found:" + lcompattr.get("gradlelicense"))
+                    print("WARNING: Gradle License not found:" + lcompattr.get("gradlelicense", ""))
 
             if deppkg:
                 for filename in deppkg:
@@ -1045,7 +1045,7 @@ def main(  # noqa: C901
                         print("Failed")
                         retcode = retcode + 1
 
-            compname = os.environ.get("COMPONENT_NAME_" + str(cnt),"")
+            compname = os.environ.get("COMPONENT_NAME_" + str(cnt), "")
             compversion = os.environ.get("COMPONENT_VERSION_" + str(cnt), "")
             appname = os.environ.get("COMPONENT_APPLICATION_" + str(cnt), "")
             appversion = os.environ.get("COMPONENT_APPLICATION_VERSION_" + str(cnt), "")
@@ -1110,6 +1110,9 @@ def main(  # noqa: C901
 
         if dhapi.is_empty(compautoinc):
             compautoinc = "Y"
+
+        if dhapi.is_empty(environment):
+            environment = ""       
 
         dhapi.set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, environment, crdatasource, changerequest)
 
