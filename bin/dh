@@ -538,23 +538,23 @@ def main(  # noqa: C901
                 data = json.loads(payload)
 
             if dhapi.is_not_empty(namespace):
-                data['imagetags'] = []
+                data["imagetags"] = []
                 pid = subprocess.Popen("kubectl get pods -A -o json", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                 payload = ""
-                for line in pid.stdout.readlines():
-                    payload = payload + line.decode("utf-8").strip()
+                if pid.stdout is not None:
+                    for line in pid.stdout.readlines():
+                        payload = payload + line.decode("utf-8").strip()
 
                 if dhapi.is_not_empty(payload):
                     cluster_json = json.loads(payload)
-                    items = cluster_json.get('items', [])
+                    items = cluster_json.get("items", [])
                     for item in items:
-                        if (item['metadata']['namespace'] == namespace):
-                            containers = item['spec']['containers']
+                        if item["metadata"]["namespace"] == namespace:
+                            containers = item["spec"]["containers"]
                             imagetag = ""
                             for img in containers:
-                                imagetag = img['image']
-                            data['imagetags'].append(imagetag)
-
+                                imagetag = img["image"]
+                            data["imagetags"].append(imagetag)
 
             if dhapi.is_empty(appname):
                 appname = data.get("application", "")
@@ -1174,12 +1174,16 @@ def main(  # noqa: C901
                     appversion = saveappver
 
                 if dhapi.is_empty(appversion):
+                    if appname is None:
+                        appname = ""
                     parts = appname.split(";")
                     if len(parts) == 3:
                         appname = parts[0] + ";" + parts[1]
                         appversion = parts[2]
 
                 if dhapi.is_empty(appversion):
+                    if appname is None:
+                        appname = ""
                     parts = appname.split(";")
                     if len(parts) == 3:
                         appname = parts[0] + ";" + parts[1]
