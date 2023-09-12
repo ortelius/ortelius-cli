@@ -1,3 +1,3 @@
 """DeployHub REST API Client module."""
 
-__version__ = "9.3.238"
+__version__ = "9.3.239"
