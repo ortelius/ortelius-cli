@@ -1610,7 +1610,7 @@ def clone_repo(project):
     return data
 
 
-def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, deployenv, crdatasource, crlist, cluster_json, msname, msbranch):  # pylint: disable=C901 # noqa: C901
+def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, deployenv, crdatasource, crlist, cluster_json, msname, msbranch):  # pylint: disable=too-complex # noqa: C901
     """
     Parse the kubernetes deployment yaml for component name and version.
 
