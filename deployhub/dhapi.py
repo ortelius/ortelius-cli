@@ -2182,7 +2182,11 @@ def run_cmd(cmd):
     if exe_path is not None:
         with subprocess.Popen(f"{exe_path} {cmd}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True) as pid:  # nosec: B602
             output, errors = pid.communicate()
-            retval = output + errors
+            if output is not None:
+                retval = str(output)
+            
+            if errors is not None:
+                retval += str(errors)
     else:
         print(f"{exe} not found. Please make sure it is installed and in your PATH.")
 
