@@ -9,11 +9,13 @@
 import base64
 import json
 import os
-import subprocess
+import shlex
+import shutil
+import subprocess  # nosec B404
 import sys
 import tempfile
 import time
-import urllib
+import urllib.parse
 from pathlib import Path
 from pprint import pprint
 
@@ -120,7 +122,8 @@ def post_json_with_header(url, token):
         string: The json string
     """
     pprint(url)
-    lines = subprocess.run(["curl", "-X", "POST", url, "-H", "Accept: application/json", "-H", "Circle-Token:" + token, "-q"], check=False, stdout=subprocess.PIPE).stdout.decode("utf-8").split("\n")
+    cmd = " ".join(["curl", "-X", "POST", url, "-H", "Accept: application/json", "-H", "Circle-Token:" + token, "-q"])
+    lines = run_cmd(cmd).split("\n")
     return lines
 
 
@@ -159,16 +162,19 @@ def sslcerts(dhurl, customcert):
     try:
         requests.get(dhurl, timeout=3000)
     except requests.exceptions.SSLError:
+        tempdir = tempfile.mkdtemp()
+        ca = ""
+        customcert = ""
         print("Adding custom certs to certifi store...")
         cafile = certifi.where()
         with open(customcert, "rb") as infile:
             customca = infile.read()
         with open(cafile, "rb") as infile:
             ca = infile.read()
-        with open("/tmp/customca.pem", "ab") as outfile:
+        with open(f"{tempdir}/customca.pem", "ab") as outfile:
             outfile.write(ca)
             outfile.write(customca)
-        os.environ["REQUESTS_CA_BUNDLE"] = "/tmp/customca.pem"
+        os.environ["REQUESTS_CA_BUNDLE"] = f"{tempdir}/customca.pem"
 
 
 def login(dhurl, user, password, errors):
@@ -211,7 +217,7 @@ def deploy_application_by_appid(dhurl, cookies, appid, env):
     Returns:
         list: [deployment_id (int) -1 for error, message (string)].
     """
-    data = get_json(dhurl + "/dmadminweb/API/deploy?app=" + str(appid) + "&env=" + urllib.parse.urlencode()(env) + "&wait=N", cookies)
+    data = get_json(dhurl + "/dmadminweb/API/deploy?app=" + str(appid) + "&env=" + urllib.parse.quote(env) + "&wait=N", cookies)
 
     if data is None:
         return [-1, "Deployment Failed"]
@@ -268,17 +274,24 @@ def move_application(dhurl, cookies, appname, appversion, from_domain, task):
     data = get_application(dhurl, cookies, appname, appversion, True)
     appid = data[0]
 
+    fromid = ""
     # Get from domainid
     data = get_json(dhurl + "/dmadminweb/API/domain/" + urllib.parse.quote(from_domain), cookies)
-    fromid = str(data["result"]["id"])
+    if data is not None:
+        if data.get("result", None) is not None:
+            result = data.get("result", {})
+            if result.get("id", None) is not None:
+                fromid = str(result.get("id", ""))
 
     # Get from Tasks
     data = get_json(dhurl + "/dmadminweb/GetTasks?domainid=" + fromid, cookies)
     taskid = "0"
 
-    for atask in data:
-        if atask["name"] == task:
-            taskid = str(atask["id"])
+    if data is not None:
+        for atask in data:
+            if atask.get("name", "") == task:
+                if atask.get("id", None) is not None:
+                    taskid = str(atask.get("id", ""))
 
     # Move App Version
     data = get_json(dhurl + "/dmadminweb/RunTask?f=run&tid=" + taskid + "&notes=&id=" + appid + "&pid=" + fromid, cookies)
@@ -402,38 +415,64 @@ def get_attrs(dhurl, cookies, app, comp, env, srv):
     Returns:
         dict: key/value pair of attributes.
     """
+    envid = "-1"
+    appid = "-1"
+    srvid = "-1"
+    compid = "-1"
+    servers = []
+    env_attrs = []
+    srv_attrs = []
+    app_attrs = []
+    comp_attrs = []
+
     data = get_json(dhurl + "/dmadminweb/API/environment/" + urllib.parse.quote(env), cookies)
-    envid = str(data["result"]["id"])
-    servers = data["result"]["servers"]
+    if data is not None:
+        if data.get("result", None) is not None:
+            result = data.get("result", {})
+            if result.get("id", None) is not None:
+                envid = str(result.get("id", ""))
+            if result.get("servers", None) is not None:
+                servers = result.get("servers", [])
 
     data = get_json(dhurl + "/dmadminweb/API/getvar/environment/" + envid, cookies)
-    env_attrs = data["attributes"]
+
+    if data is not None:
+        env_attrs = data.get("attributes", [])
 
     for a_srv in servers:
         if srv == a_srv["name"]:
             srvid = str(a_srv["id"])
             data = get_json(dhurl + "/dmadminweb/API/getvar/server/" + srvid, cookies)
-            srv_attrs = data["attributes"]
+            if data is not None:
+                srv_attrs = data.get("attributes", [])
             break
 
     data = get_json(dhurl + "/dmadminweb/API/application/?name=" + urllib.parse.quote(app), cookies)
 
-    if app == data["result"]["name"]:
-        appid = str(data["result"]["id"])
-    else:
-        for a_ver in data["result"]["versions"]:
-            if app == a_ver["name"]:
-                appid = str(a_ver["id"])
-                break
+    if data is not None:
+        result = data.get("result", {})
+
+        if app == result.get("name", ""):
+            appid = str(result.get("id", ""))
+        else:
+            versions = result.get("versions", [])
+            for a_ver in versions:
+                if app == a_ver.get("name", ""):
+                    appid = str(a_ver.get("id", ""))
+                    break
 
     data = get_json(dhurl + "/dmadminweb/API/getvar/application/" + appid, cookies)
-    app_attrs = data["attributes"]
+    if data is not None:
+        app_attrs = data.get("attributes", [])
 
     data = get_json(dhurl + "/dmadminweb/API/component/" + comp, cookies)
-    compid = str(data["result"]["id"])
+    if data is not None:
+        result = data.get("result", {})
+        compid = str(result.get("id", ""))
 
     data = get_json(dhurl + "/dmadminweb/API/getvar/component/" + compid, cookies)
-    comp_attrs = data["attributes"]
+    if data is not None:
+        comp_attrs = data.get("attributes", [])
 
     result = {}
     for entry in env_attrs:
@@ -464,7 +503,10 @@ def get_application_attrs(dhurl, cookies, appid):
         string: json string of the key/value attributes.
     """
     data = get_json(dhurl + "/dmadminweb/API/getvar/application/" + str(appid), cookies)
-    app_attrs = data["attributes"]
+    if data is None:
+        return {}
+
+    app_attrs = data.get("attributes", {})
     return app_attrs
 
 
@@ -481,15 +523,21 @@ def find_domain(dhurl, cookies, findname):
         string or None if not found: the full domain name
     """
     data = get_json(dhurl + "/dmadminweb/GetAllDomains", cookies)
+
+    if data is None:
+        return None
+
     for dom in data:
-        child = dom["name"].split(".")[-1]
-        if child == findname:
-            return dom
-        else:
-            child = child.replace(" ", "").lower()
+        if dom.get("name", None) is not None:
+            name = dom.get("name", "")
+            child = name.split(".")[-1]
             if child == findname:
-                dom["name"] = "GLOBAL.Chasing Horses LLC." + dom["name"]
                 return dom
+            else:
+                child = child.replace(" ", "").lower()
+                if child == findname:
+                    dom["name"] = "GLOBAL.Chasing Horses LLC." + name
+                    return dom
     return None
 
 
@@ -668,8 +716,9 @@ def get_previous_commit(dhurl, cookies, compname, compvariant):
     parent_compid = data[0]
     if parent_compid > 0:
         data = get_component_fromid(dhurl, cookies, parent_compid)
-        if data.get("result", None) is not None:
-            return data["result"].get("gitcommit", "")
+        if data is not None:
+            if data.get("result", None) is not None:
+                return data["result"].get("gitcommit", "")
     return ""
 
 
@@ -816,6 +865,9 @@ def new_component_version(dhurl, cookies, compname, compvariant, compversion, ki
             else:
                 latest_compversion = ""
 
+            verschema = ""
+            gitcommit = ""
+
             if "-g" in latest_compversion:  # git commit
                 verschema = latest_compversion.split("-g")[0]
                 gitcommit = latest_compversion.split("-g")[1]
@@ -837,7 +889,7 @@ def new_component_version(dhurl, cookies, compname, compvariant, compversion, ki
                     schema_parts = verschema.split("_")
                     incnum = schema_parts.pop()
                     incnum = str(int(incnum) + 1)
-                    schema_parts.append(incnum)
+                    schema_parts += [incnum]
                     verschema = "_".join(schema_parts) + gitcommit
                 elif verschema.isdigit():
                     verschema = str(int(verschema) + 1) + gitcommit
@@ -885,10 +937,16 @@ def new_docker_component(dhurl, cookies, compname, compvariant, compversion, par
             data = get_json(dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname), cookies)
         else:
             data = get_json(dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname + ";" + compvariant), cookies)
-        compid = data["result"]["id"]
+        if data is not None:
+            result = data.get("result", {})
+            compid = int(result.get("id", "0"))
     else:
         data = get_json(dhurl + "/dmadminweb/API/new/compver/" + str(parent_compid), cookies)
-        compid = data["result"]["id"]
+        if data is not None:
+            if data is not None:
+                result = data.get("result", {})
+                compid = int(result.get("id", "0"))
+
         update_name(dhurl, cookies, compname, compvariant, compversion, compid)
 
     new_component_item(dhurl, cookies, compid, "docker", None)
@@ -926,10 +984,16 @@ def new_file_component(dhurl, cookies, compname, compvariant, compversion, paren
             data = get_json(dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname), cookies)
         else:
             data = get_json(dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname + ";" + compvariant), cookies)
-        compid = data["result"]["id"]
+        if data is not None:
+            if data is not None:
+                result = data.get("result", {})
+                compid = int(result.get("id", "0"))
     else:
         data = get_json(dhurl + "/dmadminweb/API/new/compver/" + str(parent_compid), cookies)
-        compid = data["result"]["id"]
+        if data is not None:
+            if data is not None:
+                result = data.get("result", {})
+                compid = int(result.get("id", "0"))
         update_name(dhurl, cookies, compname, compvariant, compversion, compid)
 
     new_component_item(dhurl, cookies, compid, "file", component_items)
@@ -951,6 +1015,7 @@ def new_component_item(dhurl, cookies, compid, kind, component_items):
     Returns:
         int: id of the new component item, -1 if an error occurred.
     """
+    data = None
     # Get compId
     if kind.lower() == "docker" or component_items is None:
         data = get_json(dhurl + "/dmadminweb/UpdateAttrs?f=inv&c=" + str(compid) + "&xpos=100&ypos=100&kind=" + kind + "&removeall=Y", cookies)
@@ -972,12 +1037,15 @@ def new_component_item(dhurl, cookies, compid, kind, component_items):
             if i == 0:
                 tmpstr = tmpstr + "&removeall=Y"
 
-            data = get_json(dhurl + "/dmadminweb/API/new/compitem/" + urllib.parse.quote(ciname) + "?component=" + str(compid) + "&xpos=100&ypos=" + str(ypos) + "&kind=" + kind + tmpstr)
+            data = get_json(dhurl + "/dmadminweb/API/new/compitem/" + urllib.parse.quote(ciname) + "?component=" + str(compid) + "&xpos=100&ypos=" + str(ypos) + "&kind=" + kind + tmpstr, cookies)
 
-            if data.size() > 0 and data["result"] is not None:
-                if parent_item > 0:
-                    get_json(dhurl + "/dmadminweb/UpdateAttrs?f=iad&c=" + str(compid) + "&fn=" + str(parent_item) + "&tn=" + str(data["result"]["id"]))
-                parent_item = data["result"]["id"]
+            if data is not None:
+                if data.get("result", None) is not None:
+                    result = data.get("result", {})
+                    workid = result.get("id", -1)
+                    if parent_item > 0:
+                        get_json(dhurl + "/dmadminweb/UpdateAttrs?f=iad&c=" + str(compid) + "&fn=" + str(parent_item) + "&tn=" + str(workid), cookies)
+                    parent_item = workid
 
             ypos = ypos + 100
             i = i + 1
@@ -1034,18 +1102,26 @@ def new_component(dhurl, cookies, compname, compvariant, compversion, kind, pare
     Returns:
         int: component id of the new component otherwise None.
     """
+    compid = -1
+
     # Create base version
     if parent_compid is None:
         data = get_json(dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname + ";" + compvariant), cookies)
-        compid = data["result"]["id"]
+        if data is not None:
+            if data is not None:
+                result = data.get("result", {})
+                compid = int(result.get("id", -1))
     else:
         data = get_json(dhurl + "/dmadminweb/API/new/compver/" + str(parent_compid), cookies)
-        compid = data["result"]["id"]
+        if data is not None:
+            if data is not None:
+                result = data.get("result", {})
+                compid = int(result.get("id", -1))
 
     update_name(dhurl, cookies, compname, compvariant, compversion, compid)
 
     if kind is not None:
-        new_component_item(dhurl, cookies, compid, kind)
+        new_component_item(dhurl, cookies, compid, kind, None)
 
     return compid
 
@@ -1116,7 +1192,7 @@ def update_compid_attrs(dhurl, cookies, compid, attrs, crdatasource, crlist):
 
     if is_not_empty(crdatasource):
         for bugid in crlist:
-            get_json(dhurl + "/dmadminweb/API2/assign/defect/" + str(compid) + "?ds=" + crdatasource + "&bugid=" + str(bugid))
+            get_json(dhurl + "/dmadminweb/API2/assign/defect/" + str(compid) + "?ds=" + crdatasource + "&bugid=" + str(bugid), cookies)
 
     return [True, data, dhurl + "/dmadminweb/API/setvar/component/" + str(compid)]
 
@@ -1180,6 +1256,8 @@ def get_application(dhurl, cookies, appname, appversion, id_only):
     appversion = clean_name(appversion)
 
     application = ""
+    name = ""
+    appid = -1
 
     param = ""
     if id_only:
@@ -1200,6 +1278,7 @@ def get_application(dhurl, cookies, appname, appversion, id_only):
         return [-1, "", -1]
 
     if data.get("success", False):
+        vlist = []
         result = data.get("result", None)
         if result:
             appid = result.get("id", -1)
@@ -1228,6 +1307,8 @@ def get_application_fromid(dhurl, cookies, appid, appversion):
     Returns:
         list: [id or -1 if not found, application name, latest version id].
     """
+    appid = -1
+    name = ""
     appversion = clean_name(appversion)
     param = ""
 
@@ -1241,6 +1322,7 @@ def get_application_fromid(dhurl, cookies, appid, appversion):
         return [-1, "", -1]
 
     if data.get("success", False):
+        vlist = []
         result = data.get("result", None)
         if result:
             appid = result.get("id", -1)
@@ -1321,6 +1403,7 @@ def new_application(dhurl, cookies, appname, appversion, appautoinc, envs, compi
     parent_appid = -1
 
     domain = ""
+    parts = []
 
     if is_empty(appversion) and ";" in appname:
         parts = appname.split(";")
@@ -1344,8 +1427,9 @@ def new_application(dhurl, cookies, appname, appversion, appautoinc, envs, compi
     # Create base version
     if parent_appid < 0:
         data = get_json(dhurl + "/dmadminweb/API/new/application/?name=" + urllib.parse.quote(appname) + "&" + domain, cookies)
-        if data.get("success", False):
-            data = get_application(dhurl, cookies, appname, "", True)
+        if data is not None:
+            if data.get("success", False):
+                data = get_application(dhurl, cookies, appname, "", True)
             parent_appid = data[0]
 
         if envs is not None:
@@ -1389,10 +1473,14 @@ def new_application(dhurl, cookies, appname, appversion, appautoinc, envs, compi
     if appid < 0:
         data = get_json(dhurl + "/dmadminweb/API/newappver/" + str(latest_appid) + "/?name=" + urllib.parse.quote(appname + ";" + appversion) + "&" + domain, cookies)
 
-        if not data.get("success", False):
-            return [-1, data.get("error", "")]
+        if data is not None:
+            if not data.get("success", False):
+                return [-1, data.get("error", "")]
 
-        appid = data["result"]["id"]
+            if data.get("result", None) is not None:
+                result = data.get("result", {})
+                if result.get("id", None) is not None:
+                    appid = result.get("id", "")
 
     return [appid, full_appname + ";" + appversion]
 
@@ -1507,10 +1595,9 @@ def clone_repo(project):
     os.chdir(tempdir)
     print(tempdir)
 
-    pid = subprocess.Popen("git clone -q git@github.com:" + project + ".git .", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    for line in pid.stdout.readlines():
+    lines = run_cmd("git clone -q git@github.com:" + project + ".git .").split("\n")
+    for line in lines:
         print(line)
-        pid.wait()
 
     data = None
     if not os.path.exists("features.toml"):
@@ -1523,7 +1610,7 @@ def clone_repo(project):
     return data
 
 
-def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, deployenv, crdatasource, crlist, cluster_json, msname, msbranch):
+def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, deployenv, crdatasource, crlist, cluster_json, msname, msbranch):  # pylint: disable=C901 # noqa: C901
     """
     Parse the kubernetes deployment yaml for component name and version.
 
@@ -1553,6 +1640,8 @@ def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, depl
         branch_containers = []
         master_containers = {}
         deployed_ms = {}
+        tag = ""
+        repo = ""
 
         for item in items:
             deploy_time = item["metadata"]["creationTimestamp"]
@@ -1668,14 +1757,17 @@ def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, depl
                 app = appname + ";" + appversion
             data = get_json(dhurl + "/dmadminweb/API/application/?name=" + urllib.parse.quote(app) + "&latest=Y", cookies)
             appid = -1
-            if data is not None and data["success"]:
+            if data is not None and data.get("success", False):
                 appid = data["result"]["id"]
 
             existing_ids = []
 
             if appid > 0:
+                existing_comps = []
                 data = get_json(dhurl + "/dmadminweb/API/application/" + str(appid), cookies)
-                existing_comps = data["result"]["components"]
+                if data is not None:
+                    result = data.get("result", {})
+                    existing_comps = result.get("components", [])
 
                 for comp in existing_comps:
                     existing_ids.append(comp["id"])
@@ -1684,10 +1776,10 @@ def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, depl
             for item in compid_list:
                 new_ids.append(item["compid"])
 
-            if areEqual(existing_ids, new_ids):
+            if are_equal(existing_ids, new_ids):
                 print("Application Version " + appname + ";" + appversion + " already exists")
             else:
-                data = new_application(dhurl, cookies, appname, appversion, appautoinc, envs)
+                data = new_application(dhurl, cookies, appname, appversion, appautoinc, envs, -1)
                 if data is not None:
                     appid = data[0]
 
@@ -1706,20 +1798,20 @@ def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, depl
             deploy["application"] = appid
             deploy["environment"] = deployenv
             deploy["rc"] = 0
-            with open(deploydata, mode="w", encoding="utf-8") as fp:
-                json.dump(deploy, fp)
-            fp.close()
+            with open(deploydata, mode="w", encoding="utf-8") as deployfp:
+                json.dump(deploy, deployfp)
+            deployfp.close()
             log_deploy_application(dhurl, cookies, deploydata)
     return
 
 
-def areEqual(arr1, arr2):
-    n = len(arr1)
-    m = len(arr2)
+def are_equal(arr1, arr2):
+    arr1_len = len(arr1)
+    arr2_len = len(arr2)
 
     # If lengths of array are not
     # equal means array are not equal
-    if n != m:
+    if arr1_len != arr2_len:
         return False
 
     # Sort both arrays
@@ -1727,7 +1819,7 @@ def areEqual(arr1, arr2):
     arr2.sort()
 
     # Linearly compare elements
-    for i in range(n):
+    for i in range(arr1_len):
         if arr1[i] != arr2[i]:
             return False
 
@@ -1769,20 +1861,20 @@ def log_deploy_application(dhurl, cookies, deploydata):
 
         if is_not_empty(application) and is_not_empty(environment):
             result = post_json(url, payload, cookies)
-            data["deployid"] = result.get("deployid", -1)
-            data["application"] = result.get("application", application)
-            data["appid"] = result.get("appid", -1)
-            application = data["application"]
+            if result is not None:
+                data["deployid"] = result.get("deployid", -1)
+                data["application"] = result.get("application", application)
+                data["appid"] = result.get("appid", -1)
+                application = data["application"]
+
+                if result.get("errormsg", None) is not None:
+                    print(result.get("errormsg", None))
 
             print(f"Recorded deployment of {application} for {environment}")
 
             if compversion is not None and len(compversion) > 0:
                 print("Assigned components to " + application + ":")
                 print("  " + "\n  ".join(compversion))
-
-            if result.get("errormsg", None) is not None:
-                print(result.get("errormsg", None))
-
     return data
 
 
@@ -1846,7 +1938,7 @@ def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, comp
     if is_not_empty(appversion):
         saveappver = appversion
 
-    pwd = ""
+    cwd = ""
     tempdir = ""
 
     if "git@" in kvconfig:
@@ -1863,17 +1955,17 @@ def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, comp
         gitdir = kvconfig.split("/", maxsplit=1)[0]
         kvconfig = "/".join(kvconfig.split("/")[1:])
 
-        pwd = os.getcwd()
+        cwd = os.getcwd()
         tempdir = tempfile.mkdtemp()
         os.chdir(tempdir)
         print(tempdir)
 
-        lines = subprocess.run(["git", "clone", "-q", repo], check=False, stdout=subprocess.PIPE).stdout.decode("utf-8").split("\n")
+        lines = run_cmd("git clone -q " + repo).split("\n")
         for line in lines:
             print(line)
 
         os.chdir(gitdir)
-        lines = subprocess.run(["git", "checkout", gitbranch], check=False, stdout=subprocess.PIPE).stdout.decode("utf-8").split("\n")
+        lines = run_cmd("git checkout " + gitbranch).split("\n")
         for line in lines:
             print(line)
 
@@ -1891,8 +1983,8 @@ def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, comp
 
     flat_dict = flatten(normal_dict, reducer="path")
 
-    if is_not_empty(tempdir) and is_not_empty(pwd):
-        os.chdir(pwd)
+    if is_not_empty(tempdir) and is_not_empty(cwd):
+        os.chdir(cwd)
     #    rmtree(tempdir)
 
     attrs = {}
@@ -2012,7 +2104,7 @@ def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, comp
 
 
 def post_textfile(dhurl, cookies, compid, filename, file_type):
-    file_data = ""
+    file_data = bytes()
     if os.path.exists(filename):
         file_data = open(filename, "rb").read()
     else:
@@ -2078,13 +2170,20 @@ def update_deppkgs(dhurl, cookies, compid, filename, glic):
     return result
 
 
-def run_git(cmd):
-    if "git " in cmd and not os.path.exists(".git"):
-        return ""
-
-    pid = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+def run_cmd(cmd):
     retval = ""
-    for line in pid.stdout.readlines():
-        retval = line.decode("utf-8").strip()
-        break
+    cmd_args = shlex.split(cmd)
+
+    exe = cmd_args.pop(0)
+    if exe == "git" and not os.path.exists(".git"):
+        return retval
+
+    exe_path = shutil.which(exe)
+    if exe_path is not None:
+        with subprocess.Popen(f"{exe_path} {cmd}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True) as pid:  # nosec: B602
+            output, errors = pid.communicate()
+            retval = output + errors
+    else:
+        print(f"{exe} not found. Please make sure it is installed and in your PATH.")
+
     return retval
