@@ -2172,22 +2172,14 @@ def update_deppkgs(dhurl, cookies, compid, filename, glic):
 
 def run_cmd(cmd):
     retval = ""
-    cmd_args = shlex.split(cmd)
 
-    exe = cmd_args.pop(0)
-    if exe == "git" and not os.path.exists(".git"):
+    if "git" in cmd and not os.path.exists(".git"):
         return retval
 
-    exe_path = shutil.which(exe)
-    if exe_path is not None:
-        with subprocess.Popen(f"{exe_path} {cmd}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True) as pid:  # nosec: B602
-            output, errors = pid.communicate()
-            if output is not None:
-                retval = str(output)
-            
-            if errors is not None:
-                retval += str(errors)
-    else:
-        print(f"{exe} not found. Please make sure it is installed and in your PATH.")
+    pid = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    retval = ""
+    if pid.stdout is not None:
+        for line in pid.stdout.readlines():
+            retval += line.decode("utf-8").strip() + "\n"
 
     return retval
