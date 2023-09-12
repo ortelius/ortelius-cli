@@ -204,7 +204,6 @@ import json
 import os
 import re
 import stat
-import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -337,6 +336,7 @@ def main(  # noqa: C901
     """
 
     cookies = ""
+    environment = ""
     attrs = {}
     if rsp is None:
         rsp = "component.toml"
@@ -490,18 +490,18 @@ def main(  # noqa: C901
                                 pipeline = ""
                                 for entry in app_attrs:
                                     if "DeployEnv" in entry:
-                                        deployenv = entry["DeployEnv"]
+                                        deployenv = entry.get("DeployEnv", "")
                                     if "CircleCI_Pipeline" in entry:
-                                        pipeline = entry["CircleCI_Pipeline"]
+                                        pipeline = entry.get("CircleCI_Pipeline", "")
 
                                 if dhapi.is_not_empty(deployenv):
                                     applist.append({"appid": appid, "appname": appname, "deployenv": deployenv, "circleci_pipeline": pipeline})
 
             for entry in applist:
-                appid = entry["appid"]
-                appname = entry["appname"]
-                deployenv = entry["deployenv"]
-                pipeline = entry["circleci_pipeline"]
+                appid = entry.get("appid", "")
+                appname = entry.get("appname", "")
+                deployenv = entry.get("deployenv", "")
+                pipeline = entry.get("circleci_pipeline", "")
 
                 print("Deploying " + appname + " to " + deployenv)
                 data = dhapi.deploy_application_by_appid(dhurl, cookies, appid, deployenv)
@@ -539,11 +539,7 @@ def main(  # noqa: C901
 
             if dhapi.is_not_empty(namespace):
                 data["imagetags"] = []
-                pid = subprocess.Popen("kubectl get pods -A -o json", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-                payload = ""
-                if pid.stdout is not None:
-                    for line in pid.stdout.readlines():
-                        payload = payload + line.decode("utf-8").strip()
+                payload = dhapi.run_cmd("kubectl get pods -A -o json").strip()
 
                 if dhapi.is_not_empty(payload):
                     cluster_json = json.loads(payload)
@@ -1112,7 +1108,7 @@ def main(  # noqa: C901
             compautoinc = "Y"
 
         if dhapi.is_empty(environment):
-            environment = ""       
+            environment = ""
 
         dhapi.set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, environment, crdatasource, changerequest)
 
@@ -1410,7 +1406,7 @@ def envscript(dhurl, cookies, envvars, envvars_sh):  # noqa: C901
     if dhapi.is_not_empty(envvars_sh):
         fp_script = open(envvars_sh, mode="a", encoding="utf-8")
 
-    lines = subprocess.run(["cat", envvars], check=False, stdout=subprocess.PIPE).stdout.decode("utf-8")
+    lines = dhapi.run_cmd("cat " + envvars)
 
     mapping = os.environ
 
@@ -1418,105 +1414,105 @@ def envscript(dhurl, cookies, envvars, envvars_sh):  # noqa: C901
         now = datetime.now()
         mapping["BLDDATE"] = now.strftime("%c")
     else:
-        mapping["BLDDATE"] = mapping.get("BLDDATE").strip('"')
+        mapping["BLDDATE"] = mapping.get("BLDDATE", "").strip('"')
 
     # if the buildnum, git_repo, git_url, git_commit_time, git_lines not in os.environ and not in attrvars and not in export then export
     run_fetch = True
     if mapping.get("SHORT_SHA", None) is None:
-        mapping["SHORT_SHA"] = dhapi.run_git("git log --oneline -n 1 | cut -d' '  -f1")
+        mapping["SHORT_SHA"] = dhapi.run_cmd("git log --oneline -n 1 | cut -d' '  -f1")
 
     if mapping.get("GIT_COMMIT", None) is None:
-        mapping["GIT_COMMIT"] = dhapi.run_git("git log --oneline -n 1 | cut -d' '  -f1")
+        mapping["GIT_COMMIT"] = dhapi.run_cmd("git log --oneline -n 1 | cut -d' '  -f1")
 
     if mapping.get("GIT_VERIFY_COMMIT", None) is None:
-        mapping["GIT_VERIFY_COMMIT"] = dhapi.run_git("git verify-commit " + mapping.get("GIT_COMMIT", "") + " 2>&1 | grep -i 'Signature made' | wc -l")
+        mapping["GIT_VERIFY_COMMIT"] = dhapi.run_cmd("git verify-commit " + mapping.get("GIT_COMMIT", "") + " 2>&1 | grep -i 'Signature made' | wc -l")
 
     if mapping.get("GIT_SIGNED_OFF_BY", None) is None:
-        mapping["GIT_SIGNED_OFF_BY"] = dhapi.run_git(
+        mapping["GIT_SIGNED_OFF_BY"] = dhapi.run_cmd(
             "git log -1 " + mapping.get("GIT_COMMIT", "") + " | grep 'Signed-off-by:' | cut -d: -f2 | sed 's/^[ \t]*//;s/[ \t]*$//' | sed 's/&/&amp;/g; s/</&lt;/g; s/>/&gt;/g;'"
         )
 
     if mapping.get("BUILDNUM", None) is None:
         if run_fetch:
-            dhapi.run_git("git fetch --unshallow")
+            dhapi.run_cmd("git fetch --unshallow")
             run_fetch = False
-        mapping["BUILDNUM"] = dhapi.run_git('git log --oneline | wc -l | tr -d " "')
+        mapping["BUILDNUM"] = dhapi.run_cmd('git log --oneline | wc -l | tr -d " "')
 
     if mapping.get("GIT_REPO", None) is None:
         if run_fetch:
-            dhapi.run_git("git fetch --unshallow")
+            dhapi.run_cmd("git fetch --unshallow")
             run_fetch = False
-        mapping["GIT_REPO"] = dhapi.run_git("git config --get remote.origin.url | awk -F/ '{print $(NF-1)\"/\"$NF}'| sed 's/.git$//'")
+        mapping["GIT_REPO"] = dhapi.run_cmd("git config --get remote.origin.url | awk -F/ '{print $(NF-1)\"/\"$NF}'| sed 's/.git$//'")
 
     if mapping.get("GIT_REPO_PROJECT", None) is None:
         if run_fetch:
-            dhapi.run_git("git fetch --unshallow")
+            dhapi.run_cmd("git fetch --unshallow")
             run_fetch = False
-        mapping["GIT_REPO_PROJECT"] = dhapi.run_git("git config --get remote.origin.url | awk -F/ '{print $(NF-1)}'")
+        mapping["GIT_REPO_PROJECT"] = dhapi.run_cmd("git config --get remote.origin.url | awk -F/ '{print $(NF-1)}'")
 
     if mapping.get("GIT_ORG", None) is None:
         if run_fetch:
-            dhapi.run_git("git fetch --unshallow")
+            dhapi.run_cmd("git fetch --unshallow")
             run_fetch = False
-        mapping["GIT_ORG"] = dhapi.run_git("git config --get remote.origin.url | awk -F/ '{print $NF}'| sed 's/.git$//'")
+        mapping["GIT_ORG"] = dhapi.run_cmd("git config --get remote.origin.url | awk -F/ '{print $NF}'| sed 's/.git$//'")
 
     if mapping.get("GIT_URL", None) is None:
         if run_fetch:
-            dhapi.run_git("git fetch --unshallow")
+            dhapi.run_cmd("git fetch --unshallow")
             run_fetch = 0
-        mapping["GIT_URL"] = dhapi.run_git("git config --get remote.origin.url")
+        mapping["GIT_URL"] = dhapi.run_cmd("git config --get remote.origin.url")
 
     if mapping.get("GIT_BRANCH", None) is None:
         if run_fetch:
-            dhapi.run_git("git fetch --unshallow")
+            dhapi.run_cmd("git fetch --unshallow")
             run_fetch = 0
-        mapping["GIT_BRANCH"] = dhapi.run_git("git rev-parse --abbrev-ref HEAD")
+        mapping["GIT_BRANCH"] = dhapi.run_cmd("git rev-parse --abbrev-ref HEAD")
 
     if mapping.get("GIT_COMMIT_TIMESTAMP", None) is None:
         if run_fetch:
-            dhapi.run_git("git fetch --unshallow")
+            dhapi.run_cmd("git fetch --unshallow")
             run_fetch = 0
-        mapping["GIT_COMMIT_TIMESTAMP"] = dhapi.run_git("git log --pretty='format:%cd' " + mapping.get("SHORT_SHA", "") + " | head -1")
+        mapping["GIT_COMMIT_TIMESTAMP"] = dhapi.run_cmd("git log --pretty='format:%cd' " + mapping.get("SHORT_SHA", "") + " | head -1")
 
     if mapping.get("GIT_BRANCH_PARENT", None) is None:
         if run_fetch:
-            dhapi.run_git("git fetch --unshallow")
+            dhapi.run_cmd("git fetch --unshallow")
             run_fetch = 0
-        mapping["GIT_BRANCH_PARENT"] = dhapi.run_git('git show-branch -a 2>/dev/null | sed "s/].*//" | grep "\\*" | grep -v "$(git rev-parse --abbrev-ref HEAD)" | head -n1 | sed "s/^.*\\[//"')
+        mapping["GIT_BRANCH_PARENT"] = dhapi.run_cmd('git show-branch -a 2>/dev/null | sed "s/].*//" | grep "\\*" | grep -v "$(git rev-parse --abbrev-ref HEAD)" | head -n1 | sed "s/^.*\\[//"')
         print(mapping["GIT_BRANCH_PARENT"])
 
     if mapping.get("GIT_BRANCH_CREATE_COMMIT", None) is None:
         if run_fetch:
-            dhapi.run_git("git fetch --unshallow")
+            dhapi.run_cmd("git fetch --unshallow")
             run_fetch = 0
-        mapping["GIT_BRANCH_CREATE_COMMIT"] = dhapi.run_git(
-            "git log --oneline --reverse " + mapping.get("GIT_BRANCH_PARENT", "main") + ".." + mapping.get("GIT_BRANCH") + " | head -1 | awk -F' ' '{print $1}'"
+        mapping["GIT_BRANCH_CREATE_COMMIT"] = dhapi.run_cmd(
+            "git log --oneline --reverse " + mapping.get("GIT_BRANCH_PARENT", "main") + ".." + mapping.get("GIT_BRANCH", "") + " | head -1 | awk -F' ' '{print $1}'"
         )
 
     if mapping.get("GIT_BRANCH_CREATE_TIMESTAMP", None) is None:
         if run_fetch:
-            dhapi.run_git("git fetch --unshallow")
+            dhapi.run_cmd("git fetch --unshallow")
             run_fetch = 0
-        mapping["GIT_BRANCH_CREATE_TIMESTAMP"] = dhapi.run_git("git log --pretty='format:%cd' " + mapping.get("GIT_BRANCH_CREATE_COMMIT", "HEAD") + " | head -1")
+        mapping["GIT_BRANCH_CREATE_TIMESTAMP"] = dhapi.run_cmd("git log --pretty='format:%cd' " + mapping.get("GIT_BRANCH_CREATE_COMMIT", "HEAD") + " | head -1")
 
     if mapping.get("GIT_COMMIT_AUTHORS", None) is None:
         if run_fetch:
-            dhapi.run_git("git fetch --unshallow")
+            dhapi.run_cmd("git fetch --unshallow")
             run_fetch = 0
-        mapping["GIT_COMMIT_AUTHORS"] = dhapi.run_git(
+        mapping["GIT_COMMIT_AUTHORS"] = dhapi.run_cmd(
             "git rev-list --remotes --pretty --since='"
             + mapping.get("GIT_BRANCH_CREATE_TIMESTAMP", "")
             + "' --until='"
             + mapping.get("GIT_COMMIT_TIMESTAMP", "")
-            + "' | grep -i 'Author:' | grep -v dependabot | awk -F'[:<>]' '{print $3}' | sed 's/^ //' | sed 's/ $//' | sort -u | tr '\n' ',' | sed 's/,$//'"
+            + "' | grep -i 'Author:' | grep -v dependabot | awk -F'[:<>]' '{print $3}' | sed 's/^ //' | sed 's/ $//' | sort -u | tr '\n' ',' | sed 's/,$//'",
         )
 
     if mapping.get("GIT_LINES_TOTAL", None) is None:
         if run_fetch:
-            dhapi.run_git("git fetch --unshallow")
+            dhapi.run_cmd("git fetch --unshallow")
             run_fetch = 0
         if os.path.exists(".git"):
-            mapping["GIT_LINES_TOTAL"] = dhapi.run_git("wc -l $(git ls-files) | grep total | awk -F' ' '{print $1}'")
+            mapping["GIT_LINES_TOTAL"] = dhapi.run_cmd("wc -l $(git ls-files) | grep total | awk -F' ' '{print $1}'")
         else:
             mapping["GIT_LINES_TOTAL"] = "0"
 
@@ -1536,7 +1532,7 @@ def envscript(dhurl, cookies, envvars, envvars_sh):  # noqa: C901
         mapping["GIT_TOTAL_COMMITTERS_CNT"] = attrvars.get("TotalCommittersCnt", attrvars.get("GitTotalCommittersCnt", None))
 
     if mapping.get("GIT_COMMITTERS_CNT", None) is None and mapping.get("GIT_COMMIT_AUTHORS", None) is not None:
-        mapping["GIT_COMMITTERS_CNT"] = str(len(mapping.get("GIT_COMMIT_AUTHORS").split(",")))
+        mapping["GIT_COMMITTERS_CNT"] = str(len(mapping.get("GIT_COMMIT_AUTHORS", "").split(",")))
 
     if (
         mapping.get("GIT_COMMITTERS_CNT", None) is not None
@@ -1544,7 +1540,7 @@ def envscript(dhurl, cookies, envvars, envvars_sh):  # noqa: C901
         and str(mapping.get("GIT_TOTAL_COMMITTERS_CNT", 0)) != "0"
         and str(mapping.get("GIT_TOTAL_COMMITTERS_CNT", "") != "")
     ):
-        mapping["GIT_CONTRIB_PERCENTAGE"] = str(round(int(mapping.get("GIT_COMMITTERS_CNT")) / int(mapping.get("GIT_TOTAL_COMMITTERS_CNT")) * 100))
+        mapping["GIT_CONTRIB_PERCENTAGE"] = str(round(int(mapping.get("GIT_COMMITTERS_CNT", "0")) / int(mapping.get("GIT_TOTAL_COMMITTERS_CNT", "1")) * 100))
     else:
         mapping["GIT_CONTRIB_PERCENTAGE"] = "0"
 
@@ -1564,11 +1560,11 @@ def envscript(dhurl, cookies, envvars, envvars_sh):  # noqa: C901
         gitcommit = dhapi.get_previous_commit(dhurl, cookies, compname, compvariant)
         if dhapi.is_not_empty(gitcommit):
             if run_fetch:
-                dhapi.run_git("git fetch --unshallow")
+                dhapi.run_cmd("git fetch --unshallow")
                 run_fetch = 0
             export_vars["GIT_PREVIOUS_COMPONENT_COMMIT"] = gitcommit
-            export_vars["GIT_LINES_ADDED"] = dhapi.run_git("git diff --stat " + mapping.get("SHORT_SHA", "") + " " + gitcommit + ' | grep changed | cut -d" " -f5')
-            export_vars["GIT_LINES_DELETED"] = dhapi.run_git("git diff --stat " + mapping.get("SHORT_SHA", "") + " " + gitcommit + ' | grep changed | cut -d" " -f7')
+            export_vars["GIT_LINES_ADDED"] = dhapi.run_cmd("git diff --stat " + mapping.get("SHORT_SHA", "") + " " + gitcommit + ' | grep changed | cut -d" " -f5')
+            export_vars["GIT_LINES_DELETED"] = dhapi.run_cmd("git diff --stat " + mapping.get("SHORT_SHA", "") + " " + gitcommit + ' | grep changed | cut -d" " -f7')
         else:
             export_vars["GIT_PREVIOUS_COMPONENT_COMMIT"] = ""
             export_vars["GIT_LINES_ADDED"] = "0"
@@ -1615,10 +1611,11 @@ def filterdict(dhurl, cookies, objtype, fromdom, allobjs):
     data = dhapi.get_json(dhurl + "/dmadminweb/API/export/" + objtype, cookies)
 
     objlist = []
-    for obj in data.get(objtype, []):
-        objname = obj.get("objname", "")
-        if fromdom.lower() in objname.lower():
-            objlist.append(obj)
+    if data is not None:
+        for obj in data.get(objtype, []):
+            objname = obj.get("objname", "")
+            if fromdom.lower() in objname.lower():
+                objlist.append(obj)
 
     allobjs[objtype] = objlist
 
@@ -1646,4 +1643,4 @@ def importdict(dhurl, cookies, objtype, allobjs):
 
 
 if __name__ == "__main__":
-    main()
+    main()  # pyright: ignore [reportGeneralTypeIssues] # pylint: disable=no-value-for-parameter
