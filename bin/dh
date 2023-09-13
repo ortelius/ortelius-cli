@@ -198,7 +198,7 @@ Args:
 # To generate markdown use:
 # pydoc-markdown -I bin | awk '/dh.main/ {p=1}; p==0 {print}'
 
-__version__ = "9.3.242"
+__version__ = "9.3.241"
 
 import json
 import os
@@ -949,7 +949,7 @@ def main(  # noqa: C901
             if deppkg:
                 for filename in deppkg:
                    result = dhapi.update_deppkgs(dhurl, cookies, compid, filename, glic)
-                   pprint.print(result)
+                   pprint(result)
 
             if consumes is not None:
                 file = open(consumes, mode="r", encoding="utf-8")
