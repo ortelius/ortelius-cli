@@ -2163,7 +2163,6 @@ def update_deppkgs(dhurl, cookies, compid, filename, glic):
 
         payload = json.dumps(data)
 
-    print(payload)
     result = post_json(dhurl + "/msapi/deppkg/" + filetype + "?compid=" + str(compid), payload, cookies)
 
     if result is None:
