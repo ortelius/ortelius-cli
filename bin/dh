@@ -948,7 +948,8 @@ def main(  # noqa: C901
 
             if deppkg:
                 for filename in deppkg:
-                    dhapi.update_deppkgs(dhurl, cookies, compid, filename, glic)
+                   result = dhapi.update_deppkgs(dhurl, cookies, compid, filename, glic)
+                   pprint.print(result)
 
             if consumes is not None:
                 file = open(consumes, mode="r", encoding="utf-8")
