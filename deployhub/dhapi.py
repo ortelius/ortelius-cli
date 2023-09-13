@@ -102,7 +102,7 @@ def post_json(url, payload, cookies):
         res = requests.post(url, data=payload, cookies=cookies, headers={"Content-Type": "application/json"}, timeout=300)
         if res is None:
             return None
-        if res.status_code != 200:
+        if res.status_code < 200 and res.status_code > 299:
             return None
         return res.json()
     except requests.exceptions.ConnectionError as conn_error:
