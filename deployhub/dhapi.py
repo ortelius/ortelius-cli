@@ -2110,6 +2110,6 @@ def run_cmd(cmd):
     retval = ""
     if pid.stdout is not None:
         for line in io.TextIOWrapper(pid.stdout, encoding="utf-8"):
-            retval += line.rstrip()
+            retval += line
 
     return retval

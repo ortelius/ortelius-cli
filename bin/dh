@@ -356,7 +356,6 @@ def main(  # noqa: C901
         template = Template(lines)
         lines = template.safe_substitute(**mapping)
 
-        pprint(lines)
         vardict = qtoml.loads(lines)
 
         attrvars = vardict.get("Attributes", {})
@@ -367,7 +366,6 @@ def main(  # noqa: C901
         template = Template(lines)
         lines = template.safe_substitute(**vardict)
 
-        pprint(lines)
         vardict = qtoml.loads(lines)
 
         if dhapi.is_empty(appname):
@@ -1534,7 +1532,6 @@ def envscript(dhurl, cookies, envvars, envvars_sh):  # noqa: C901
             template = Template(lines)
             lines = template.safe_substitute(**mapping)  
 
-            pprint(lines)
             vardict = qtoml.loads(lines)
 
     attrvars = vardict.get("Attributes", {})
