@@ -9,7 +9,7 @@
       "console": "integratedTerminal",
       "cwd": "/Users/steve/Downloads/console_dh_keys",
       "args": [
-        "updatecomp",
+        "envscript",
         "--dhurl",
         "https://console.deployhub.com",
         "--dhuser",
@@ -17,12 +17,8 @@
         "--dhpass",
         "ortelius",
         "--rsp",
-        "/Users/steve/Downloads/console_dh_keys/component.toml",
-        "--deppkg",
-        "cyclonedx@/Users/steve/Downloads/console_dh_keys/example_jsonformat_Cyclonedx_NG_syft_result.json",
-        "--file",
-        "--kvconfig",
-        "/Users/steve/Downloads/console_dh_keys/props"
+        "/Users/steve/Downloads/console_dh_keys/component2.toml"
+
       ]
     }
   ]
