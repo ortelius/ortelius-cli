@@ -1416,10 +1416,6 @@ def envscript(dhurl, cookies, envvars, envvars_sh):  # noqa: C901
     if dhapi.is_not_empty(envvars_sh):
         fp_script = open(envvars_sh, mode="a", encoding="utf-8")
 
-    lines = ""
-    if os.path.exists(envvars):
-        lines = dhapi.run_cmd("cat " + envvars)
-
     mapping = os.environ
 
     if mapping.get("BLDDATE", None) is None:
@@ -1531,11 +1527,15 @@ def envscript(dhurl, cookies, envvars, envvars_sh):  # noqa: C901
     if mapping.get("BASENAME", None) is None:
         mapping["BASENAME"] = os.path.basename(os.getcwd())
 
-    template = Template(lines)
-    lines = template.safe_substitute(**mapping)
+    vardict = {}
+    if os.path.exists(envvars):
+        with open(envvars, mode="r", encoding="utf-8") as fin:
+            lines = fin.read()
+            template = Template(lines)
+            lines = template.safe_substitute(**mapping)  
 
-    pprint(lines)
-    vardict = qtoml.loads(lines)
+            pprint(lines)
+            vardict = qtoml.loads(lines)
 
     attrvars = vardict.get("Attributes", {})
     for key, val in attrvars.items():
