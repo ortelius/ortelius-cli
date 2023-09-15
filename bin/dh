@@ -1303,9 +1303,12 @@ def main(  # noqa: C901
         dhapi.import_cluster(dhurl, cookies, todom, appname, appversion, appautoinc, deployenv, crdatasource, [], cluster_json, msname, msbranch)
 
     elif action.lower() == "envscript":
-        if dhapi.is_empty(envvars):
+        if dhapi.is_empty(envvars) and dhapi.is_empty(rsp):
             print("--envvars is required")
             sys.exit(1)
+
+        if dhapi.is_empty(envvars):
+            envvars = rsp
 
         print("Creating env shell script from " + envvars)
         envscript(dhurl, cookies, envvars, envvars_sh)
@@ -1411,7 +1414,9 @@ def envscript(dhurl, cookies, envvars, envvars_sh):  # noqa: C901
     if dhapi.is_not_empty(envvars_sh):
         fp_script = open(envvars_sh, mode="a", encoding="utf-8")
 
-    lines = dhapi.run_cmd("cat " + envvars)
+    lines = ""
+    if os.path.exists(envvars):
+        lines = dhapi.run_cmd("cat " + envvars)
 
     mapping = os.environ
 
