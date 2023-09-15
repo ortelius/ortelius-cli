@@ -2109,7 +2109,7 @@ def run_cmd(cmd):
     pid = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     retval = ""
     if pid.stdout is not None:
-        for line in io.TextIOWrapper(pid.stdout, encoding="utf-8"):  
-            retval += line
+        for line in io.TextIOWrapper(pid.stdout, encoding="utf-8"):
+            retval += line.rstrip()
 
     return retval
