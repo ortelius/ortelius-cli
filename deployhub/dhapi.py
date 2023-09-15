@@ -9,8 +9,7 @@
 import base64
 import json
 import os
-import shlex
-import shutil
+
 import subprocess  # nosec B404
 import sys
 import tempfile
@@ -162,19 +161,18 @@ def sslcerts(dhurl, customcert):
     try:
         requests.get(dhurl, timeout=3000)
     except requests.exceptions.SSLError:
-        tempdir = tempfile.mkdtemp()
-        ca = ""
-        customcert = ""
         print("Adding custom certs to certifi store...")
         cafile = certifi.where()
+        ca = ""
+        customca = ""
         with open(customcert, "rb") as infile:
             customca = infile.read()
         with open(cafile, "rb") as infile:
             ca = infile.read()
-        with open(f"{tempdir}/customca.pem", "ab") as outfile:
+        with open("/tmp/customca.pem", "ab") as outfile:
             outfile.write(ca)
             outfile.write(customca)
-        os.environ["REQUESTS_CA_BUNDLE"] = f"{tempdir}/customca.pem"
+        os.environ["REQUESTS_CA_BUNDLE"] = "/tmp/customca.pem"
 
 
 def login(dhurl, user, password, errors):
@@ -1976,10 +1974,20 @@ def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, comp
         try:
             print(filename)
             config = ConfigObj(filename, encoding="iso-8859-1")
-            filename = filename[len(kvconfig) + 1 :]
-            normal_dict[filename] = config.dict()
+            work_dict = config.dict()
+            temp_dict = normal_dict | work_dict
+            normal_dict = temp_dict
         except configobj.ConfigObjError as error:
             print(error)
+
+    for file_path in Path(kvconfig).glob("**/*.json"):
+        filename = fspath(file_path)
+
+        print(filename)
+        with open(filename, mode="r", encoding="utf-8") as fp_json:
+            data = json.load(fp_json)
+            temp_dict = normal_dict | data
+            normal_dict = temp_dict
 
     flat_dict = flatten(normal_dict, reducer="path")
 
@@ -2005,101 +2013,22 @@ def set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, comp
         data = get_component(dhurl, cookies, compname, "", "", False, True)
         latest_compid = data[0]
 
-    old_attrs = []
     if latest_compid > 0:
         comp_attrs = get_component_attrs(dhurl, cookies, latest_compid)
 
+        old_attrs = {}
         for attr in comp_attrs:
             key = list(attr.keys())[0]
             value = attr[key]
-            key = key.replace("\\\\", "/")
-            key = key.replace("\\", "/")
-            old_attrs.append(key + "=" + value)
+            old_attrs[key] = value
 
-    new_attrs = []
-    for key, value in attrs.items():
-        key = key.replace("\\\\", "/")
-        key = key.replace("\\", "/")
-        value = value.replace("\\", "\\\\")
-        new_attrs.append(key + "=" + value)
-
-    diffs = set(new_attrs) ^ set(old_attrs)
-
-    print("Comparing KV: %d Changes" % len(diffs))
-
-    if len(diffs) > 0:
-        pprint(list(diffs))
-        compid = new_component_version(dhurl, cookies, compname, compvariant, compversion, kind, None, compautoinc)
-        print("Creation Done: " + get_component_name(dhurl, cookies, compid))
+        all_attrs = old_attrs | attrs
 
         print("Updating Component Attributes\n")
 
-        data = update_compid_attrs(dhurl, cookies, compid, attrs, crdatasource, crlist)
+        data = update_compid_attrs(dhurl, cookies, latest_compid, all_attrs, crdatasource, crlist)
 
-        print("Attribute Update Done")
-    else:
-        data = get_component(dhurl, cookies, compname, compvariant, compversion, True, True)
-        compid = data[0]
-
-    if is_not_empty(appname):
-        if is_not_empty(saveappver):
-            appversion = saveappver
-
-        if is_empty(appversion):
-            parts = appname.split(";")
-            if len(parts) == 3:
-                appname = parts[0] + ";" + parts[1]
-                appversion = parts[2]
-
-        if is_empty(appversion):
-            parts = appname.split(";")
-            if len(parts) == 3:
-                appname = parts[0] + ";" + parts[1]
-                appversion = parts[2]
-
-        if is_empty(appversion):
-            appversion = ""
-
-        #            print("Creating Application Version '" + str(appname) + "' '" + appversion + "'")
-        #            data = new_application(dhurl, cookies, appname, appversion, appautoinc, None)
-        #            appid = data[0]
-        #            print("Creation Done: " + get_application_name(dhurl, cookies, appid))
-        #
-        #            print("Assigning Component Version to Application Version " + str(appid))
-        #
-        #            data = add_compver_to_appver(dhurl, cookies, appid, compid)
-        #            print("Assignment Done")
-
-        if is_not_empty(env):
-            data = get_environment(dhurl, cookies, env)
-            envid = data[0]
-
-            data = get_application(dhurl, cookies, appname, appversion, False)
-
-            appid = data[0]
-            appname = data[1]
-
-            config_component = get_component_name(dhurl, cookies, compid)
-            if "." in config_component:
-                config_component = config_component.split(".")[-1]
-
-            print(f"Updating environment {env} with config component {config_component}")
-
-            attrs = {}
-            attrs["Config Component"] = (
-                "<a href='javascript:void(0);' onclick=\"chgsel({t: 'components_tab', id: 'cv"
-                + str(compid)
-                + "', odl: '', tm: 'application_menu', name: '"
-                + config_component
-                + "'})\" >"
-                + config_component
-                + "</a>"
-            )
-            attrs["Last Deployed Application"] = (
-                "<a href='javascript:void(0);' onclick=\"chgsel({t: 'applications_tab', id: 'av" + str(appid) + "', odl: '', tm: 'application_menu', name: '" + appname + "'})\" >" + appname + "</a>"
-            )
-
-            update_envid_attrs(dhurl, cookies, envid, attrs)
+    print("Attribute Update Done")
     return
 
 

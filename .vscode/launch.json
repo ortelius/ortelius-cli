@@ -20,7 +20,9 @@
         "/Users/steve/Downloads/console_dh_keys/component.toml",
         "--deppkg",
         "cyclonedx@/Users/steve/Downloads/console_dh_keys/example_jsonformat_Cyclonedx_NG_syft_result.json",
-        "--file"
+        "--file",
+        "--kvconfig",
+        "/Users/steve/Downloads/console_dh_keys/props"
       ]
     }
   ]
