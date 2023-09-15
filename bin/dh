@@ -965,6 +965,10 @@ def main(  # noqa: C901
                 print("Adding Providing End Points")
                 dhapi.post_json(dhurl + "/dmadminweb/API2/provides/" + str(compid), payload, cookies)
 
+            if compname is not None and dhapi.is_not_empty(kvconfig):
+                print("Load config from " + kvconfig)
+                dhapi.set_kvconfig(dhurl, cookies, kvconfig, appname, appversion, appautoinc, compname, compvariant, compversion, compautoinc, kind, environment, crdatasource, changerequest)
+
             applist = []
 
             print("AppName=" + str(appname) + " AppAutoInc=" + str(appautoinc))
