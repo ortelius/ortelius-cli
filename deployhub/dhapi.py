@@ -613,10 +613,7 @@ def get_component(dhurl, cookies, compname, compvariant, compversion, id_only, l
     if latest:
         param = param + "&latest=Y"
 
-    data = get_json(
-        dhurl + "/dmadminweb/API/component/?name=" + urllib.parse.quote(component) + param,
-        cookies,
-    )
+    data = get_json( dhurl + "/dmadminweb/API/component/?name=" + urllib.parse.quote(component) + param, cookies, )
 
     if data is None:
         return [-1, ""]
@@ -902,15 +899,7 @@ def new_component_version( dhurl, cookies, compname, compvariant, compversion, k
 
                 compversion = verschema
 
-                data = get_component(
-                    dhurl,
-                    cookies,
-                    domain + compname,
-                    compvariant,
-                    compversion,
-                    True,
-                    False,
-                )
+                data = get_component( dhurl, cookies, domain + compname, compvariant, compversion, True, False, )
                 compid = data[0]
 
             if kind.lower() == "docker":
@@ -946,15 +935,9 @@ def new_docker_component(dhurl, cookies, compname, compvariant, compversion, par
     # Create base version
     if parent_compid < 0:
         if is_empty(compvariant):
-            data = get_json(
-                dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname),
-                cookies,
-            )
+            data = get_json( dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname), cookies, )
         else:
-            data = get_json(
-                dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname + ";" + compvariant),
-                cookies,
-            )
+            data = get_json( dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname + ";" + compvariant), cookies, )
         if data is not None:
             result = data.get("result", {})
             compid = int(result.get("id", "0"))
@@ -999,15 +982,9 @@ def new_file_component(dhurl, cookies, compname, compvariant, compversion, paren
     # Create base version
     if parent_compid < 0:
         if is_empty(compvariant):
-            data = get_json(
-                dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname),
-                cookies,
-            )
+            data = get_json( dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname), cookies, )
         else:
-            data = get_json(
-                dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname + ";" + compvariant),
-                cookies,
-            )
+            data = get_json( dhurl + "/dmadminweb/API/new/compver/?name=" + urllib.parse.quote(compname + ";" + compvariant), cookies, )
         if data is not None:
             if data is not None:
                 result = data.get("result", {})
@@ -1061,20 +1038,14 @@ def new_component_item(dhurl, cookies, compid, kind, component_items):
             if i == 0:
                 tmpstr = tmpstr + "&removeall=Y"
 
-            data = get_json(
-                dhurl + "/dmadminweb/API/new/compitem/" + urllib.parse.quote(ciname) + "?component=" + str(compid) + "&xpos=100&ypos=" + str(ypos) + "&kind=" + kind + tmpstr,
-                cookies,
-            )
+            data = get_json( dhurl + "/dmadminweb/API/new/compitem/" + urllib.parse.quote(ciname) + "?component=" + str(compid) + "&xpos=100&ypos=" + str(ypos) + "&kind=" + kind + tmpstr, cookies, )
 
             if data is not None:
                 if data.get("result", None) is not None:
                     result = data.get("result", {})
                     workid = result.get("id", -1)
                     if parent_item > 0:
-                        get_json(
-                            dhurl + "/dmadminweb/UpdateAttrs?f=iad&c=" + str(compid) + "&fn=" + str(parent_item) + "&tn=" + str(workid),
-                            cookies,
-                        )
+                        get_json( dhurl + "/dmadminweb/UpdateAttrs?f=iad&c=" + str(compid) + "&fn=" + str(parent_item) + "&tn=" + str(workid), cookies, )
                     parent_item = workid
 
             ypos = ypos + 100
@@ -1107,20 +1078,11 @@ def update_name(dhurl, cookies, compname, compvariant, compversion, compid):
         compname = compname.split(".")[-1]
 
     if compvariant is not None and compvariant != "" and compversion is not None and compversion != "":
-        data = get_json(
-            dhurl + "/dmadminweb/UpdateSummaryData?objtype=23&id=" + str(compid) + "&change_1=" + urllib.parse.quote(compname + ";" + compvariant + ";" + compversion),
-            cookies,
-        )
+        data = get_json( dhurl + "/dmadminweb/UpdateSummaryData?objtype=23&id=" + str(compid) + "&change_1=" + urllib.parse.quote(compname + ";" + compvariant + ";" + compversion), cookies, )
     elif compvariant is not None and compvariant != "":
-        data = get_json(
-            dhurl + "/dmadminweb/UpdateSummaryData?objtype=23&id=" + str(compid) + "&change_1=" + urllib.parse.quote(compname + ";" + compvariant),
-            cookies,
-        )
+        data = get_json( dhurl + "/dmadminweb/UpdateSummaryData?objtype=23&id=" + str(compid) + "&change_1=" + urllib.parse.quote(compname + ";" + compvariant), cookies, )
     else:
-        data = get_json(
-            dhurl + "/dmadminweb/UpdateSummaryData?objtype=23&id=" + str(compid) + "&change_1=" + urllib.parse.quote(compname),
-            cookies,
-        )
+        data = get_json( dhurl + "/dmadminweb/UpdateSummaryData?objtype=23&id=" + str(compid) + "&change_1=" + urllib.parse.quote(compname), cookies, )
 
     return data
 
@@ -1273,10 +1235,7 @@ def is_compassigned2app(dhurl, cookies, appid, compid):
         boolean: True if the component is assigned to the application version.
     """
 
-    data = get_json(
-        dhurl + "/dmadminweb/API/compassigned2app/" + str(appid) + "/" + str(compid),
-        cookies,
-    )
+    data = get_json( dhurl + "/dmadminweb/API/compassigned2app/" + str(appid) + "/" + str(compid), cookies, )
 
     if data is None:
         return False
@@ -1316,10 +1275,7 @@ def get_application(dhurl, cookies, appname, appversion, id_only):
     else:
         application = appname
 
-    data = get_json(
-        dhurl + "/dmadminweb/API/application/?name=" + urllib.parse.quote(application) + param,
-        cookies,
-    )
+    data = get_json( dhurl + "/dmadminweb/API/application/?name=" + urllib.parse.quote(application) + param, cookies, )
 
     if data is None:
         return [-1, "", -1]
