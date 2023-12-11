@@ -949,8 +949,8 @@ def main(  # noqa: C901
 
             if deppkg:
                 for filename in deppkg:
-                   result = dhapi.update_deppkgs(dhurl, cookies, compid, filename, glic)
-                   print(result)
+                    result = dhapi.update_deppkgs(dhurl, cookies, compid, filename, glic)
+                    print(result)
 
             if consumes is not None:
                 file = open(consumes, mode="r", encoding="utf-8")
@@ -1529,7 +1529,7 @@ def envscript(dhurl, cookies, envvars, envvars_sh):  # noqa: C901
         with open(envvars, mode="r", encoding="utf-8") as fin:
             lines = fin.read()
             template = Template(lines)
-            lines = template.safe_substitute(**mapping)  
+            lines = template.safe_substitute(**mapping)
 
             vardict = qtoml.loads(lines)
 
