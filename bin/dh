@@ -337,6 +337,7 @@ def main(  # noqa: C901
 
     cookies = ""
     environment = ""
+
     attrs = {}
     if rsp is None:
         rsp = "component.toml"
@@ -1309,7 +1310,6 @@ def main(  # noqa: C901
 
         if dhapi.is_empty(envvars):
             envvars = rsp
-
         print("Creating env shell script from " + envvars)
         envscript(dhurl, cookies, envvars, envvars_sh)
     elif action.lower() == "export":
@@ -1408,7 +1408,6 @@ def envscript(dhurl, cookies, envvars, envvars_sh):  # noqa: C901
     Returns:
         no data returned.  Output is in the shell script file.
     """
-
     fp_script = None
 
     if dhapi.is_not_empty(envvars_sh):

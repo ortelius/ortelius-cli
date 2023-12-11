@@ -102,6 +102,7 @@ def post_json(url, payload, cookies):
         res = requests.post(url, data=payload, cookies=cookies, headers={"Content-Type": "application/json"}, timeout=300)
         if res is None:
             return None
+
         if res.status_code < 200 and res.status_code > 299:
             return None
         return res.json()
@@ -122,6 +123,7 @@ def post_json_with_header(url, token):
         string: The json string
     """
     pprint(url)
+
     cmd = " ".join(["curl", "-X", "POST", url, "-H", "Accept: application/json", "-H", "Circle-Token:" + token, "-q"])
     lines = run_cmd(cmd).split("\n")
     return lines
@@ -291,7 +293,6 @@ def move_application(dhurl, cookies, appname, appversion, from_domain, task):
             if atask.get("name", "") == task:
                 if atask.get("id", None) is not None:
                     taskid = str(atask.get("id", ""))
-
     # Move App Version
     data = get_json(dhurl + "/dmadminweb/RunTask?f=run&tid=" + taskid + "&notes=&id=" + appid + "&pid=" + fromid, cookies)
 
@@ -437,7 +438,6 @@ def get_attrs(dhurl, cookies, app, comp, env, srv):
 
     if data is not None:
         env_attrs = data.get("attributes", [])
-
     for a_srv in servers:
         if srv == a_srv["name"]:
             srvid = str(a_srv["id"])
@@ -1038,6 +1038,7 @@ def new_component_item(dhurl, cookies, compid, kind, component_items):
 
             data = get_json(dhurl + "/dmadminweb/API/new/compitem/" + urllib.parse.quote(ciname) + "?component=" + str(compid) + "&xpos=100&ypos=" + str(ypos) + "&kind=" + kind + tmpstr, cookies)
 
+
             if data is not None:
                 if data.get("result", None) is not None:
                     result = data.get("result", {})
@@ -1116,7 +1117,6 @@ def new_component(dhurl, cookies, compname, compvariant, compversion, kind, pare
             if data is not None:
                 result = data.get("result", {})
                 compid = int(result.get("id", -1))
-
     update_name(dhurl, cookies, compname, compvariant, compversion, compid)
 
     if kind is not None:
@@ -1319,7 +1319,6 @@ def get_application_fromid(dhurl, cookies, appid, appversion):
 
     if data is None:
         return [-1, "", -1]
-
     if data.get("success", False):
         vlist = []
         result = data.get("result", None)
@@ -1480,7 +1479,6 @@ def new_application(dhurl, cookies, appname, appversion, appautoinc, envs, compi
                 result = data.get("result", {})
                 if result.get("id", None) is not None:
                     appid = result.get("id", "")
-
     return [appid, full_appname + ";" + appversion]
 
 
