@@ -2314,7 +2314,7 @@ def run_cmd(cmd):
     if "git" in cmd and not os.path.exists(".git"):
         return retval
 
-    pid = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    pid = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)  # nosec B602
     retval = ""
     if pid.stdout is not None:
         for line in io.TextIOWrapper(pid.stdout, encoding="utf-8"):
