@@ -1040,6 +1040,7 @@ def new_component_item(dhurl, cookies, compid, kind, component_items):
 
             data = get_json(dhurl + "/dmadminweb/API/new/compitem/" + urllib.parse.quote(ciname) + "?component=" + str(compid) + "&xpos=100&ypos=" + str(ypos) + "&kind=" + kind + tmpstr, cookies)
 
+
             if data is not None:
                 if data.get("result", None) is not None:
                     result = data.get("result", {})
