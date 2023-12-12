@@ -1731,10 +1731,7 @@ def import_cluster(dhurl, cookies, domain, appname, appversion, appautoinc, depl
             for container in master_containers.values():
                 if deployed_ms["msname"] != container["msname"]:
                     complist.append(container)
-                elif deployed_ms["branch"] == container["branch"] and msbranch not in (
-                    "master",
-                    "main",
-                ):
+                elif deployed_ms["branch"] == container["branch"] and msbranch not in ( "master", "main", ):
                     complist.append(container)
 
         compid_list = []
