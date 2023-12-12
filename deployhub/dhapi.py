@@ -123,7 +123,7 @@ def post_json_with_header(url, token):
     """
     pprint(url)
 
-    cmd = " ".join( [ "curl", "-X", "POST", url, "-H", "Accept: application/json", "-H", "Circle-Token:" + token, "-q", ] )
+    cmd = " ".join(["curl", "-X", "POST", url, "-H", "Accept: application/json", "-H", "Circle-Token:" + token, "-q"])
     lines = run_cmd(cmd).split("\n")
     return lines
 
@@ -1188,7 +1188,7 @@ def update_compid_attrs(dhurl, cookies, compid, attrs, crdatasource, crlist):
 
     data = post_json(dhurl + "/dmadminweb/API/setvar/component/" + str(compid) + "?delattrs=y", payload, cookies)
     if data is not None and data.get("error", None) is not None:
-        return [ False, "Could not update attributes on '" + str(compid) + "' " + data.get("error", ""), ]
+        return [False, "Could not update attributes on '" + str(compid) + "' " + data.get("error", "")]
 
     if is_not_empty(crdatasource):
         for bugid in crlist:
