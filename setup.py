@@ -6,10 +6,10 @@ setup(
     setup_requires=["wheel"],
     url="https://ortelius.io",
     project_urls={
-        "Project Repo": "https://github.com/ortelius/cli",
+        "Project Repo": "https://github.com/ortelius/ortelius-cli",
         "Issues": "https://github.com/ortelius/ortelius/issues",
-        "Ortelius CLI Documentation": "https://github.com/ortelius/cli/blob/main/doc/dh.md",
-        "Python Python API Documentation": "https://github.com/ortelius/cli/blob/main/doc/deployhub.md",
+        "Ortelius CLI Documentation": "https://github.com/ortelius/ortelius-cli/blob/main/doc/dh.md",
+        "Python Python API Documentation": "https://github.com/ortelius/ortelius-cli/blob/main/doc/deployhub.md",
     },
     author="Steve Taylor",
     author_email="steve@deployhub.com",
