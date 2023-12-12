@@ -1163,7 +1163,8 @@ def update_component_attrs(dhurl, cookies, compname, compvariant, compversion, a
         crlist = allcrs.split(",")
 
         for bugid in crlist:
-            bugid = bugid.strip() get_json( dhurl + "/dmadminweb/API2/assign/defect/cv" + str(compid) + "?ds=" + urllib.parse.quote(crdatasource) + "&bugid=" + str(bugid), cookies, )
+            bugid = bugid.strip()
+            get_json( dhurl + "/dmadminweb/API2/assign/defect/cv" + str(compid) + "?ds=" + urllib.parse.quote(crdatasource) + "&bugid=" + str(bugid), cookies, )
 
     return [True, data, dhurl + "/dmadminweb/API/setvar/component/" + str(compid)]
 
@@ -1185,11 +1186,7 @@ def update_compid_attrs(dhurl, cookies, compid, attrs, crdatasource, crlist):
     """
     payload = json.dumps(attrs)
 
-    data = post_json(
-        dhurl + "/dmadminweb/API/setvar/component/" + str(compid) + "?delattrs=y",
-        payload,
-        cookies,
-    )
+    data = post_json( dhurl + "/dmadminweb/API/setvar/component/" + str(compid) + "?delattrs=y", payload, cookies, )
     if data is not None and data.get("error", None) is not None:
         return [ False, "Could not update attributes on '" + str(compid) + "' " + data.get("error", ""), ]
 
