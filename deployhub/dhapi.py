@@ -98,7 +98,11 @@ def post_json(url, payload, cookies):
         string: The json string.
     """
     try:
-        res = requests.post(url, data=payload, cookies=cookies, headers={"Content-Type": "application/json"}, timeout=300)
+        if '/import' in url:
+            res = requests.post(url, data=payload, cookies=cookies, headers={"Content-Type": "application/json"}, timeout=1800)
+        else:
+            res = requests.post(url, data=payload, cookies=cookies, headers={"Content-Type": "application/json"}, timeout=300)
+
         if res is None:
             return None
 
