@@ -1,6 +1,8 @@
 """Setup config for the module."""
 
-from distutils.core import setup
+# pylint: disable=E0401,E0611
+
+from distutils.core import setup  # pyright: ignore [reportMissingImports]
 
 setup(
     setup_requires=["wheel"],
