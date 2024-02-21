@@ -1652,4 +1652,4 @@ def importdict(dhurl, cookies, objtype, allobjs):
 
 
 if __name__ == "__main__":
-    main()  # pyright: ignore [reportGeneralTypeIssues] # pylint: disable=no-value-for-parameter
+    main()  # pyright: ignore [reportGeneralTypeIssues, reportCallIssue] # pylint: disable=no-value-for-parameter
