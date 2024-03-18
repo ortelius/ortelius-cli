@@ -2072,10 +2072,10 @@ def post_textfile(dhurl, cookies, compid, filename, file_type):
 def update_deppkgs(dhurl, cookies, compid, filename, glic):
 
     sbomtype = None
-    data = get_json(dhurl + "/msapi/sbomtype" , cookies)
+    data = get_json(dhurl + "/msapi/sbomtype", cookies)
 
     if data is not None:
-        sbomtype = data.get('SBOMType', None)
+        sbomtype = data.get("SBOMType", None)
 
     payload = ""
 
@@ -2086,7 +2086,7 @@ def update_deppkgs(dhurl, cookies, compid, filename, glic):
     with open(filename, mode="r", encoding="utf-8") as fin_data:
         data = json.load(fin_data)
 
-        if sbomtype is not None and sbomtype == 'fullfile':
+        if sbomtype is not None and sbomtype == "fullfile":
             data["_key"] = str(compid)
             result = post_json(dhurl + "/msapi/sbom", data, cookies)
         else:
