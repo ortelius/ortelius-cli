@@ -2070,6 +2070,13 @@ def post_textfile(dhurl, cookies, compid, filename, file_type):
 
 
 def update_deppkgs(dhurl, cookies, compid, filename, glic):
+
+    sbomtype = None
+    data = get_json(dhurl + "/msapi/sbomtype" , cookies)
+
+    if data is not None:
+        sbomtype = data.get('SBOMType', None)
+
     payload = ""
 
     parts = filename.split("@")
@@ -2079,25 +2086,29 @@ def update_deppkgs(dhurl, cookies, compid, filename, glic):
     with open(filename, mode="r", encoding="utf-8") as fin_data:
         data = json.load(fin_data)
 
-        if glic is not None:
-            glic_hash = {}
+        if sbomtype is not None and sbomtype == 'fullfile':
+            data["_key"] = str(compid)
+            result = post_json(dhurl + "/msapi/sbom", data, cookies)
+        else:
+            if glic is not None:
+                glic_hash = {}
 
-            for lic in glic.get("dependencies", []):
-                if lic.get("moduleLicense", None) is not None:
-                    glic_hash["pkg:maven/" + lic["moduleName"].replace(":", "/") + "@" + lic["moduleVersion"]] = lic.get("moduleLicense", "")
+                for lic in glic.get("dependencies", []):
+                    if lic.get("moduleLicense", None) is not None:
+                        glic_hash["pkg:maven/" + lic["moduleName"].replace(":", "/") + "@" + lic["moduleVersion"]] = lic.get("moduleLicense", "")
 
-            newdata = []
-            for sbom_pkg in data.get("components"):
-                if glic_hash.get(sbom_pkg["purl"], None) is not None:
-                    sbom_pkg["licenses"] = [{"license": {"name": glic_hash.get(sbom_pkg["purl"], None)}}]
+                newdata = []
+                for sbom_pkg in data.get("components"):
+                    if glic_hash.get(sbom_pkg["purl"], None) is not None:
+                        sbom_pkg["licenses"] = [{"license": {"name": glic_hash.get(sbom_pkg["purl"], None)}}]
 
-                newdata.append(sbom_pkg)
+                    newdata.append(sbom_pkg)
 
-            data["components"] = newdata
+                data["components"] = newdata
 
-        payload = json.dumps(data)
+            payload = json.dumps(data)
 
-    result = post_json(dhurl + "/msapi/deppkg/" + filetype + "?compid=" + str(compid), payload, cookies)
+        result = post_json(dhurl + "/msapi/deppkg/" + filetype + "?compid=" + str(compid), payload, cookies)
 
     if result is None:
         return {"message": "Could not persist '" + filename + "' with compid: '" + str(compid) + "'"}
