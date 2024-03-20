@@ -101,7 +101,7 @@ def post_json(url, payload, cookies):
         if "/import" in url:
             res = requests.post(url, data=payload, cookies=cookies, headers={"Content-Type": "application/json"}, timeout=1800)
         else:
-            res = requests.post(url, data=payload, cookies=cookies, headers={"Content-Type": "application/json"}, timeout=300)
+            res = requests.post(url, data=payload, cookies=cookies, headers={"Content-Type": "application/json", "host": "console.deployhub.com"}, timeout=300)
 
         if res is None:
             return None
@@ -2071,6 +2071,7 @@ def post_textfile(dhurl, cookies, compid, filename, file_type):
 
 def update_deppkgs(dhurl, cookies, compid, filename, glic):
 
+    result = None
     sbomtype = None
     data = get_json(dhurl + "/msapi/sbomtype", cookies)
 
@@ -2088,10 +2089,7 @@ def update_deppkgs(dhurl, cookies, compid, filename, glic):
 
         if sbomtype is not None and sbomtype == "fullfile":
             data["_key"] = str(compid)
-            json_data = json.dumps(data, indent=4) 
-            with open('data.json', 'w') as file:
-                file.write(json_data)
-            result = post_json(dhurl + "/msapi/package", data, cookies)
+            result = post_json(dhurl + "/msapi/package", json.dumps(data), cookies)
         else:
             if glic is not None:
                 glic_hash = {}
@@ -2111,7 +2109,7 @@ def update_deppkgs(dhurl, cookies, compid, filename, glic):
 
             payload = json.dumps(data)
 
-        result = post_json(dhurl + "/msapi/deppkg/" + filetype + "?compid=" + str(compid), payload, cookies)
+            result = post_json(dhurl + "/msapi/deppkg/" + filetype + "?compid=" + str(compid), payload, cookies)
 
     if result is None:
         return {"message": "Could not persist '" + filename + "' with compid: '" + str(compid) + "'"}
