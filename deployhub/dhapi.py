@@ -2088,7 +2088,10 @@ def update_deppkgs(dhurl, cookies, compid, filename, glic):
 
         if sbomtype is not None and sbomtype == "fullfile":
             data["_key"] = str(compid)
-            result = post_json(dhurl + "/msapi/sbom", data, cookies)
+            json_data = json.dumps(data, indent=4) 
+            with open('data.json', 'w') as file:
+                file.write(json_data)
+            result = post_json(dhurl + "/msapi/package", data, cookies)
         else:
             if glic is not None:
                 glic_hash = {}
