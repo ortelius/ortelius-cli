@@ -2091,7 +2091,7 @@ def update_deppkgs(dhurl, cookies, compid, filename, glic):
             postdata = {}
             postdata["_key"] = str(compid)
             postdata["content"] = data
-            json_data = json.dumps(postdata, indent=4) 
+            json_data = json.dumps(postdata, indent=4)
             print(json_data)
             result = post_json(dhurl + "/msapi/package", json.dumps(postdata), cookies)
         else:
