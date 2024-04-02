@@ -1427,7 +1427,7 @@ def envscript(dhurl, cookies, envvars, envvars_sh):  # noqa: C901
         mapping["SHORT_SHA"] = dhapi.run_cmd("git log --oneline -n 1 | cut -d' '  -f1")
 
     if mapping.get("GIT_COMMIT", None) is None:
-        mapping["GIT_COMMIT"] = dhapi.run_cmd("git log --oneline -n 1 | cut -d' '  -f1")
+        mapping["GIT_COMMIT"] = dhapi.run_cmd("git rev-parse HEAD")
 
     if mapping.get("GIT_VERIFY_COMMIT", None) is None:
         mapping["GIT_VERIFY_COMMIT"] = dhapi.run_cmd("git verify-commit " + mapping.get("GIT_COMMIT", "") + " 2>&1 | grep -i 'Signature made' | wc -l")
