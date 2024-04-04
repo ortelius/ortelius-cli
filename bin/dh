@@ -423,8 +423,7 @@ def main(  # noqa: C901
             dhapi.sslcerts(dhurl, cert)
 
         cookies = dhapi.login(dhurl, dhuser, dhpass, errors)
-        pprint(cookies)
-
+        
         if cookies is None:
             if errors:
                 print(errors[0])
