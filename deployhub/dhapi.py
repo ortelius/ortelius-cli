@@ -113,7 +113,7 @@ def post_json(url, payload, cookies):
             json_data = res.json()  
             return json_data
         except ValueError:
-            return "{}"  
+            return {}  
     except requests.exceptions.ConnectionError as conn_error:
         print(str(conn_error))
     return None
