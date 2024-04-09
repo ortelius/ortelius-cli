@@ -109,10 +109,11 @@ def post_json(url, payload, cookies):
         if res.status_code < 200 and res.status_code > 299:
             return None
         
-        if len(res.text) == 0:
-            return None
-        
-        return res.json()
+        try:
+            json_data = res.json()  
+            return json_data
+        except ValueError:
+            return None  
     except requests.exceptions.ConnectionError as conn_error:
         print(str(conn_error))
     return None
