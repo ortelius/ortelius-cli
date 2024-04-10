@@ -833,6 +833,11 @@ def main(  # noqa: C901
             attrs["GitTotalCommittersCnt"] = attrs.get("GitTotalCommittersCnt", os.getenv("GIT_TOTAL_COMMITTERS_CNT", ""))
             attrs["GitUrl"] = attrs.get("GitUrl", os.getenv("GIT_URL", ""))
 
+            if os.getenv("GIT_TRIGGER", None) is not None:
+                trigger = os.getenv("GIT_TRIGGER", None)
+                if trigger != "workflow_dispatch":
+                    attrs["JobTriggeredBy"] = attrs.get("JobTriggeredBy","SCM")
+
             attrs["JobTriggeredBy"] = attrs.get("JobTriggeredBy", attrs.get("JobTriggerdBy", ""))
 
             lcompattr = {}
