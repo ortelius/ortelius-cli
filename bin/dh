@@ -423,7 +423,7 @@ def main(  # noqa: C901
             dhapi.sslcerts(dhurl, cert)
 
         cookies = dhapi.login(dhurl, dhuser, dhpass, errors)
-        
+
         if cookies is None:
             if errors:
                 print(errors[0])
@@ -801,9 +801,9 @@ def main(  # noqa: C901
 
             if attrs.get("DockerTag", None) is not None:
                 dockerrepo = attrs.get("DockerRepo", "")
-                dockertag  = attrs.get("DockerTag", "")
+                dockertag = attrs.get("DockerTag", "")
 
-                attrs['Purl'] = docker_tag_to_purl(dockerrepo + ':' + dockertag)
+                attrs["Purl"] = docker_tag_to_purl(dockerrepo + ":" + dockertag)
 
             attrs["GitBranch"] = attrs.get("GitBranch", os.getenv("GIT_BRANCH", ""))
             attrs["GitBranchCreateCommit"] = attrs.get("GitBranchCreateCommit", os.getenv("GIT_BRANCH_CREATE_COMMIT", ""))
@@ -842,7 +842,7 @@ def main(  # noqa: C901
             if os.getenv("GIT_TRIGGER", None) is not None:
                 trigger = os.getenv("GIT_TRIGGER", None)
                 if trigger != "workflow_dispatch":
-                    attrs["JobTriggeredBy"] = attrs.get("JobTriggeredBy","SCM")
+                    attrs["JobTriggeredBy"] = attrs.get("JobTriggeredBy", "SCM")
 
             attrs["JobTriggeredBy"] = attrs.get("JobTriggeredBy", attrs.get("JobTriggerdBy", ""))
 
@@ -1661,24 +1661,26 @@ def importdict(dhurl, cookies, objtype, allobjs):
         data = dhapi.post_json(dhurl + "/dmadminweb/API/import/", jstr, cookies)
         pprint(data)
 
+
 def docker_tag_to_purl(docker_tag):
     """
     Converts a Docker tag to a Package URL (purl).
-    
+
     Args:
         docker_tag (str): The Docker tag to convert. Example: 'quay.io/deployhub/dh-ms-general:svccat-v11.0.265-gb537b3'
-        
+
     Returns:
         str: The corresponding purl.
     """
     # Split the docker tag into registry, namespace/repository, and tag
-    registry_repo, tag = docker_tag.split(':')
-    registry, repo = registry_repo.split('/', 1)
-    
+    registry_repo, tag = docker_tag.split(":")
+    registry, repo = registry_repo.split("/", 1)
+
     # Construct the purl
     purl = f"pkg:docker/{registry}/{repo}@{tag}"
-    
+
     return purl
+
 
 if __name__ == "__main__":
     main()  # pyright: ignore [reportGeneralTypeIssues, reportCallIssue] # pylint: disable=no-value-for-parameter
