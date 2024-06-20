@@ -342,6 +342,8 @@ def main(  # noqa: C901
     if rsp is None:
         rsp = "component.toml"
 
+    envscript(dhurl, cookies, rsp, None)
+
     if os.path.exists(rsp):
         file = open(rsp, mode="r", encoding="utf-8")
         lines = file.read()
@@ -705,7 +707,7 @@ def main(  # noqa: C901
         deploydata_dict["application"] = ""
         deploydata_dict["compversion"] = []
         deploydata_dict["rc"] = 0
-
+        
         if dhapi.is_not_empty(deploydatasave):
             payload = ""
             if os.path.isfile(deploydatasave):
@@ -752,8 +754,6 @@ def main(  # noqa: C901
             deploydata_dict["compversion"] = worklist
 
             print("Creation Done: " + compname)
-
-            envscript(dhurl, cookies, rsp, None)
 
             print("Updating Component Attributes\n")
             for attr in compattr:
@@ -1460,17 +1460,17 @@ def envscript(dhurl, cookies, envvars, envvars_sh):  # noqa: C901
             run_fetch = False
         mapping["GIT_REPO"] = dhapi.run_cmd("git config --get remote.origin.url | awk -F/ '{print $(NF-1)\"/\"$NF}'| sed 's/.git$//'")
 
-    if mapping.get("GIT_REPO_PROJECT", None) is None:
-        if run_fetch:
-            dhapi.run_cmd("git fetch --unshallow")
-            run_fetch = False
-        mapping["GIT_REPO_PROJECT"] = dhapi.run_cmd("git config --get remote.origin.url | awk -F/ '{print $(NF-1)}'")
-
     if mapping.get("GIT_ORG", None) is None:
         if run_fetch:
             dhapi.run_cmd("git fetch --unshallow")
             run_fetch = False
-        mapping["GIT_ORG"] = dhapi.run_cmd("git config --get remote.origin.url | awk -F/ '{print $NF}'| sed 's/.git$//'")
+        mapping["GIT_ORG"] = dhapi.run_cmd("git config --get remote.origin.url | awk -F'[@:/]' '{print $(NF-1)}'")
+
+    if mapping.get("GIT_REPO_PROJECT", None) is None:
+        if run_fetch:
+            dhapi.run_cmd("git fetch --unshallow")
+            run_fetch = False
+        mapping["GIT_REPO_PROJECT"] = dhapi.run_cmd("git config --get remote.origin.url | awk -F/ '{print $NF}'| sed 's/.git$//'")
 
     if mapping.get("GIT_URL", None) is None:
         if run_fetch:
@@ -1534,6 +1534,9 @@ def envscript(dhurl, cookies, envvars, envvars_sh):  # noqa: C901
 
     if mapping.get("BASENAME", None) is None:
         mapping["BASENAME"] = os.path.basename(os.getcwd())
+
+    if mapping.get("COMPNAME", None) is None and mapping.get("GIT_REPO_PROJECT", None) is not None:
+         mapping["COMPNAME"] = mapping.get("GIT_REPO_PROJECT", "")
 
     vardict = {}
     if os.path.exists(envvars):
@@ -1672,8 +1675,19 @@ def docker_tag_to_purl(docker_tag):
     Returns:
         str: The corresponding purl.
     """
+
+    if dhapi.is_empty(docker_tag) or docker_tag == ":":
+        return ""
+    
     # Split the docker tag into registry, namespace/repository, and tag
+    if ':' not in docker_tag:
+        docker_tag = docker_tag + ':latest'
+
     registry_repo, tag = docker_tag.split(":")
+
+    if '/' not in registry_repo:
+        registry_repo = 'library/' + registry_repo
+
     registry, repo = registry_repo.split("/", 1)
 
     # Construct the purl
