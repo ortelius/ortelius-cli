@@ -16,7 +16,7 @@ setup(
     author="Steve Taylor",
     author_email="steve@deployhub.com",
     name="ortelius-cli",
-    version="9.3.275",
+    version="9.3.276",
     packages=[
         "deployhub",
     ],
