@@ -198,7 +198,7 @@ Args:
 # To generate markdown use:
 # pydoc-markdown -I bin | awk '/dh.main/ {p=1}; p==0 {print}'
 
-__version__ = "9.3.275"
+__version__ = "9.3.274"
 
 import json
 import os
@@ -342,6 +342,19 @@ def main(  # noqa: C901
     if rsp is None:
         rsp = "component.toml"
 
+    errors = []
+
+    if dhapi.is_not_empty(cert):
+        dhapi.sslcerts(dhurl, cert)
+
+    if dhapi.is_not_empty(dhurl) and dhapi.is_not_empty(dhuser) and dhapi.is_not_empty(dhpass):
+        cookies = dhapi.login(dhurl, dhuser, dhpass, errors)
+
+        if cookies is None:
+            if errors:
+                print(errors[0])
+            sys.exit(1)
+
     envscript(dhurl, cookies, rsp, None)
 
     if os.path.exists(rsp):
@@ -417,18 +430,6 @@ def main(  # noqa: C901
 
         if dhapi.is_empty(dhpass):
             print("--dhpass is required")
-            sys.exit(1)
-
-        errors = []
-
-        if dhapi.is_not_empty(cert):
-            dhapi.sslcerts(dhurl, cert)
-
-        cookies = dhapi.login(dhurl, dhuser, dhpass, errors)
-
-        if cookies is None:
-            if errors:
-                print(errors[0])
             sys.exit(1)
 
     if action.lower() == "deploy":

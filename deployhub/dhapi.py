@@ -210,6 +210,8 @@ def login(dhurl, user, password, errors):
             if not data.get("success", False):
                 errors.append(data.get("error", ""))
                 return None
+            cookies = {"token":  data.get("token", "")}
+
             return cookies
     except requests.exceptions.ConnectionError as conn_error:
         errors.append(str(conn_error))
