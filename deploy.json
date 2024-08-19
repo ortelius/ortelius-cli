@@ -1,5 +1,14 @@
 {
-  "application": "GLOBAL.ortelius.saas.ortelius",
-  "environment": "GLOBAL.ortelius.saas.Local Kind Cluster",
-  "compversion": ["GLOBAL.ortelius.saas.aaa", "GLOBAL.ortelius.saas.bbb"]
+  "application": "GLOBAL.Santa Fe Software.LogDeploy App",
+  "environment": {
+    "GLOBAL.Santa Fe Software.Local Kind Cluster": [
+      "GLOBAL.Santa Fe Software.cluster1",
+      "GLOBAL.Santa Fe Software.cluster2"
+    ]
+  },
+  "compversion": [
+    "GLOBAL.Santa Fe Software.TellerWar2",
+    "GLOBAL.Santa Fe Software.TellerWar3"
+  ],
+  "skipdeploy": "Y"
 }

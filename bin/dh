@@ -363,9 +363,9 @@ def main(  # noqa: C901
 
         with open("generated-component.toml", mode="w", encoding="utf-8") as file:
             # Write the string to the file
-            file.write(f"Name = \"GLOBAL.{org}.{repo}\"\n")
-            file.write(f"Variant = \"{branch}\"\n")
-            file.write(f"Version = \"v{bldnum}\"\n")
+            file.write(f'Name = "GLOBAL.{org}.{repo}"\n')
+            file.write(f'Variant = "{branch}"\n')
+            file.write(f'Version = "v{bldnum}"\n')
         rsp = "generated-component.toml"
 
     envscript(dhurl, cookies, rsp, None)
@@ -725,7 +725,7 @@ def main(  # noqa: C901
         deploydata_dict["application"] = ""
         deploydata_dict["compversion"] = []
         deploydata_dict["rc"] = 0
-        
+
         if dhapi.is_not_empty(deploydatasave):
             payload = ""
             if os.path.isfile(deploydatasave):
@@ -1553,7 +1553,7 @@ def envscript(dhurl, cookies, envvars, envvars_sh):  # noqa: C901
         mapping["BASENAME"] = os.path.basename(os.getcwd())
 
     if mapping.get("COMPNAME", None) is None and mapping.get("GIT_REPO_PROJECT", None) is not None:
-         mapping["COMPNAME"] = mapping.get("GIT_REPO_PROJECT", "")
+        mapping["COMPNAME"] = mapping.get("GIT_REPO_PROJECT", "")
 
     vardict = {}
     if os.path.exists(envvars):
@@ -1695,15 +1695,15 @@ def docker_tag_to_purl(docker_tag):
 
     if dhapi.is_empty(docker_tag) or docker_tag == ":":
         return ""
-    
+
     # Split the docker tag into registry, namespace/repository, and tag
-    if ':' not in docker_tag:
-        docker_tag = docker_tag + ':latest'
+    if ":" not in docker_tag:
+        docker_tag = docker_tag + ":latest"
 
     registry_repo, tag = docker_tag.split(":")
 
-    if '/' not in registry_repo:
-        registry_repo = 'library/' + registry_repo
+    if "/" not in registry_repo:
+        registry_repo = "library/" + registry_repo
 
     registry, repo = registry_repo.split("/", 1)
 
