@@ -26,4 +26,4 @@ The dh Python script interacts with the Ortelius REST APIs to perform:
 
 ## Further Reading
 
-See [Ortelius CLI Documentation](doc/dh.md) and [Ortelius Python API Documentation](doc/deployhub.md)
+See [Ortelius CI/CD Integration](https://docs.ortelius.io/guides/userguide/integrations/ci-cd_integrations/) and [Ortelius Python API Documentation](doc/deployhub.md)
