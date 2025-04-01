@@ -162,6 +162,9 @@ def is_not_empty(my_string):
     Returns:
         boolean: False if the string is None or blank, otherwise True.
     """
+    if isinstance(my_string, dict):
+        return True
+    
     if isinstance(my_string, int):
         my_string = str(my_string)
 

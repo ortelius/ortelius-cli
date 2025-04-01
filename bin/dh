@@ -630,6 +630,11 @@ def main(  # noqa: C901
                 data = dhapi.log_deploy_application(dhurl, cookies, deploydata)
                 deployid = data.get("deployid", -1)
                 appname = data.get("application", appname)
+                environment = data.get("environment", environment)
+
+                if isinstance(environment, dict):
+                    environment = next(iter(environment))
+                    
                 print("Logged Deployment for " + appname + " to " + environment)
             else:
                 data = dhapi.log_deploy_application(dhurl, cookies, deploydata)
