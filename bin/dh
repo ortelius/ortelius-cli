@@ -595,10 +595,10 @@ def main(  # noqa: C901
             if dhapi.is_not_empty(appversion):
                 full_appname = full_appname + ";" + appversion
 
-            res = dhapi.get_application(dhurl, cookies, full_appname, "latest", False)
-            latest_appid = res[0]
-            if latest_appid > 0:
-                full_appname = dhapi.get_application_name(dhurl, cookies, latest_appid)
+         #   res = dhapi.get_application(dhurl, cookies, full_appname, "latest", False)
+         #   latest_appid = res[0]
+         #   if latest_appid > 0:
+         #       full_appname = dhapi.get_application_name(dhurl, cookies, latest_appid)
             data["application"] = full_appname
             data.pop("appversion", None)
 
