@@ -4,16 +4,20 @@ The Ortelius Command Line Interface supports integration with DevOps tools and C
 
 The CLI Python script interacts with the Ortelius REST APIs to perform:
 
-- Approve the _Application Version_
-- Move the _Application Version- using the supplied task
-- Create/replace the _Component Version_ for the _Application Version_
-- Assign a _Component Version_ to an _Application version_
-- Assign the key/values pairs to the _Component version_
+- Create/replace the _Component Version_ Version_ for the _Application Version_
+- Assign a component version to an _Application Version_
+- Assign the key/values pairs to the _Component Version_
 - Create a bash file from the _Component_ .toml file
 - Export a _Domain_ including all objects to stdout
 - Imports the export file into the new _Domain_
-- Deploy the _Application Version_
-- Upload Swagger and SBOM files to _Component Version_
+- Deploy the _Application_
+- Persist SBOMs to the  _Component Version_
+- Persist SonarQube Project Status, Bugs, Code Smells, and Violations metrics to the  _Component Version_
+- Persist Veracode Score to the  _Component Version_
+- Persist License File to the  _Component Version_
+- Persist Readme File the  _Component Version_
+- Persist Swagger and OpenAPI files the  _Component Version_
+- Persist Git Branch, Branch Create Commit, Branch Create Timestamp, Branch Parent, Commit, Commit Authors, Committers Count, Commit Timestamp, Lines Added, Lines Deleted, Lines Total, Org, Repo, Repo Project, Signed Off By, Tag, Url, Verified Commit
 
 
 ## CLI Prerequisites
