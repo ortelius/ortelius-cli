@@ -1,0 +1,94 @@
+package cmd
+
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+	"strings"
+
+	"github.com/ortelius/dh-cli/internal/config"
+	"github.com/ortelius/dh-cli/internal/types"
+	"github.com/ortelius/dh-cli/internal/util"
+	"github.com/spf13/cobra"
+)
+
+var kvCmd = &cobra.Command{
+	Use:   "kv",
+	Short: "Assign key/value pairs to component version",
+	Long:  "Assigns the key/value pairs to the component version",
+	RunE:  runKV,
+}
+
+func init() {
+	kvCmd.Flags().StringVar(&kvconfig, "kvconfig", "", "Directory containing JSON and properties files")
+	kvCmd.Flags().StringVar(&deploydata, "deploydata", "", "JSON file containing deployment data")
+	kvCmd.Flags().StringVar(&compname, "compname", "", "Component Name")
+	kvCmd.Flags().StringVar(&compvariant, "compvariant", "", "Component Variant")
+	kvCmd.Flags().StringVar(&compversion, "compversion", "", "Component Version")
+	kvCmd.Flags().StringVar(&compautoinc, "compautoinc", "Y", "Component Auto Increment Version")
+	kvCmd.Flags().StringVar(&kind, "kind", "docker", "Component Item Type")
+	kvCmd.Flags().StringVar(&crdatasource, "crdatasource", "", "Change Request Data Source")
+	kvCmd.Flags().StringSliceVar(&changerequest, "changerequest", []string{}, "Change Request IDs")
+
+	RootCmd.AddCommand(kvCmd)
+}
+
+func runKV(cmd *cobra.Command, args []string) error {
+	_, client, err := config.GetConfigAndInit()
+	if err != nil {
+		return err
+	}
+
+	var environment string
+
+	if util.IsEmpty(kvconfig) && util.IsEmpty(deploydata) {
+		return fmt.Errorf("kvconfig or deploydata is required")
+	}
+
+	if util.IsNotEmpty(deploydata) {
+		content, err := os.ReadFile(deploydata)
+		if err != nil {
+			return err
+		}
+
+		var data types.DeployData
+		if err := json.Unmarshal(content, &data); err != nil {
+			return err
+		}
+
+		appname = data.Application
+		appversion = data.AppVersion
+		compname = data.ConfigComponent
+		compvariant = data.Environment
+		compversion = ""
+		environment = data.Environment
+
+		if util.IsEmpty(kvconfig) {
+			kvconfig = data.KvConfig
+		}
+
+		fmt.Printf("Config for %s to %s\n", appname, compvariant)
+	}
+
+	if util.IsEmpty(compname) {
+		return fmt.Errorf("compname is required")
+	}
+
+	// Clean variant
+	if strings.Contains(compvariant, ".") {
+		parts := strings.Split(compvariant, ".")
+		compvariant = parts[len(parts)-1]
+	}
+
+	if util.IsEmpty(compautoinc) {
+		compautoinc = "Y"
+	}
+
+	compAutoIncBool := strings.ToLower(compautoinc) == "y"
+	appAutoIncBool := strings.ToLower(appautoinc) == "y"
+
+	client.SetKVConfig(kvconfig, appname, appversion, appAutoIncBool,
+		compname, compvariant, compversion, compAutoIncBool, kind, environment, crdatasource, changerequest)
+
+	return nil
+}
