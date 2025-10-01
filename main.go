@@ -1,4 +1,4 @@
-// Package main provides the entry point for the DeployHub CLI application.
+// Package main provides the entry point for the Ortelius CLI application.
 package main
 
 import (

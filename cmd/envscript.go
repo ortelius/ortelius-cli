@@ -1,10 +1,10 @@
-// Package cmd provides command-line interface commands for the DeployHub CLI application.
+// Package cmd provides command-line interface commands for the Ortelius CLI application.
 package cmd
 
 import (
 	"fmt"
 
-	"github.com/ortelius/ortelius-cli/internal/dhutil"
+	"github.com/ortelius/ortelius-cli/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -28,20 +28,19 @@ func init() {
 }
 
 func runEnvScript(_ *cobra.Command, _ []string) error {
-	dhurl, dhuser, dhpass, rsp, cert := GetGlobalFlags()
-	_ = dhurl
-	_ = dhuser
-	_ = dhpass
-	_ = cert
+	orteliusUrl, orteliusUser, orteliusPass, rsp := GetGlobalFlags()
+	_ = orteliusUrl
+	_ = orteliusUser
+	_ = orteliusPass
 
-	if dhutil.IsEmpty(envvars) && dhutil.IsEmpty(rsp) {
+	if util.IsEmpty(envvars) && util.IsEmpty(rsp) {
 		return fmt.Errorf("envvars is required")
 	}
 
-	if dhutil.IsEmpty(envvars) {
+	if util.IsEmpty(envvars) {
 		envvars = rsp
 	}
 
 	fmt.Printf("Creating env shell script from %s\n", envvars)
-	return dhutil.CreateEnvScript(envvars, envvarssh)
+	return util.CreateEnvScript(envvars, envvarssh)
 }

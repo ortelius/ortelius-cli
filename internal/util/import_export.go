@@ -1,16 +1,16 @@
-// Package dhutil provides utility functions for import/export operations in the DeployHub CLI.
-package dhutil
+// Package util provides utility functions for import/export operations in the Ortelius CLI.
+package util
 
 import (
 	"encoding/json"
 	"fmt"
 	"strings"
 
-	"github.com/ortelius/ortelius-cli/pkg/deployhub"
+	"github.com/ortelius/ortelius-cli/pkg/ortelius"
 )
 
 // FilterDict filters objects by domain for export
-func FilterDict(client *deployhub.Client, objType, fromDom string, allObjs map[string]interface{}) {
+func FilterDict(client *ortelius.Client, objType, fromDom string, allObjs map[string]interface{}) {
 	endpoint := fmt.Sprintf("/dmadminweb/API/export/%s", objType)
 	data, err := client.GetJSON(endpoint)
 	if err != nil {
@@ -34,7 +34,7 @@ func FilterDict(client *deployhub.Client, objType, fromDom string, allObjs map[s
 }
 
 // ImportDict imports objects from export data
-func ImportDict(client *deployhub.Client, objType string, allObjs map[string]interface{}) {
+func ImportDict(client *ortelius.Client, objType string, allObjs map[string]interface{}) {
 	fmt.Println(objType)
 
 	if objects, ok := allObjs[objType].([]interface{}); ok {

@@ -1,4 +1,4 @@
-// Package config provides configuration management for the DeployHub CLI application.
+// Package config provides configuration management for the Ortelius CLI application.
 package config
 
 import (
@@ -12,51 +12,58 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/mitchellh/mapstructure"
-	"github.com/ortelius/ortelius-cli/internal/dhutil"
 	"github.com/ortelius/ortelius-cli/internal/models"
-	"github.com/ortelius/ortelius-cli/pkg/deployhub"
+	"github.com/ortelius/ortelius-cli/internal/util"
+	"github.com/ortelius/ortelius-cli/pkg/ortelius"
 	"github.com/spf13/viper"
 )
 
 // GetConfigAndInit initializes the client and loads configuration
-func GetConfigAndInit() (*models.ComponentConfig, *deployhub.Client, error) {
+func GetConfigAndInit() (*models.ComponentConfig, *ortelius.Client, error) {
 	// Get values from viper (environment variables) and command flags
-	dhurl := viper.GetString("dhurl")
-	dhuser := viper.GetString("dhuser")
-	dhpass := viper.GetString("dhpass")
+	// Try ortelius* environment variables first, fall back to dh* for backward compatibility
+	orteliusUrl := viper.GetString("orteliusurl")
+	if orteliusUrl == "" {
+		orteliusUrl = viper.GetString("dhurl")
+	}
+
+	orteliusUser := viper.GetString("orteliususer")
+	if orteliusUser == "" {
+		orteliusUser = viper.GetString("dhuser")
+	}
+
+	orteliusPass := viper.GetString("orteliuspass")
+	if orteliusPass == "" {
+		orteliusPass = viper.GetString("dhpass")
+	}
 
 	// Get global flags from root command
-	globalDhurl, globalDhuser, globalDhpass, rsp, cert := getGlobalFlags()
+	globalOrteliusUrl, globalOrteliusUser, globalOrteliusPass, rsp := getGlobalFlags()
 
-	if dhurl == "" {
-		dhurl = globalDhurl
+	if orteliusUrl == "" {
+		orteliusUrl = globalOrteliusUrl
 	}
-	if dhuser == "" {
-		dhuser = globalDhuser
+	if orteliusUser == "" {
+		orteliusUser = globalOrteliusUser
 	}
-	if dhpass == "" {
-		dhpass = globalDhpass
+	if orteliusPass == "" {
+		orteliusPass = globalOrteliusPass
 	}
 
 	// Initialize client
-	client := deployhub.NewClient(dhurl)
-	if cert != "" && dhutil.IsNotEmpty(cert) {
-		if err := client.SSLCerts(); err != nil {
-			return nil, nil, fmt.Errorf("SSL certificate error: %w", err)
-		}
-	}
+	client := ortelius.NewClient(orteliusUrl)
 
 	// Login
-	if dhutil.IsEmpty(dhurl) || dhutil.IsEmpty(dhuser) || dhutil.IsEmpty(dhpass) {
+	if util.IsEmpty(orteliusUrl) || util.IsEmpty(orteliusUser) || util.IsEmpty(orteliusPass) {
 		return nil, nil, fmt.Errorf("dhurl, dhuser, and dhpass are required")
 	}
 
-	if err := client.Login(dhuser, dhpass); err != nil {
+	if err := client.Login(orteliusUser, orteliusPass); err != nil {
 		return nil, nil, fmt.Errorf("login failed: %w", err)
 	}
 
 	// Handle RSP file
-	if !dhutil.FileExists(rsp) {
+	if !util.FileExists(rsp) {
 		var err error
 		if rsp, err = generateDefaultRSP(); err != nil {
 			return nil, nil, err
@@ -74,10 +81,10 @@ func GetConfigAndInit() (*models.ComponentConfig, *deployhub.Client, error) {
 }
 
 func generateDefaultRSP() (string, error) {
-	org := strings.TrimSpace(dhutil.RunCmd("git config --get remote.origin.url | awk -F'[@:/]' '{print $(NF-1)}'"))
-	repo := strings.TrimSpace(dhutil.RunCmd("git config --get remote.origin.url | awk -F/ '{print $NF}'| sed 's/.git$//'"))
-	branch := strings.TrimSpace(dhutil.RunCmd("git rev-parse --abbrev-ref HEAD"))
-	bldnum := strings.TrimSpace(dhutil.RunCmd("git log --oneline | wc -l | tr -d ' '"))
+	org := strings.TrimSpace(util.RunCmd("git config --get remote.origin.url | awk -F'[@:/]' '{print $(NF-1)}'"))
+	repo := strings.TrimSpace(util.RunCmd("git config --get remote.origin.url | awk -F/ '{print $NF}'| sed 's/.git$//'"))
+	branch := strings.TrimSpace(util.RunCmd("git rev-parse --abbrev-ref HEAD"))
+	bldnum := strings.TrimSpace(util.RunCmd("git log --oneline | wc -l | tr -d ' '"))
 
 	content := fmt.Sprintf(`Name = "GLOBAL.%s.%s"
 Variant = "%s"
@@ -184,7 +191,7 @@ func loadAndProcessConfig(filename string) (*models.ComponentConfig, error) {
 	// First substitution with environment variables
 	var config models.ComponentConfig
 
-	if !dhutil.FileExists(filename) {
+	if !util.FileExists(filename) {
 		return &config, nil
 	}
 
@@ -219,11 +226,11 @@ func loadAndProcessConfig(filename string) (*models.ComponentConfig, error) {
 
 // getGlobalFlags is a placeholder - needs to be imported from cmd package
 // This is a workaround for the circular dependency
-var getGlobalFlags = func() (string, string, string, string, string) {
-	return "", "", "", "component.toml", ""
+var getGlobalFlags = func() (string, string, string, string) {
+	return "", "", "", "component.toml"
 }
 
 // SetGlobalFlagsGetter allows the cmd package to set this function
-func SetGlobalFlagsGetter(fn func() (string, string, string, string, string)) {
+func SetGlobalFlagsGetter(fn func() (string, string, string, string)) {
 	getGlobalFlags = fn
 }

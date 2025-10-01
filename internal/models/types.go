@@ -1,4 +1,4 @@
-// Package models provides common data structures used throughout the DeployHub CLI application.
+// Package models provides common data structures used throughout the Ortelius CLI application.
 package models
 
 // ComponentConfig represents the component configuration structure

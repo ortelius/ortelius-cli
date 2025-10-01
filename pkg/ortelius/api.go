@@ -1,15 +1,13 @@
-// Package deployhub provides a Go client for the DeployHub REST API
+// Package ortelius provides a Go client for the Ortelius REST API
 // This is a complete conversion from the Python dhapi.py module
-package deployhub
+package ortelius
 
 import (
 	"bytes"
-	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -24,14 +22,14 @@ import (
 	"github.com/go-ini/ini"
 )
 
-// Client represents a DeployHub API client
+// Client represents an Ortelius API client
 type Client struct {
 	BaseURL    string
 	HTTPClient *http.Client
 	Cookies    map[string]string
 }
 
-// NewClient creates a new DeployHub API client
+// NewClient creates a new Ortelius API client
 func NewClient(baseURL string) *Client {
 	return &Client{
 		BaseURL: strings.TrimSuffix(baseURL, "/"),
@@ -77,28 +75,7 @@ func cleanName(name string) string {
 	return name
 }
 
-// SSLCerts handles custom SSL certificates
-func (c *Client) SSLCerts() error {
-	// Test SSL connection first
-	resp, err := c.HTTPClient.Get(c.BaseURL)
-	if err != nil {
-		if strings.Contains(err.Error(), "certificate") {
-			log.Println("Adding custom certs to client...")
-			// Create custom transport with insecure TLS for custom certs
-			tr := &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			}
-			c.HTTPClient.Transport = tr
-		}
-		return err
-	}
-	if resp != nil {
-		resp.Body.Close()
-	}
-	return nil
-}
-
-// Login authenticates with DeployHub
+// Login authenticates with Ortelius
 func (c *Client) Login(user, password string) error {
 	data := url.Values{}
 	data.Set("user", user)
@@ -184,7 +161,7 @@ func (c *Client) postJSON(endpoint string, payload interface{}) (map[string]inte
 
 	req.Header.Set("Content-Type", "application/json")
 	if !strings.Contains(endpoint, "/import") {
-		req.Header.Set("host", "console.deployhub.com")
+		req.Header.Set("host", "ortelius.deployhub.com")
 	}
 
 	// Add cookies

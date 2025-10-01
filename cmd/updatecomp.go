@@ -1,4 +1,4 @@
-// Package cmd provides command-line interface commands for the DeployHub CLI application.
+// Package cmd provides command-line interface commands for the Ortelius CLI application.
 package cmd
 
 import (
@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/ortelius/ortelius-cli/internal/config"
-	"github.com/ortelius/ortelius-cli/internal/dhutil"
+	"github.com/ortelius/ortelius-cli/internal/util"
 	"github.com/ortelius/ortelius-cli/internal/models"
 	"github.com/spf13/cobra"
 )
@@ -70,45 +70,45 @@ func runUpdateComp(_ *cobra.Command, _ []string) error {
 	}
 
 	// Override with config values
-	if dhutil.IsEmpty(compname) {
+	if util.IsEmpty(compname) {
 		compname = cfg.Name
 	}
-	if dhutil.IsEmpty(compvariant) {
+	if util.IsEmpty(compvariant) {
 		compvariant = cfg.Variant
 	}
-	if dhutil.IsEmpty(compversion) {
+	if util.IsEmpty(compversion) {
 		compversion = cfg.Version
 	}
-	if dhutil.IsEmpty(appname) {
+	if util.IsEmpty(appname) {
 		appname = cfg.Application
 	}
-	if dhutil.IsEmpty(appversion) {
+	if util.IsEmpty(appversion) {
 		appversion = cfg.ApplicationVersion
 	}
 
-	if dhutil.IsEmpty(compname) {
+	if util.IsEmpty(compname) {
 		return fmt.Errorf("compname is required")
 	}
 
 	// Handle variant/version parsing
-	if dhutil.IsEmpty(compvariant) && strings.Contains(compversion, "-v") {
+	if util.IsEmpty(compvariant) && strings.Contains(compversion, "-v") {
 		parts := strings.Split(compversion, "-v")
 		compvariant = parts[0]
 		compversion = "v" + parts[1]
 	}
-	if dhutil.IsEmpty(compvariant) && strings.Contains(compversion, "-V") {
+	if util.IsEmpty(compvariant) && strings.Contains(compversion, "-V") {
 		parts := strings.Split(compversion, "-V")
 		compvariant = parts[0]
 		compversion = "v" + parts[1]
 	}
 
 	// Clean variant name
-	if dhutil.IsNotEmpty(compvariant) {
+	if util.IsNotEmpty(compvariant) {
 		compvariant = strings.ReplaceAll(compvariant, "/", "_")
 	}
 
 	// Set default auto increment
-	if dhutil.IsEmpty(compautoinc) {
+	if util.IsEmpty(compautoinc) {
 		compautoinc = "Y"
 	}
 	compAutoIncBool := strings.ToLower(compautoinc) == "y" || compautoinc == "true"
@@ -120,7 +120,7 @@ func runUpdateComp(_ *cobra.Command, _ []string) error {
 	}
 
 	// Load existing deploy data if specified
-	if dhutil.IsNotEmpty(deploydatasave) && dhutil.FileExists(deploydatasave) {
+	if util.IsNotEmpty(deploydatasave) && util.FileExists(deploydatasave) {
 		content, err := os.ReadFile(deploydatasave)
 		if err == nil {
 			var existingData models.DeployData
@@ -178,7 +178,7 @@ func runUpdateComp(_ *cobra.Command, _ []string) error {
 
 				if strings.HasPrefix(value, "@") {
 					value = value[1:]
-					if dhutil.FileExists(value) {
+					if util.FileExists(value) {
 						content, err := os.ReadFile(value)
 						if err == nil {
 							attrs[key] = strings.ReplaceAll(string(content), "\n", "")
@@ -194,7 +194,7 @@ func runUpdateComp(_ *cobra.Command, _ []string) error {
 			}
 		}
 
-		attrs = dhutil.GetDerivedEnvMapping(attrs)
+		attrs = util.GetDerivedEnvMapping(attrs)
 
 		// Auto-detect chart information
 		shortname := compname
@@ -203,10 +203,10 @@ func runUpdateComp(_ *cobra.Command, _ []string) error {
 			shortname = parts[len(parts)-1]
 		}
 
-		chartPath := dhutil.FindChartPath(shortname)
+		chartPath := util.FindChartPath(shortname)
 		if chartPath != "" {
 			attrs["Chart"] = filepath.Dir(chartPath)
-			if chartVersion := dhutil.ExtractChartVersion(chartPath); chartVersion != "" {
+			if chartVersion := util.ExtractChartVersion(chartPath); chartVersion != "" {
 				attrs["ChartVersion"] = chartVersion
 			}
 		}
@@ -231,17 +231,17 @@ func runUpdateComp(_ *cobra.Command, _ []string) error {
 		}
 
 		// Handle file uploads
-		readmeFile := dhutil.FindFile([]string{"README", "README.md", "readme", "readme.md"})
+		readmeFile := util.FindFile([]string{"README", "README.md", "readme", "readme.md"})
 		if readmeFile != "" {
 			client.PostTextFile(compID, readmeFile, "readme")
 		}
 
-		licenseFile := dhutil.FindFile([]string{"LICENSE", "LICENSE.md", "license", "license.md"})
+		licenseFile := util.FindFile([]string{"LICENSE", "LICENSE.md", "license", "license.md"})
 		if licenseFile != "" {
 			client.PostTextFile(compID, licenseFile, "license")
 		}
 
-		swaggerFile := dhutil.FindFile([]string{"swagger.yaml", "swagger.yml", "swagger.json", "openapi.json", "openapi.yaml", "openapi.yml"})
+		swaggerFile := util.FindFile([]string{"swagger.yaml", "swagger.yml", "swagger.json", "openapi.json", "openapi.yaml", "openapi.yml"})
 		if swaggerFile != "" {
 			client.PostTextFile(compID, swaggerFile, "swagger")
 		}
@@ -251,7 +251,7 @@ func runUpdateComp(_ *cobra.Command, _ []string) error {
 		for _, filename := range deppkgs {
 			if strings.HasPrefix(filename, "gradlelicense@") {
 				actualFile := strings.TrimPrefix(filename, "gradlelicense@")
-				if dhutil.FileExists(actualFile) {
+				if util.FileExists(actualFile) {
 					content, err := os.ReadFile(actualFile)
 					if err == nil {
 						json.Unmarshal(content, &glic)
@@ -264,16 +264,16 @@ func runUpdateComp(_ *cobra.Command, _ []string) error {
 		}
 
 		// Handle consumes/provides endpoints
-		if dhutil.IsNotEmpty(consumes) && dhutil.FileExists(consumes) {
+		if util.IsNotEmpty(consumes) && util.FileExists(consumes) {
 			fmt.Println("Adding Consuming End Points")
 		}
 
-		if dhutil.IsNotEmpty(provides) && dhutil.FileExists(provides) {
+		if util.IsNotEmpty(provides) && util.FileExists(provides) {
 			fmt.Println("Adding Providing End Points")
 		}
 
 		// Handle KV config
-		if dhutil.IsNotEmpty(kvconfig) {
+		if util.IsNotEmpty(kvconfig) {
 			fmt.Printf("Load config from %s\n", kvconfig)
 			client.SetKVConfig(kvconfig, compname, compvariant, compversion, crdatasource, changerequest)
 		}
@@ -281,7 +281,7 @@ func runUpdateComp(_ *cobra.Command, _ []string) error {
 		// Handle application assignment
 		var appList []string
 
-		if dhutil.IsEmpty(appname) && strings.ToLower(appautoinc) == "y" {
+		if util.IsEmpty(appname) && strings.ToLower(appautoinc) == "y" {
 			// Derive appname from component
 			parentCompID, _ := client.GetComponent(compname, "", "", true, true)
 			if parentCompID > 0 {
@@ -305,14 +305,14 @@ func runUpdateComp(_ *cobra.Command, _ []string) error {
 					}
 				}
 			}
-		} else if dhutil.IsNotEmpty(appname) {
+		} else if util.IsNotEmpty(appname) {
 			appList = append(appList, appname)
 		}
 
 		// Process applications
 		for _, appName := range appList {
 			currentAppVersion := saveAppVer
-			if dhutil.IsEmpty(currentAppVersion) {
+			if util.IsEmpty(currentAppVersion) {
 				// Parse app;version format
 				if strings.Contains(appName, ";") {
 					parts := strings.Split(appName, ";")
@@ -343,7 +343,7 @@ func runUpdateComp(_ *cobra.Command, _ []string) error {
 			fmt.Println("Assignment Done")
 
 			// Deploy if environment specified
-			if dhutil.IsNotEmpty(deployenv) {
+			if util.IsNotEmpty(deployenv) {
 				fmt.Printf("Deploying %s to %s\n", realAppName, deployenv)
 				deployID, errMsg := client.DeployApplicationByID(newAppID, deployenv)
 
@@ -373,13 +373,13 @@ func runUpdateComp(_ *cobra.Command, _ []string) error {
 
 		cnt++
 
-		if dhutil.IsEmpty(compname) {
+		if util.IsEmpty(compname) {
 			break
 		}
 	}
 
 	// Save deploy data
-	if dhutil.IsNotEmpty(deploydatasave) {
+	if util.IsNotEmpty(deploydatasave) {
 		content, err := json.MarshalIndent(deployDataDict, "", "  ")
 		if err == nil {
 			os.WriteFile(deploydatasave, content, 0644)

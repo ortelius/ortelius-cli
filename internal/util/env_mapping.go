@@ -1,5 +1,5 @@
-// Package dhutil provides utility functions for import/export operations in the DeployHub CLI.
-package dhutil
+// Package util provides utility functions for import/export operations in the Ortelius CLI.
+package util
 
 import (
 	"fmt"

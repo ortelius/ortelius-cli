@@ -1,4 +1,4 @@
-// Package cmd provides command-line interface commands for the DeployHub CLI application.
+// Package cmd provides command-line interface commands for the Ortelius CLI application.
 package cmd
 
 import (
@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/ortelius/ortelius-cli/internal/config"
-	"github.com/ortelius/ortelius-cli/internal/dhutil"
+	"github.com/ortelius/ortelius-cli/internal/util"
 	"github.com/ortelius/ortelius-cli/internal/models"
 	"github.com/spf13/cobra"
 )
@@ -40,11 +40,11 @@ func runKV(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	if dhutil.IsEmpty(kvconfig) && dhutil.IsEmpty(deploydata) {
+	if util.IsEmpty(kvconfig) && util.IsEmpty(deploydata) {
 		return fmt.Errorf("kvconfig or deploydata is required")
 	}
 
-	if dhutil.IsNotEmpty(deploydata) {
+	if util.IsNotEmpty(deploydata) {
 		content, err := os.ReadFile(deploydata)
 		if err != nil {
 			return err
@@ -61,14 +61,14 @@ func runKV(_ *cobra.Command, _ []string) error {
 		compvariant = data.Environment
 		compversion = ""
 
-		if dhutil.IsEmpty(kvconfig) {
+		if util.IsEmpty(kvconfig) {
 			kvconfig = data.KvConfig
 		}
 
 		fmt.Printf("Config for %s to %s\n", appname, compvariant)
 	}
 
-	if dhutil.IsEmpty(compname) {
+	if util.IsEmpty(compname) {
 		return fmt.Errorf("compname is required")
 	}
 
@@ -78,7 +78,7 @@ func runKV(_ *cobra.Command, _ []string) error {
 		compvariant = parts[len(parts)-1]
 	}
 
-	if dhutil.IsEmpty(compautoinc) {
+	if util.IsEmpty(compautoinc) {
 		compautoinc = "Y"
 	}
 

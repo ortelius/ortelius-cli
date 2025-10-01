@@ -1,4 +1,4 @@
-// Package cmd provides command-line interface commands for the DeployHub CLI application.
+// Package cmd provides command-line interface commands for the Ortelius CLI application.
 package cmd
 
 import (
@@ -13,18 +13,20 @@ import (
 var Version = "dev"
 
 var (
-	dhurl  string
-	dhuser string
-	dhpass string
-	rsp    string
-	cert   string
+	orteliusUrl  string
+	dhUrl        string // Legacy flag for backward compatibility
+	orteliusUser string
+	dhUser       string // Legacy flag for backward compatibility
+	orteliusPass string
+	dhPass       string // Legacy flag for backward compatibility
+	rsp          string
 )
 
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
-	Use:   "dh",
-	Short: "Ortelius CLI using the dhapi module",
-	Long: `Ortelius CLI provides commands to interact with DeployHub for:
+	Use:   "ortelius",
+	Short: "Ortelius CLI using the Ortelius API Module",
+	Long: `Ortelius CLI provides commands to interact with Ortelius for:
 - Deploying applications
 - Record deployment of the Application
 - Managing component versions
@@ -57,19 +59,40 @@ func Execute() {
 
 func init() {
 	// Global flags
-	RootCmd.PersistentFlags().StringVar(&dhurl, "dhurl", "", "DeployHub URL")
-	RootCmd.PersistentFlags().StringVar(&dhuser, "dhuser", "", "DeployHub User")
-	RootCmd.PersistentFlags().StringVar(&dhpass, "dhpass", "", "DeployHub Password")
-	RootCmd.PersistentFlags().StringVar(&cert, "cert", "", "Customer SSL Certificate File")
+	RootCmd.PersistentFlags().StringVar(&orteliusUrl, "orteliusurl", "", "Ortelius URL")
+	RootCmd.PersistentFlags().StringVar(&dhUrl, "dhurl", "", "Ortelius URL (deprecated, use --orteliusurl)")
+	RootCmd.PersistentFlags().StringVar(&orteliusUser, "orteliususer", "", "Ortelius User")
+	RootCmd.PersistentFlags().StringVar(&dhUser, "dhuser", "", "Ortelius User (deprecated, use --orteliususer)")
+	RootCmd.PersistentFlags().StringVar(&orteliusPass, "orteliuspass", "", "Ortelius Password")
+	RootCmd.PersistentFlags().StringVar(&dhPass, "dhpass", "", "Ortelius Password (deprecated, use --orteliuspass)")
 	RootCmd.PersistentFlags().StringVar(&rsp, "rsp", "component.toml", "Response File for Parameters")
 
 	// Bind environment variables
 	viper.BindEnv("dhurl", "DHURL")
+	viper.BindEnv("orteliusurl", "ORTELIUS_URL")
 	viper.BindEnv("dhuser", "DHUSER")
+	viper.BindEnv("orteliususer", "ORTELIUS_USER")
 	viper.BindEnv("dhpass", "DHPASS")
+	viper.BindEnv("orteliuspass", "ORTELIUS_PASS")
 }
 
 // GetGlobalFlags returns the global flag values for use by other packages
-func GetGlobalFlags() (string, string, string, string, string) {
-	return dhurl, dhuser, dhpass, rsp, cert
+func GetGlobalFlags() (string, string, string, string) {
+	// Implement fallback logic: use ortelius* flags if set, otherwise fall back to dh* flags
+	url := orteliusUrl
+	if url == "" {
+		url = dhUrl
+	}
+
+	user := orteliusUser
+	if user == "" {
+		user = dhUser
+	}
+
+	pass := orteliusPass
+	if pass == "" {
+		pass = dhPass
+	}
+
+	return url, user, pass, rsp
 }

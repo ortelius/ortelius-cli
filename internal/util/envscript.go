@@ -1,5 +1,5 @@
-// Package dhutil provides utility functions for import/export operations in the DeployHub CLI.
-package dhutil
+// Package util provides utility functions for import/export operations in the Ortelius CLI.
+package util
 
 import (
 	"fmt"
@@ -95,7 +95,7 @@ func CreateEnvScript(envvarsFile, outputFile string) error {
 
 	// Handle git previous commit if component name available
 	if vardict.Name != "" {
-		// This would require dhapi client to get previous commit
+		// This would require api client to get previous commit
 		// For now, set defaults
 		exportVars["GIT_PREVIOUS_COMPONENT_COMMIT"] = ""
 		exportVars["GIT_LINES_ADDED"] = "0"

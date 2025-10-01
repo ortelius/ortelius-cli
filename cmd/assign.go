@@ -1,4 +1,4 @@
-// Package cmd provides command-line interface commands for the DeployHub CLI application.
+// Package cmd provides command-line interface commands for the Ortelius CLI application.
 package cmd
 
 import (
@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/ortelius/ortelius-cli/internal/config"
-	"github.com/ortelius/ortelius-cli/internal/dhutil"
+	"github.com/ortelius/ortelius-cli/internal/util"
 	"github.com/ortelius/ortelius-cli/internal/models"
 	"github.com/spf13/cobra"
 )
@@ -39,20 +39,20 @@ func runAssign(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	if dhutil.IsEmpty(appname) {
+	if util.IsEmpty(appname) {
 		return fmt.Errorf("appname is required")
 	}
-	if dhutil.IsEmpty(compname) {
+	if util.IsEmpty(compname) {
 		return fmt.Errorf("compname is required")
 	}
 
 	// Handle variant/version parsing
-	if dhutil.IsEmpty(compvariant) && strings.Contains(compversion, "-v") {
+	if util.IsEmpty(compvariant) && strings.Contains(compversion, "-v") {
 		parts := strings.Split(compversion, "-v")
 		compvariant = parts[0]
 		compversion = "v" + parts[1]
 	}
-	if dhutil.IsEmpty(compvariant) && strings.Contains(compversion, "-V") {
+	if util.IsEmpty(compvariant) && strings.Contains(compversion, "-V") {
 		parts := strings.Split(compversion, "-V")
 		compvariant = parts[0]
 		compversion = "v" + parts[1]
@@ -62,7 +62,7 @@ func runAssign(_ *cobra.Command, _ []string) error {
 	deployDataDict := models.DeployData{}
 
 	// Load existing deploy data if specified
-	if dhutil.IsNotEmpty(deploydatasave) && dhutil.FileExists(deploydatasave) {
+	if util.IsNotEmpty(deploydatasave) && util.FileExists(deploydatasave) {
 		content, err := os.ReadFile(deploydatasave)
 		if err == nil {
 			json.Unmarshal(content, &deployDataDict)
@@ -85,7 +85,7 @@ func runAssign(_ *cobra.Command, _ []string) error {
 		currentAppName := appname
 
 		// Parse appname;appversion format
-		if dhutil.IsEmpty(currentAppVersion) && strings.Contains(currentAppName, ";") {
+		if util.IsEmpty(currentAppVersion) && strings.Contains(currentAppName, ";") {
 			parts := strings.Split(currentAppName, ";")
 			if len(parts) == 3 {
 				currentAppName = parts[0] + ";" + parts[1]
@@ -106,7 +106,7 @@ func runAssign(_ *cobra.Command, _ []string) error {
 		}
 
 		// Assign to environments
-		if !dhutil.Contains(assignCompleted, currentAppName) {
+		if !util.Contains(assignCompleted, currentAppName) {
 			client.AssignAppToEnv(currentAppName, envs)
 			assignCompleted = append(assignCompleted, currentAppName)
 		}
@@ -130,13 +130,13 @@ func runAssign(_ *cobra.Command, _ []string) error {
 
 		cnt++
 
-		if dhutil.IsEmpty(compname) {
+		if util.IsEmpty(compname) {
 			break
 		}
 	}
 
 	// Save deploy data
-	if dhutil.IsNotEmpty(deploydatasave) {
+	if util.IsNotEmpty(deploydatasave) {
 		content, err := json.MarshalIndent(deployDataDict, "", "  ")
 		if err == nil {
 			os.WriteFile(deploydatasave, content, 0644)

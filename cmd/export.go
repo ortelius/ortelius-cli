@@ -1,4 +1,4 @@
-// Package cmd provides command-line interface commands for the DeployHub CLI application.
+// Package cmd provides command-line interface commands for the Ortelius CLI application.
 package cmd
 
 import (
@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/ortelius/ortelius-cli/internal/config"
-	"github.com/ortelius/ortelius-cli/internal/dhutil"
+	"github.com/ortelius/ortelius-cli/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -31,7 +31,7 @@ func runExport(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	if dhutil.IsEmpty(fromdom) {
+	if util.IsEmpty(fromdom) {
 		return fmt.Errorf("fromdom is required")
 	}
 
@@ -41,7 +41,7 @@ func runExport(_ *cobra.Command, _ []string) error {
 		"datasources", "tasks", "engines", "repositories", "environments", "components", "applications", "releases"}
 
 	for _, objType := range objectTypes {
-		dhutil.FilterDict(client, objType, fromdom, allObjs)
+		util.FilterDict(client, objType, fromdom, allObjs)
 	}
 
 	jsonStr, err := json.MarshalIndent(allObjs, "", "  ")
