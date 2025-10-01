@@ -1,3 +1,4 @@
+// Package config provides configuration management for the DeployHub CLI application.
 package config
 
 import (
@@ -11,14 +12,14 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/mitchellh/mapstructure"
-	"github.com/ortelius/dh-cli/internal/types"
-	"github.com/ortelius/dh-cli/internal/util"
-	"github.com/ortelius/dh-cli/pkg/deployhub"
+	"github.com/ortelius/ortelius-cli/internal/dhutil"
+	"github.com/ortelius/ortelius-cli/internal/models"
+	"github.com/ortelius/ortelius-cli/pkg/deployhub"
 	"github.com/spf13/viper"
 )
 
 // GetConfigAndInit initializes the client and loads configuration
-func GetConfigAndInit() (*types.ComponentConfig, *deployhub.Client, error) {
+func GetConfigAndInit() (*models.ComponentConfig, *deployhub.Client, error) {
 	// Get values from viper (environment variables) and command flags
 	dhurl := viper.GetString("dhurl")
 	dhuser := viper.GetString("dhuser")
@@ -39,14 +40,14 @@ func GetConfigAndInit() (*types.ComponentConfig, *deployhub.Client, error) {
 
 	// Initialize client
 	client := deployhub.NewClient(dhurl)
-	if cert != "" && util.IsNotEmpty(cert) {
-		if err := client.SSLCerts(cert); err != nil {
+	if cert != "" && dhutil.IsNotEmpty(cert) {
+		if err := client.SSLCerts(); err != nil {
 			return nil, nil, fmt.Errorf("SSL certificate error: %w", err)
 		}
 	}
 
 	// Login
-	if util.IsEmpty(dhurl) || util.IsEmpty(dhuser) || util.IsEmpty(dhpass) {
+	if dhutil.IsEmpty(dhurl) || dhutil.IsEmpty(dhuser) || dhutil.IsEmpty(dhpass) {
 		return nil, nil, fmt.Errorf("dhurl, dhuser, and dhpass are required")
 	}
 
@@ -55,7 +56,7 @@ func GetConfigAndInit() (*types.ComponentConfig, *deployhub.Client, error) {
 	}
 
 	// Handle RSP file
-	if !util.FileExists(rsp) {
+	if !dhutil.FileExists(rsp) {
 		var err error
 		if rsp, err = generateDefaultRSP(); err != nil {
 			return nil, nil, err
@@ -73,10 +74,10 @@ func GetConfigAndInit() (*types.ComponentConfig, *deployhub.Client, error) {
 }
 
 func generateDefaultRSP() (string, error) {
-	org := strings.TrimSpace(util.RunCmd("git config --get remote.origin.url | awk -F'[@:/]' '{print $(NF-1)}'"))
-	repo := strings.TrimSpace(util.RunCmd("git config --get remote.origin.url | awk -F/ '{print $NF}'| sed 's/.git$//'"))
-	branch := strings.TrimSpace(util.RunCmd("git rev-parse --abbrev-ref HEAD"))
-	bldnum := strings.TrimSpace(util.RunCmd("git log --oneline | wc -l | tr -d ' '"))
+	org := strings.TrimSpace(dhutil.RunCmd("git config --get remote.origin.url | awk -F'[@:/]' '{print $(NF-1)}'"))
+	repo := strings.TrimSpace(dhutil.RunCmd("git config --get remote.origin.url | awk -F/ '{print $NF}'| sed 's/.git$//'"))
+	branch := strings.TrimSpace(dhutil.RunCmd("git rev-parse --abbrev-ref HEAD"))
+	bldnum := strings.TrimSpace(dhutil.RunCmd("git log --oneline | wc -l | tr -d ' '"))
 
 	content := fmt.Sprintf(`Name = "GLOBAL.%s.%s"
 Variant = "%s"
@@ -179,11 +180,11 @@ func ResolveString(s string, vars map[string]string) (string, error) {
 	return buf.String(), nil
 }
 
-func loadAndProcessConfig(filename string) (*types.ComponentConfig, error) {
+func loadAndProcessConfig(filename string) (*models.ComponentConfig, error) {
 	// First substitution with environment variables
-	var config types.ComponentConfig
+	var config models.ComponentConfig
 
-	if !util.FileExists(filename) {
+	if !dhutil.FileExists(filename) {
 		return &config, nil
 	}
 

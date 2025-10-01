@@ -1,11 +1,12 @@
+// Package cmd provides command-line interface commands for the DeployHub CLI application.
 package cmd
 
 import (
 	"fmt"
 	"strings"
 
-	"github.com/ortelius/dh-cli/internal/config"
-	"github.com/ortelius/dh-cli/internal/util"
+	"github.com/ortelius/ortelius-cli/internal/config"
+	"github.com/ortelius/ortelius-cli/internal/dhutil"
 	"github.com/spf13/cobra"
 )
 
@@ -33,28 +34,28 @@ func init() {
 	clusterCmd.Flags().StringVar(&deployenv, "deployenv", "", "Deployment Environment")
 	clusterCmd.Flags().StringVar(&crdatasource, "crdatasource", "", "Change Request Data Source")
 	clusterCmd.Flags().StringSliceVar(&changerequest, "changerequest", []string{}, "Change Request IDs")
-	
+
 	RootCmd.AddCommand(clusterCmd)
 }
 
-func runCluster(cmd *cobra.Command, args []string) error {
+func runCluster(_ *cobra.Command, _ []string) error {
 	_, client, err := config.GetConfigAndInit()
 	if err != nil {
 		return err
 	}
 
-	if util.IsEmpty(appname) {
+	if dhutil.IsEmpty(appname) {
 		return fmt.Errorf("appname is required")
 	}
-	if util.IsEmpty(clusterjson) {
+	if dhutil.IsEmpty(clusterjson) {
 		return fmt.Errorf("cluster_json is required")
 	}
-	if util.IsEmpty(todom) {
+	if dhutil.IsEmpty(todom) {
 		return fmt.Errorf("todom is required")
 	}
 
 	// Parse appname;appversion format
-	if util.IsEmpty(appversion) && strings.Contains(appname, ";") {
+	if dhutil.IsEmpty(appversion) && strings.Contains(appname, ";") {
 		parts := strings.Split(appname, ";")
 		if len(parts) == 3 {
 			appname = parts[0] + ";" + parts[1]

@@ -1,4 +1,5 @@
-package util
+// Package dhutil provides utility functions for import/export operations in the DeployHub CLI.
+package dhutil
 
 import (
 	"fmt"
@@ -10,7 +11,7 @@ import (
 	"text/template"
 
 	"github.com/BurntSushi/toml"
-	"github.com/ortelius/dh-cli/internal/types"
+	"github.com/ortelius/ortelius-cli/internal/models"
 )
 
 // CreateEnvScript creates a bash script from environment variables
@@ -31,7 +32,7 @@ func CreateEnvScript(envvarsFile, outputFile string) error {
 	// Get environment mapping with derived git values
 	mapping = GetDerivedEnvMapping(mapping)
 
-	var vardict types.ComponentConfig
+	var vardict models.ComponentConfig
 	if FileExists(envvarsFile) {
 		content, err := os.ReadFile(envvarsFile)
 		if err != nil {

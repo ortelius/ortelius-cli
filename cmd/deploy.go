@@ -1,3 +1,4 @@
+// Package cmd provides command-line interface commands for the DeployHub CLI application.
 package cmd
 
 import (
@@ -6,10 +7,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ortelius/dh-cli/internal/config"
-	"github.com/ortelius/dh-cli/internal/types"
-	"github.com/ortelius/dh-cli/internal/util"
-	"github.com/ortelius/dh-cli/pkg/deployhub"
+	"github.com/ortelius/ortelius-cli/internal/config"
+	"github.com/ortelius/ortelius-cli/internal/dhutil"
+	"github.com/ortelius/ortelius-cli/internal/models"
+	"github.com/ortelius/ortelius-cli/pkg/deployhub"
 	"github.com/spf13/cobra"
 )
 
@@ -40,21 +41,21 @@ func init() {
 	RootCmd.AddCommand(deployCmd)
 }
 
-func runDeploy(cmd *cobra.Command, args []string) error {
+func runDeploy(_ *cobra.Command, _ []string) error {
 	cfg, client, err := config.GetConfigAndInit()
 	if err != nil {
 		return err
 	}
 
 	// Override with config values if not set
-	if util.IsEmpty(appname) {
+	if dhutil.IsEmpty(appname) {
 		appname = cfg.Application
 	}
-	if util.IsEmpty(appversion) {
+	if dhutil.IsEmpty(appversion) {
 		appversion = cfg.ApplicationVersion
 	}
 
-	if util.IsEmpty(deploydata) {
+	if dhutil.IsEmpty(deploydata) {
 		return deployDirect(client)
 	}
 
@@ -62,15 +63,15 @@ func runDeploy(cmd *cobra.Command, args []string) error {
 }
 
 func deployDirect(client *deployhub.Client) error {
-	if util.IsEmpty(appname) {
+	if dhutil.IsEmpty(appname) {
 		return fmt.Errorf("appname is required")
 	}
 
 	var appList []map[string]interface{}
 
-	if util.IsNotEmpty(appname) {
+	if dhutil.IsNotEmpty(appname) {
 		// Parse appname;appversion format
-		if util.IsEmpty(appversion) && strings.Contains(appname, ";") {
+		if dhutil.IsEmpty(appversion) && strings.Contains(appname, ";") {
 			parts := strings.Split(appname, ";")
 			if len(parts) == 3 {
 				appname = parts[0] + ";" + parts[1]
@@ -79,7 +80,7 @@ func deployDirect(client *deployhub.Client) error {
 		}
 
 		appID, fullAppName, _ := client.GetApplication(appname, appversion, true)
-		if util.IsEmpty(deployenv) {
+		if dhutil.IsEmpty(deployenv) {
 			return fmt.Errorf("deployenv is required")
 		}
 
@@ -129,16 +130,16 @@ func deployFromData(client *deployhub.Client) error {
 		return err
 	}
 
-	var data types.DeployData
+	var data models.DeployData
 	if err := json.Unmarshal(content, &data); err != nil {
 		return err
 	}
 
 	// Handle namespace if provided
-	if util.IsNotEmpty(namespace) {
+	if dhutil.IsNotEmpty(namespace) {
 		// Get pods from cluster and extract image tags
-		output := util.RunCmd("kubectl get pods -A -o json")
-		if util.IsNotEmpty(output) {
+		output := dhutil.RunCmd("kubectl get pods -A -o json")
+		if dhutil.IsNotEmpty(output) {
 			var clusterJSON map[string]interface{}
 			if err := json.Unmarshal([]byte(output), &clusterJSON); err == nil {
 				if items, ok := clusterJSON["items"].([]interface{}); ok {
@@ -167,24 +168,24 @@ func deployFromData(client *deployhub.Client) error {
 	}
 
 	// Update data from flags
-	if util.IsEmpty(appname) {
+	if dhutil.IsEmpty(appname) {
 		appname = data.Application
 	} else {
 		data.Application = appname
 	}
 
-	if util.IsEmpty(appversion) {
+	if dhutil.IsEmpty(appversion) {
 		appversion = data.AppVersion
 	} else {
 		data.AppVersion = appversion
 	}
 
 	// Clean and process app version
-	appversion = util.CleanName(appversion)
+	appversion = dhutil.CleanName(appversion)
 	data.AppVersion = appversion
 
 	fullAppName := appname
-	if util.IsNotEmpty(appversion) {
+	if dhutil.IsNotEmpty(appversion) {
 		fullAppName = fullAppName + ";" + appversion
 	}
 
@@ -194,7 +195,7 @@ func deployFromData(client *deployhub.Client) error {
 	data.AppVersion = "" // Remove appversion from data
 
 	// Set environment
-	if util.IsEmpty(deployenv) {
+	if dhutil.IsEmpty(deployenv) {
 		deployenv = data.Environment
 	} else {
 		data.Environment = deployenv

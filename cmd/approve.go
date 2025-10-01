@@ -1,11 +1,12 @@
+// Package cmd provides command-line interface commands for the DeployHub CLI application.
 package cmd
 
 import (
 	"fmt"
 	"strings"
 
-	"github.com/ortelius/dh-cli/internal/config"
-	"github.com/ortelius/dh-cli/internal/util"
+	"github.com/ortelius/ortelius-cli/internal/config"
+	"github.com/ortelius/ortelius-cli/internal/dhutil"
 	"github.com/spf13/cobra"
 )
 
@@ -19,22 +20,22 @@ var approveCmd = &cobra.Command{
 func init() {
 	approveCmd.Flags().StringVar(&appname, "appname", "", "Application Name")
 	approveCmd.Flags().StringVar(&appversion, "appversion", "", "Application Version")
-	
+
 	RootCmd.AddCommand(approveCmd)
 }
 
-func runApprove(cmd *cobra.Command, args []string) error {
+func runApprove(_ *cobra.Command, _ []string) error {
 	_, client, err := config.GetConfigAndInit()
 	if err != nil {
 		return err
 	}
 
-	if util.IsEmpty(appname) {
+	if dhutil.IsEmpty(appname) {
 		return fmt.Errorf("appname is required")
 	}
 
 	// Parse appname;appversion format
-	if util.IsEmpty(appversion) && strings.Contains(appname, ";") {
+	if dhutil.IsEmpty(appversion) && strings.Contains(appname, ";") {
 		parts := strings.Split(appname, ";")
 		if len(parts) == 3 {
 			appname = parts[0] + ";" + parts[1]

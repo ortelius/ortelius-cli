@@ -1,4 +1,5 @@
-package types
+// Package models provides common data structures used throughout the DeployHub CLI application.
+package models
 
 // ComponentConfig represents the component configuration structure
 type ComponentConfig struct {

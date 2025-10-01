@@ -1,11 +1,12 @@
-package util
+// Package dhutil provides utility functions for import/export operations in the DeployHub CLI.
+package dhutil
 
 import (
 	"encoding/json"
 	"fmt"
 	"strings"
 
-	"github.com/ortelius/dh-cli/pkg/deployhub"
+	"github.com/ortelius/ortelius-cli/pkg/deployhub"
 )
 
 // FilterDict filters objects by domain for export

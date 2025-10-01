@@ -78,7 +78,7 @@ func cleanName(name string) string {
 }
 
 // SSLCerts handles custom SSL certificates
-func (c *Client) SSLCerts(customCert string) error {
+func (c *Client) SSLCerts() error {
 	// Test SSL connection first
 	resp, err := c.HTTPClient.Get(c.BaseURL)
 	if err != nil {
@@ -281,11 +281,12 @@ func (c *Client) GetComponent(compName, compVariant, compVersion string, idOnly,
 		}
 	}
 
-	if compVariant != "" && compVersion != "" {
+	switch {
+	case compVariant != "" && compVersion != "":
 		checkCompName = fmt.Sprintf("%s;%s;%s", shortCompName, compVariant, compVersion)
-	} else if compVariant != "" {
+	case compVariant != "":
 		checkCompName = fmt.Sprintf("%s;%s", shortCompName, compVariant)
-	} else {
+	default:
 		checkCompName = shortCompName
 	}
 
@@ -371,7 +372,6 @@ func (c *Client) GetApplication(appName, appVersion string, idOnly bool) (int, s
 	}
 	if strings.ToLower(appVersion) == "latest" {
 		params += "&latest=Y"
-		appVersion = ""
 	}
 
 	endpoint := fmt.Sprintf("/dmadminweb/API/application/?name=%s%s",
@@ -495,19 +495,13 @@ func (c *Client) NewComponentVersion(compName, compVariant, compVersion, kind st
 		}
 	}
 
-	if compVariant != "" && compVersion != "" {
+	switch {
+	case compVariant != "" && compVersion != "":
 		checkCompName = fmt.Sprintf("%s;%s;%s", shortCompName, compVariant, compVersion)
-	} else if compVariant != "" {
+	case compVariant != "":
 		checkCompName = fmt.Sprintf("%s;%s", shortCompName, compVariant)
-	} else {
+	default:
 		checkCompName = shortCompName
-	}
-
-	if compVariant == "" {
-		compVariant = ""
-	}
-	if compVersion == "" {
-		compVersion = ""
 	}
 
 	// Create base component variant if one is not found
@@ -545,15 +539,16 @@ func (c *Client) NewComponentVersion(compName, compVariant, compVersion, kind st
 		verSchema := ""
 		gitCommit := ""
 
-		if strings.Contains(latestCompVersion, "-g") {
+		switch {
+		case strings.Contains(latestCompVersion, "-g"):
 			schemaParts := strings.Split(latestCompVersion, "-g")
 			verSchema = schemaParts[0]
 			gitCommit = schemaParts[1]
-		} else if strings.Contains(latestCompVersion, "_g") {
+		case strings.Contains(latestCompVersion, "_g"):
 			schemaParts := strings.Split(latestCompVersion, "_g")
 			verSchema = schemaParts[0]
 			gitCommit = schemaParts[1]
-		} else {
+		default:
 			verSchema = latestCompVersion
 		}
 
@@ -758,11 +753,12 @@ func (c *Client) UpdateName(compName, compVariant, compVersion string, compID in
 	}
 
 	var newName string
-	if compVariant != "" && compVersion != "" {
+	switch {
+	case compVariant != "" && compVersion != "":
 		newName = fmt.Sprintf("%s;%s;%s", compName, compVariant, compVersion)
-	} else if compVariant != "" {
+	case compVariant != "":
 		newName = fmt.Sprintf("%s;%s", compName, compVariant)
-	} else {
+	default:
 		newName = compName
 	}
 
@@ -867,7 +863,6 @@ func (c *Client) ImportCluster(domain, appName, appVersion string, appAutoInc bo
 		return
 	}
 
-	var branchContainers []ClusterContainer
 	masterContainers := make(map[string]ClusterContainer)
 	var deployedMS ClusterContainer
 
@@ -962,8 +957,6 @@ func (c *Client) ImportCluster(domain, appName, appVersion string, appAutoInc bo
 				if existing, exists := masterContainers[shortMSName]; !exists || existing.DeployTime <= deployTime {
 					masterContainers[shortMSName] = containerInfo
 				}
-			} else if msBranch != "" && branch == msBranch {
-				branchContainers = append(branchContainers, containerInfo)
 			}
 		}
 	}
@@ -1329,7 +1322,6 @@ func (c *Client) ApproveApplication(appName, appVersion string) (int, string) {
 func (c *Client) GetAttrs(app, comp, env, srv string) map[string]interface{} {
 	envID := "-1"
 	appID := "-1"
-	srvID := "-1"
 	compID := "-1"
 	var servers []interface{}
 	var envAttrs, srvAttrs, appAttrs, compAttrs []interface{}
@@ -1362,7 +1354,7 @@ func (c *Client) GetAttrs(app, comp, env, srv string) map[string]interface{} {
 		if srvMap, ok := server.(map[string]interface{}); ok {
 			if name, ok := srvMap["name"].(string); ok && name == srv {
 				if id, ok := srvMap["id"].(float64); ok {
-					srvID = strconv.Itoa(int(id))
+					srvID := strconv.Itoa(int(id))
 					srvAttrEndpoint := fmt.Sprintf("/dmadminweb/API/getvar/server/%s", srvID)
 					srvAttrData, err := c.getJSON(srvAttrEndpoint)
 					if err == nil && srvAttrData != nil {
@@ -1717,7 +1709,7 @@ type DeploymentLog struct {
 // AddCompVerToAppVer adds component version to application version
 func (c *Client) AddCompVerToAppVer(appID, compID int) {
 	replaceCompID := -1
-	baseCompID := c.GetBaseComponent(compID, true)
+	baseCompID := c.GetBaseComponent(compID)
 	lastCompID := 0
 	xpos := 100
 	ypos := 100
@@ -1738,7 +1730,7 @@ func (c *Client) AddCompVerToAppVer(appID, compID int) {
 				for _, comp := range components {
 					if compMap, ok := comp.(map[string]interface{}); ok {
 						if id, ok := compMap["id"].(float64); ok {
-							appBaseCompID := c.GetBaseComponent(int(id), true)
+							appBaseCompID := c.GetBaseComponent(int(id))
 							if appBaseCompID == baseCompID {
 								replaceCompID = int(id)
 							}
@@ -1767,7 +1759,7 @@ func (c *Client) AddCompVerToAppVer(appID, compID int) {
 }
 
 // GetBaseComponent gets the base component ID
-func (c *Client) GetBaseComponent(compID int, idOnly bool) int {
+func (c *Client) GetBaseComponent(compID int) int {
 	endpoint := fmt.Sprintf("/dmadminweb/API/basecomponent/%d", compID)
 	data, err := c.getJSON(endpoint)
 	if err != nil {
@@ -1845,7 +1837,7 @@ func (c *Client) LogDeployApplication(deployData map[string]interface{}) map[str
 }
 
 // SetKVConfig updates component attributes from configuration files
-func (c *Client) SetKVConfig(kvConfig, appName, appVersion string, appAutoInc bool, compName, compVariant, compVersion string, compAutoInc bool, kind, env, crDataSource string, crList []string) {
+func (c *Client) SetKVConfig(kvConfig, compName, compVariant, compVersion, crDataSource string, crList []string) {
 	if isEmpty(compVariant) {
 		compVariant = ""
 	}

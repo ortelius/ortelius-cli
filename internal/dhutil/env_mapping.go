@@ -1,4 +1,5 @@
-package util
+// Package dhutil provides utility functions for import/export operations in the DeployHub CLI.
+package dhutil
 
 import (
 	"fmt"
@@ -105,9 +106,9 @@ func assignMetaData(mapping map[string]string, setIfEmpty func(string, string), 
 
 	mapping["BuildDate"] = strings.Trim(mapping["BuildDate"], `"`)
 
-	githubUrl := mapping["GitServerUrl"] + "/" + mapping["GitRepo"] + "/actions/runs/" + mapping["BuildId"]
-	if strings.Contains(githubUrl, "github") {
-		setIfEmpty("BuildUrl", githubUrl)
+	githubURL := mapping["GitServerUrl"] + "/" + mapping["GitRepo"] + "/actions/runs/" + mapping["BuildId"]
+	if strings.Contains(githubURL, "github") {
+		setIfEmpty("BuildUrl", githubURL)
 	}
 
 	// Handle repo:tag format
@@ -165,7 +166,7 @@ func dockerTagToPurl(dockerTag string) string {
 
 	// Split the docker tag into registry, namespace/repository, and tag
 	if !strings.Contains(dockerTag, ":") {
-		dockerTag = dockerTag + ":latest"
+		dockerTag += ":latest"
 	}
 
 	parts := strings.Split(dockerTag, ":")

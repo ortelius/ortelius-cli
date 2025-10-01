@@ -1,3 +1,4 @@
+// Package cmd provides command-line interface commands for the DeployHub CLI application.
 package cmd
 
 import (
@@ -6,9 +7,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ortelius/dh-cli/internal/config"
-	"github.com/ortelius/dh-cli/internal/types"
-	"github.com/ortelius/dh-cli/internal/util"
+	"github.com/ortelius/ortelius-cli/internal/config"
+	"github.com/ortelius/ortelius-cli/internal/dhutil"
+	"github.com/ortelius/ortelius-cli/internal/models"
 	"github.com/spf13/cobra"
 )
 
@@ -33,25 +34,23 @@ func init() {
 	RootCmd.AddCommand(kvCmd)
 }
 
-func runKV(cmd *cobra.Command, args []string) error {
+func runKV(_ *cobra.Command, _ []string) error {
 	_, client, err := config.GetConfigAndInit()
 	if err != nil {
 		return err
 	}
 
-	var environment string
-
-	if util.IsEmpty(kvconfig) && util.IsEmpty(deploydata) {
+	if dhutil.IsEmpty(kvconfig) && dhutil.IsEmpty(deploydata) {
 		return fmt.Errorf("kvconfig or deploydata is required")
 	}
 
-	if util.IsNotEmpty(deploydata) {
+	if dhutil.IsNotEmpty(deploydata) {
 		content, err := os.ReadFile(deploydata)
 		if err != nil {
 			return err
 		}
 
-		var data types.DeployData
+		var data models.DeployData
 		if err := json.Unmarshal(content, &data); err != nil {
 			return err
 		}
@@ -61,16 +60,15 @@ func runKV(cmd *cobra.Command, args []string) error {
 		compname = data.ConfigComponent
 		compvariant = data.Environment
 		compversion = ""
-		environment = data.Environment
 
-		if util.IsEmpty(kvconfig) {
+		if dhutil.IsEmpty(kvconfig) {
 			kvconfig = data.KvConfig
 		}
 
 		fmt.Printf("Config for %s to %s\n", appname, compvariant)
 	}
 
-	if util.IsEmpty(compname) {
+	if dhutil.IsEmpty(compname) {
 		return fmt.Errorf("compname is required")
 	}
 
@@ -80,15 +78,11 @@ func runKV(cmd *cobra.Command, args []string) error {
 		compvariant = parts[len(parts)-1]
 	}
 
-	if util.IsEmpty(compautoinc) {
+	if dhutil.IsEmpty(compautoinc) {
 		compautoinc = "Y"
 	}
 
-	compAutoIncBool := strings.ToLower(compautoinc) == "y"
-	appAutoIncBool := strings.ToLower(appautoinc) == "y"
-
-	client.SetKVConfig(kvconfig, appname, appversion, appAutoIncBool,
-		compname, compvariant, compversion, compAutoIncBool, kind, environment, crdatasource, changerequest)
+	client.SetKVConfig(kvconfig, compname, compvariant, compversion, crdatasource, changerequest)
 
 	return nil
 }

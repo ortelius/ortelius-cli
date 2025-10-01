@@ -1,4 +1,5 @@
-package util
+// Package dhutil provides utility functions for import/export operations in the DeployHub CLI.
+package dhutil
 
 import (
 	"os"

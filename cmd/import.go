@@ -1,3 +1,4 @@
+// Package cmd provides command-line interface commands for the DeployHub CLI application.
 package cmd
 
 import (
@@ -6,8 +7,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ortelius/dh-cli/internal/config"
-	"github.com/ortelius/dh-cli/internal/util"
+	"github.com/ortelius/ortelius-cli/internal/config"
+	"github.com/ortelius/ortelius-cli/internal/dhutil"
 	"github.com/spf13/cobra"
 )
 
@@ -27,23 +28,23 @@ func init() {
 	importCmd.Flags().StringVar(&fromdom, "fromdom", "", "From Domain")
 	importCmd.Flags().StringVar(&todom, "todom", "", "To Domain")
 	importCmd.Flags().StringVar(&importfile, "importfile", "", "File to Import")
-	
+
 	RootCmd.AddCommand(importCmd)
 }
 
-func runImport(cmd *cobra.Command, args []string) error {
+func runImport(_ *cobra.Command, _ []string) error {
 	_, client, err := config.GetConfigAndInit()
 	if err != nil {
 		return err
 	}
 
-	if util.IsEmpty(fromdom) {
+	if dhutil.IsEmpty(fromdom) {
 		return fmt.Errorf("fromdom is required")
 	}
-	if util.IsEmpty(todom) {
+	if dhutil.IsEmpty(todom) {
 		return fmt.Errorf("todom is required")
 	}
-	if util.IsEmpty(importfile) {
+	if dhutil.IsEmpty(importfile) {
 		return fmt.Errorf("importfile is required")
 	}
 
@@ -64,7 +65,7 @@ func runImport(cmd *cobra.Command, args []string) error {
 		"datasources", "tasks", "engines", "repositories", "environments", "components", "applications", "releases"}
 
 	for _, objType := range objectTypes {
-		util.ImportDict(client, objType, allObjs)
+		dhutil.ImportDict(client, objType, allObjs)
 	}
 
 	return nil

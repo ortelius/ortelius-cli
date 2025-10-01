@@ -1,11 +1,12 @@
+// Package cmd provides command-line interface commands for the DeployHub CLI application.
 package cmd
 
 import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/ortelius/dh-cli/internal/config"
-	"github.com/ortelius/dh-cli/internal/util"
+	"github.com/ortelius/ortelius-cli/internal/config"
+	"github.com/ortelius/ortelius-cli/internal/dhutil"
 	"github.com/spf13/cobra"
 )
 
@@ -20,17 +21,17 @@ var exportCmd = &cobra.Command{
 
 func init() {
 	exportCmd.Flags().StringVar(&fromdom, "fromdom", "", "From Domain")
-	
+
 	RootCmd.AddCommand(exportCmd)
 }
 
-func runExport(cmd *cobra.Command, args []string) error {
+func runExport(_ *cobra.Command, _ []string) error {
 	_, client, err := config.GetConfigAndInit()
 	if err != nil {
 		return err
 	}
 
-	if util.IsEmpty(fromdom) {
+	if dhutil.IsEmpty(fromdom) {
 		return fmt.Errorf("fromdom is required")
 	}
 
@@ -40,7 +41,7 @@ func runExport(cmd *cobra.Command, args []string) error {
 		"datasources", "tasks", "engines", "repositories", "environments", "components", "applications", "releases"}
 
 	for _, objType := range objectTypes {
-		util.FilterDict(client, objType, fromdom, allObjs)
+		dhutil.FilterDict(client, objType, fromdom, allObjs)
 	}
 
 	jsonStr, err := json.MarshalIndent(allObjs, "", "  ")
