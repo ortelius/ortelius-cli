@@ -1,4 +1,5 @@
 // Package util provides utility functions for import/export operations in the Ortelius CLI.
+//revive:disable:package-comments
 package util
 
 import (

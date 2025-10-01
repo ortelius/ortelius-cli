@@ -13,8 +13,8 @@ import (
 var Version = "dev"
 
 var (
-	orteliusUrl  string
-	dhUrl        string // Legacy flag for backward compatibility
+	orteliusURL  string
+	dhURL        string // Legacy flag for backward compatibility
 	orteliusUser string
 	dhUser       string // Legacy flag for backward compatibility
 	orteliusPass string
@@ -59,12 +59,12 @@ func Execute() {
 
 func init() {
 	// Global flags
-	RootCmd.PersistentFlags().StringVar(&orteliusUrl, "orteliusurl", "", "Ortelius URL")
-	RootCmd.PersistentFlags().StringVar(&dhUrl, "dhurl", "", "Ortelius URL (deprecated, use --orteliusurl)")
-	RootCmd.PersistentFlags().StringVar(&orteliusUser, "orteliususer", "", "Ortelius User")
-	RootCmd.PersistentFlags().StringVar(&dhUser, "dhuser", "", "Ortelius User (deprecated, use --orteliususer)")
-	RootCmd.PersistentFlags().StringVar(&orteliusPass, "orteliuspass", "", "Ortelius Password")
-	RootCmd.PersistentFlags().StringVar(&dhPass, "dhpass", "", "Ortelius Password (deprecated, use --orteliuspass)")
+	RootCmd.PersistentFlags().StringVar(&orteliusURL, "ortelius-url", "", "Ortelius URL")
+	RootCmd.PersistentFlags().StringVar(&dhURL, "dhurl", "", "Ortelius URL (deprecated, use --ortelius-url)")
+	RootCmd.PersistentFlags().StringVar(&orteliusUser, "ortelius-user", "", "Ortelius User")
+	RootCmd.PersistentFlags().StringVar(&dhUser, "dhuser", "", "Ortelius User (deprecated, use --ortelius-user)")
+	RootCmd.PersistentFlags().StringVar(&orteliusPass, "ortelius-pass", "", "Ortelius Password")
+	RootCmd.PersistentFlags().StringVar(&dhPass, "dhpass", "", "Ortelius Password (deprecated, use --ortelius-pass)")
 	RootCmd.PersistentFlags().StringVar(&rsp, "rsp", "component.toml", "Response File for Parameters")
 
 	// Bind environment variables
@@ -79,9 +79,9 @@ func init() {
 // GetGlobalFlags returns the global flag values for use by other packages
 func GetGlobalFlags() (string, string, string, string) {
 	// Implement fallback logic: use ortelius* flags if set, otherwise fall back to dh* flags
-	url := orteliusUrl
+	url := orteliusURL
 	if url == "" {
-		url = dhUrl
+		url = dhURL
 	}
 
 	user := orteliusUser

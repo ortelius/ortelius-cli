@@ -28,8 +28,8 @@ func init() {
 }
 
 func runEnvScript(_ *cobra.Command, _ []string) error {
-	orteliusUrl, orteliusUser, orteliusPass, rsp := GetGlobalFlags()
-	_ = orteliusUrl
+	orteliusURL, orteliusUser, orteliusPass, rsp := GetGlobalFlags()
+	_ = orteliusURL
 	_ = orteliusUser
 	_ = orteliusPass
 

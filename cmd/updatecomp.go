@@ -4,14 +4,15 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
 
 	"github.com/ortelius/ortelius-cli/internal/config"
-	"github.com/ortelius/ortelius-cli/internal/util"
 	"github.com/ortelius/ortelius-cli/internal/models"
+	"github.com/ortelius/ortelius-cli/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -141,7 +142,9 @@ func runUpdateComp(_ *cobra.Command, _ []string) error {
 
 		if parentCompid < 0 {
 			fmt.Println("Creating Parent Component")
-			client.NewComponentVersion(compname, compvariant, "", kind, compAutoIncBool)
+			parentCompid = client.NewComponentVersion(compname, compvariant, "", kind, compAutoIncBool)
+			parentCompName := client.GetComponentName(parentCompid)
+			fmt.Printf("Creation Done: %s\n", parentCompName)
 		}
 
 		// Create component version
@@ -161,9 +164,7 @@ func runUpdateComp(_ *cobra.Command, _ []string) error {
 		attrs := make(map[string]string)
 
 		// Process config attributes
-		for k, v := range cfg.Attributes {
-			attrs[k] = v
-		}
+		maps.Copy(attrs, cfg.Attributes)
 
 		// Process command line attributes
 		for _, attr := range compattrs {

@@ -22,26 +22,26 @@ import (
 func GetConfigAndInit() (*models.ComponentConfig, *ortelius.Client, error) {
 	// Get values from viper (environment variables) and command flags
 	// Try ortelius* environment variables first, fall back to dh* for backward compatibility
-	orteliusUrl := viper.GetString("orteliusurl")
-	if orteliusUrl == "" {
-		orteliusUrl = viper.GetString("dhurl")
+	orteliusURL := viper.GetString("ortelius-url")
+	if orteliusURL == "" {
+		orteliusURL = viper.GetString("dhurl")
 	}
 
-	orteliusUser := viper.GetString("orteliususer")
+	orteliusUser := viper.GetString("ortelius-user")
 	if orteliusUser == "" {
 		orteliusUser = viper.GetString("dhuser")
 	}
 
-	orteliusPass := viper.GetString("orteliuspass")
+	orteliusPass := viper.GetString("ortelius-pass")
 	if orteliusPass == "" {
 		orteliusPass = viper.GetString("dhpass")
 	}
 
 	// Get global flags from root command
-	globalOrteliusUrl, globalOrteliusUser, globalOrteliusPass, rsp := getGlobalFlags()
+	globalOrteliusURL, globalOrteliusUser, globalOrteliusPass, rsp := getGlobalFlags()
 
-	if orteliusUrl == "" {
-		orteliusUrl = globalOrteliusUrl
+	if orteliusURL == "" {
+		orteliusURL = globalOrteliusURL
 	}
 	if orteliusUser == "" {
 		orteliusUser = globalOrteliusUser
@@ -51,10 +51,10 @@ func GetConfigAndInit() (*models.ComponentConfig, *ortelius.Client, error) {
 	}
 
 	// Initialize client
-	client := ortelius.NewClient(orteliusUrl)
+	client := ortelius.NewClient(orteliusURL)
 
 	// Login
-	if util.IsEmpty(orteliusUrl) || util.IsEmpty(orteliusUser) || util.IsEmpty(orteliusPass) {
+	if util.IsEmpty(orteliusURL) || util.IsEmpty(orteliusUser) || util.IsEmpty(orteliusPass) {
 		return nil, nil, fmt.Errorf("dhurl, dhuser, and dhpass are required")
 	}
 
