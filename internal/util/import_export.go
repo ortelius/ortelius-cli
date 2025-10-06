@@ -12,7 +12,7 @@ import (
 )
 
 // FilterDict filters objects by domain for export
-func FilterDict(client *ortelius.Client, objType, fromDom string, allObjs map[string]interface{}) {
+func FilterDict(client *ortelius.Client, objType, fromDom string, allObjs map[string]any) {
 	endpoint := fmt.Sprintf("/dmadminweb/API/export/%s", objType)
 	data, err := client.GetJSON(endpoint)
 	if err != nil {
@@ -22,7 +22,7 @@ func FilterDict(client *ortelius.Client, objType, fromDom string, allObjs map[st
 	var objList []interface{}
 	if objects, ok := data[objType].([]interface{}); ok {
 		for _, obj := range objects {
-			if objMap, ok := obj.(map[string]interface{}); ok {
+			if objMap, ok := obj.(map[string]any); ok {
 				if objName, ok := objMap["objname"].(string); ok {
 					if strings.Contains(strings.ToLower(objName), strings.ToLower(fromDom)) {
 						objList = append(objList, obj)
@@ -36,7 +36,7 @@ func FilterDict(client *ortelius.Client, objType, fromDom string, allObjs map[st
 }
 
 // ImportDict imports objects from export data
-func ImportDict(client *ortelius.Client, objType string, allObjs map[string]interface{}) {
+func ImportDict(client *ortelius.Client, objType string, allObjs map[string]any) {
 	fmt.Println(objType)
 
 	if objects, ok := allObjs[objType].([]interface{}); ok {

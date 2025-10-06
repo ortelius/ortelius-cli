@@ -80,7 +80,7 @@ func ExtractChartVersion(chartPath string) string {
 		return ""
 	}
 
-	var chart map[string]interface{}
+	var chart map[string]any
 	if err := yaml.Unmarshal(content, &chart); err != nil {
 		return ""
 	}

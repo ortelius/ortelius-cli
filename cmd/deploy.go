@@ -67,7 +67,7 @@ func deployDirect(client *ortelius.Client) error {
 		return fmt.Errorf("appname is required")
 	}
 
-	var appList []map[string]interface{}
+	var appList []map[string]any
 
 	if util.IsNotEmpty(appname) {
 		// Parse appname;appversion format
@@ -84,7 +84,7 @@ func deployDirect(client *ortelius.Client) error {
 			return fmt.Errorf("deployenv is required")
 		}
 
-		appList = append(appList, map[string]interface{}{
+		appList = append(appList, map[string]any{
 			"appid":     appID,
 			"appname":   fullAppName,
 			"deployenv": deployenv,
@@ -140,17 +140,17 @@ func deployFromData(client *ortelius.Client) error {
 		// Get pods from cluster and extract image tags
 		output := util.RunCmd("kubectl get pods -A -o json")
 		if util.IsNotEmpty(output) {
-			var clusterJSON map[string]interface{}
+			var clusterJSON map[string]any
 			if err := json.Unmarshal([]byte(output), &clusterJSON); err == nil {
 				if items, ok := clusterJSON["items"].([]interface{}); ok {
 					for _, item := range items {
-						if itemMap, ok := item.(map[string]interface{}); ok {
-							if metadata, ok := itemMap["metadata"].(map[string]interface{}); ok {
+						if itemMap, ok := item.(map[string]any); ok {
+							if metadata, ok := itemMap["metadata"].(map[string]any); ok {
 								if itemNamespace, ok := metadata["namespace"].(string); ok && itemNamespace == namespace {
-									if spec, ok := itemMap["spec"].(map[string]interface{}); ok {
+									if spec, ok := itemMap["spec"].(map[string]any); ok {
 										if containers, ok := spec["containers"].([]interface{}); ok {
 											for _, container := range containers {
-												if containerMap, ok := container.(map[string]interface{}); ok {
+												if containerMap, ok := container.(map[string]any); ok {
 													if image, ok := containerMap["image"].(string); ok {
 														data.ImageTags = append(data.ImageTags, image)
 													}
@@ -216,7 +216,7 @@ func deployFromData(client *ortelius.Client) error {
 	}
 
 	// Log deployment
-	deployResult := client.LogDeployApplication(map[string]interface{}{
+	deployResult := client.LogDeployApplication(map[string]any{
 		"application": data.Application,
 		"environment": data.Environment,
 		"rc":          data.RC,

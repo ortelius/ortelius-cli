@@ -35,7 +35,7 @@ func runExport(_ *cobra.Command, _ []string) error {
 		return fmt.Errorf("fromdom is required")
 	}
 
-	allObjs := make(map[string]interface{})
+	allObjs := make(map[string]any)
 
 	objectTypes := []string{"users", "groups", "comptypes", "credentials", "endpoints",
 		"datasources", "tasks", "engines", "repositories", "environments", "components", "applications", "releases"}
