@@ -56,7 +56,7 @@ func runImport(_ *cobra.Command, _ []string) error {
 	// Replace fromdom with todom in content
 	updatedContent := strings.ReplaceAll(string(content), fromdom, todom)
 
-	var allObjs map[string]interface{}
+	var allObjs map[string]any
 	if err := json.Unmarshal([]byte(updatedContent), &allObjs); err != nil {
 		return err
 	}

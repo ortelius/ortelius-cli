@@ -248,7 +248,7 @@ func runUpdateComp(_ *cobra.Command, _ []string) error {
 		}
 
 		// Handle dependency packages
-		var glic map[string]interface{}
+		var glic map[string]any
 		for _, filename := range deppkgs {
 			if strings.HasPrefix(filename, "gradlelicense@") {
 				actualFile := strings.TrimPrefix(filename, "gradlelicense@")
@@ -287,10 +287,10 @@ func runUpdateComp(_ *cobra.Command, _ []string) error {
 			parentCompID, _ := client.GetComponent(compname, "", "", true, true)
 			if parentCompID > 0 {
 				compData := client.GetComponentFromID(parentCompID)
-				if result, ok := compData["result"].(map[string]interface{}); ok {
+				if result, ok := compData["result"].(map[string]any); ok {
 					if apps, ok := result["applications"].([]interface{}); ok {
 						for _, app := range apps {
-							if appMap, ok := app.(map[string]interface{}); ok {
+							if appMap, ok := app.(map[string]any); ok {
 								domain := appMap["domain"].(string)
 								name := appMap["name"].(string)
 								appID := int(appMap["id"].(float64))

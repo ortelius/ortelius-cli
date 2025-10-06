@@ -58,7 +58,7 @@ func isNotEmpty(s interface{}) bool {
 		return len(strings.TrimSpace(v)) > 0
 	case int:
 		return true
-	case map[string]interface{}:
+	case map[string]any:
 		return true
 	default:
 		return false
@@ -91,7 +91,7 @@ func (c *Client) Login(user, password string) error {
 		return fmt.Errorf("login failed with status: %d", resp.StatusCode)
 	}
 
-	var result map[string]interface{}
+	var result map[string]any
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return fmt.Errorf("failed to decode login response: %w", err)
 	}
@@ -108,7 +108,7 @@ func (c *Client) Login(user, password string) error {
 }
 
 // getJSON performs a GET request and returns JSON response
-func (c *Client) getJSON(endpoint string) (map[string]interface{}, error) {
+func (c *Client) getJSON(endpoint string) (map[string]any, error) {
 	req, err := http.NewRequest("GET", c.BaseURL+endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -129,7 +129,7 @@ func (c *Client) getJSON(endpoint string) (map[string]interface{}, error) {
 		return nil, fmt.Errorf("request failed with status: %d", resp.StatusCode)
 	}
 
-	var result map[string]interface{}
+	var result map[string]any
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, err
 	}
@@ -138,7 +138,7 @@ func (c *Client) getJSON(endpoint string) (map[string]interface{}, error) {
 }
 
 // postJSON performs a POST request with JSON payload
-func (c *Client) postJSON(endpoint string, payload interface{}) (map[string]interface{}, error) {
+func (c *Client) postJSON(endpoint string, payload interface{}) (map[string]any, error) {
 	var body io.Reader
 
 	switch v := payload.(type) {
@@ -185,10 +185,10 @@ func (c *Client) postJSON(endpoint string, payload interface{}) (map[string]inte
 		return nil, fmt.Errorf("request failed with status: %d", resp.StatusCode)
 	}
 
-	var result map[string]interface{}
+	var result map[string]any
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		// Return empty map if JSON decode fails (like Python version)
-		return make(map[string]interface{}), nil
+		return make(map[string]any), nil
 	}
 
 	return result, nil
@@ -288,14 +288,14 @@ func (c *Client) GetComponent(compName, compVariant, compVersion string, idOnly,
 		return -1, ""
 	}
 
-	result, _ := data["result"].(map[string]interface{})
+	result, _ := data["result"].(map[string]any)
 	compID, _ := result["id"].(float64)
 	name, _ := result["name"].(string)
 
 	if name != checkCompName {
 		if versions, ok := result["versions"].([]interface{}); ok {
 			for _, ver := range versions {
-				if version, ok := ver.(map[string]interface{}); ok {
+				if version, ok := ver.(map[string]any); ok {
 					if verName, _ := version["name"].(string); verName == checkCompName {
 						if verID, ok := version["id"].(float64); ok {
 							return int(verID), verName
@@ -323,7 +323,7 @@ func (c *Client) GetEnvironment(env string) (int, string) {
 		return -1, ""
 	}
 
-	result, _ := data["result"].(map[string]interface{})
+	result, _ := data["result"].(map[string]any)
 	envID, _ := result["id"].(float64)
 	name, _ := result["name"].(string)
 
@@ -364,13 +364,13 @@ func (c *Client) GetApplication(appName, appVersion string, idOnly bool) (int, s
 		return -1, "", -1
 	}
 
-	result, _ := data["result"].(map[string]interface{})
+	result, _ := data["result"].(map[string]any)
 	appID, _ := result["id"].(float64)
 	name, _ := result["name"].(string)
 
 	latest := int(appID)
 	if versions, ok := result["versions"].([]interface{}); ok && len(versions) > 0 {
-		if lastVer, ok := versions[len(versions)-1].(map[string]interface{}); ok {
+		if lastVer, ok := versions[len(versions)-1].(map[string]any); ok {
 			if latestID, ok := lastVer["id"].(float64); ok {
 				latest = int(latestID)
 			}
@@ -381,16 +381,16 @@ func (c *Client) GetApplication(appName, appVersion string, idOnly bool) (int, s
 }
 
 // IsDeploymentDone checks if deployment is complete
-func (c *Client) IsDeploymentDone(deploymentID int) (bool, map[string]interface{}) {
+func (c *Client) IsDeploymentDone(deploymentID int) (bool, map[string]any) {
 	endpoint := fmt.Sprintf("/dmadminweb/API/log/%d?checkcomplete=Y", deploymentID)
 
 	data, err := c.getJSON(endpoint)
 	if err != nil {
-		return false, map[string]interface{}{"msg": fmt.Sprintf("Could not get log #%d", deploymentID)}
+		return false, map[string]any{"msg": fmt.Sprintf("Could not get log #%d", deploymentID)}
 	}
 
 	if text, ok := data["text"]; ok && text != nil {
-		return false, map[string]interface{}{"msg": fmt.Sprintf("Could not get log #%d", deploymentID)}
+		return false, map[string]any{"msg": fmt.Sprintf("Could not get log #%d", deploymentID)}
 	}
 
 	return true, data
@@ -439,7 +439,7 @@ func (c *Client) GetLogs(deployID int) (bool, string) {
 func (c *Client) NewComponentVersion(compName, compVariant, compVersion, kind string, compAutoInc bool) int {
 	compVariant = cleanName(compVariant)
 	compVersion = cleanName(compVersion)
-	var componentItems []map[string]interface{}
+	var componentItems []map[string]any
 
 	if compVariant == "" && compVersion != "" {
 		compVariant = compVersion
@@ -592,7 +592,7 @@ func (c *Client) NewDockerComponent(compName, compVariant, compVersion string, p
 		return -1
 	}
 
-	if result, ok := data["result"].(map[string]interface{}); ok {
+	if result, ok := data["result"].(map[string]any); ok {
 		if id, ok := result["id"].(float64); ok {
 			compID = int(id)
 		}
@@ -607,7 +607,7 @@ func (c *Client) NewDockerComponent(compName, compVariant, compVersion string, p
 }
 
 // NewFileComponent creates a new file component
-func (c *Client) NewFileComponent(compName, compVariant, compVersion string, parentCompID int, componentItems []map[string]interface{}) int {
+func (c *Client) NewFileComponent(compName, compVariant, compVersion string, parentCompID int, componentItems []map[string]any) int {
 	compVariant = cleanName(compVariant)
 	compVersion = cleanName(compVersion)
 
@@ -635,7 +635,7 @@ func (c *Client) NewFileComponent(compName, compVariant, compVersion string, par
 		return -1
 	}
 
-	if result, ok := data["result"].(map[string]interface{}); ok {
+	if result, ok := data["result"].(map[string]any); ok {
 		if id, ok := result["id"].(float64); ok {
 			compID = int(id)
 		}
@@ -650,8 +650,8 @@ func (c *Client) NewFileComponent(compName, compVariant, compVersion string, par
 }
 
 // NewComponentItem creates a new component item
-func (c *Client) NewComponentItem(compID int, kind string, componentItems []map[string]interface{}) map[string]interface{} {
-	var data map[string]interface{}
+func (c *Client) NewComponentItem(compID int, kind string, componentItems []map[string]any) map[string]any {
+	var data map[string]any
 	var err error
 
 	if strings.ToLower(kind) == "docker" || componentItems == nil {
@@ -667,7 +667,7 @@ func (c *Client) NewComponentItem(compID int, kind string, componentItems []map[
 			ciName := ""
 
 			for _, entry := range item {
-				if entryMap, ok := entry.(map[string]interface{}); ok {
+				if entryMap, ok := entry.(map[string]any); ok {
 					if key, ok := entryMap["key"].(string); ok {
 						if value, ok := entryMap["value"].(string); ok {
 							if strings.ToLower(key) == "name" {
@@ -689,7 +689,7 @@ func (c *Client) NewComponentItem(compID int, kind string, componentItems []map[
 
 			data, err = c.getJSON(endpoint)
 			if err == nil {
-				if result, ok := data["result"].(map[string]interface{}); ok {
+				if result, ok := data["result"].(map[string]any); ok {
 					if workID, ok := result["id"].(float64); ok {
 						workIDInt := int(workID)
 						if parentItem > 0 {
@@ -707,13 +707,13 @@ func (c *Client) NewComponentItem(compID int, kind string, componentItems []map[
 	}
 
 	if err != nil {
-		return map[string]interface{}{"error": err.Error()}
+		return map[string]any{"error": err.Error()}
 	}
 	return data
 }
 
 // UpdateName updates the component name
-func (c *Client) UpdateName(compName, compVariant, compVersion string, compID int) map[string]interface{} {
+func (c *Client) UpdateName(compName, compVariant, compVersion string, compID int) map[string]any {
 	compVariant = cleanName(compVariant)
 	compVersion = cleanName(compVersion)
 
@@ -744,7 +744,7 @@ func (c *Client) UpdateName(compName, compVariant, compVersion string, compID in
 
 	data, err := c.getJSON(endpoint)
 	if err != nil {
-		return map[string]interface{}{"error": err.Error()}
+		return map[string]any{"error": err.Error()}
 	}
 	return data
 }
@@ -830,7 +830,7 @@ func (c *Client) ImportCluster(domain, appName, appVersion string, appAutoInc bo
 	}
 	defer file.Close()
 
-	var values map[string]interface{}
+	var values map[string]any
 	if err := json.NewDecoder(file).Decode(&values); err != nil {
 		return
 	}
@@ -844,18 +844,18 @@ func (c *Client) ImportCluster(domain, appName, appVersion string, appAutoInc bo
 	var deployedMS ClusterContainer
 
 	for _, item := range items {
-		itemMap, ok := item.(map[string]interface{})
+		itemMap, ok := item.(map[string]any)
 		if !ok {
 			continue
 		}
 
-		metadata, ok := itemMap["metadata"].(map[string]interface{})
+		metadata, ok := itemMap["metadata"].(map[string]any)
 		if !ok {
 			continue
 		}
 
 		deployTime, _ := metadata["creationTimestamp"].(string)
-		labels, ok := metadata["labels"].(map[string]interface{})
+		labels, ok := metadata["labels"].(map[string]any)
 		if !ok {
 			continue
 		}
@@ -866,17 +866,17 @@ func (c *Client) ImportCluster(domain, appName, appVersion string, appAutoInc bo
 		}
 		msVersion, _ := labels["app.kubernetes.io/version"].(string)
 
-		spec, ok := itemMap["spec"].(map[string]interface{})
+		spec, ok := itemMap["spec"].(map[string]any)
 		if !ok {
 			continue
 		}
 
-		template, ok := spec["template"].(map[string]interface{})
+		template, ok := spec["template"].(map[string]any)
 		if !ok {
 			continue
 		}
 
-		templateSpec, ok := template["spec"].(map[string]interface{})
+		templateSpec, ok := template["spec"].(map[string]any)
 		if !ok {
 			continue
 		}
@@ -887,7 +887,7 @@ func (c *Client) ImportCluster(domain, appName, appVersion string, appAutoInc bo
 		}
 
 		for _, container := range containers {
-			containerMap, ok := container.(map[string]interface{})
+			containerMap, ok := container.(map[string]any)
 			if !ok {
 				continue
 			}
@@ -955,7 +955,7 @@ func (c *Client) ImportCluster(domain, appName, appVersion string, appAutoInc bo
 		}
 	}
 
-	var compIDList []map[string]interface{}
+	var compIDList []map[string]any
 	for _, item := range compList {
 		compID, _ := c.GetComponent(item.CompName, item.CompVariant, item.CompVersion, true, false)
 		if compID == -1 {
@@ -972,7 +972,7 @@ func (c *Client) ImportCluster(domain, appName, appVersion string, appAutoInc bo
 			fmt.Printf("%s;%s;%s\n", item.CompName, item.CompVariant, item.CompVersion)
 		}
 
-		compIDList = append(compIDList, map[string]interface{}{
+		compIDList = append(compIDList, map[string]any{
 			"compid": compID,
 			"name":   fmt.Sprintf("%s;%s;%s", item.CompName, item.CompVariant, item.CompVersion),
 		})
@@ -990,7 +990,7 @@ func (c *Client) ImportCluster(domain, appName, appVersion string, appAutoInc bo
 		appID := -1
 		if err == nil && data != nil {
 			if success, _ := data["success"].(bool); success {
-				if result, ok := data["result"].(map[string]interface{}); ok {
+				if result, ok := data["result"].(map[string]any); ok {
 					if id, ok := result["id"].(float64); ok {
 						appID = int(id)
 					}
@@ -1003,10 +1003,10 @@ func (c *Client) ImportCluster(domain, appName, appVersion string, appAutoInc bo
 			appEndpoint := fmt.Sprintf("/dmadminweb/API/application/%d", appID)
 			appData, err := c.getJSON(appEndpoint)
 			if err == nil && appData != nil {
-				if result, ok := appData["result"].(map[string]interface{}); ok {
+				if result, ok := appData["result"].(map[string]any); ok {
 					if comps, ok := result["components"].([]interface{}); ok {
 						for _, comp := range comps {
-							if compMap, ok := comp.(map[string]interface{}); ok {
+							if compMap, ok := comp.(map[string]any); ok {
 								if id, ok := compMap["id"].(float64); ok {
 									existingIDs = append(existingIDs, int(id))
 								}
@@ -1051,7 +1051,7 @@ func (c *Client) ImportCluster(domain, appName, appVersion string, appAutoInc bo
 		}
 
 		// Create deployment record
-		deployData := map[string]interface{}{
+		deployData := map[string]any{
 			"application": appID,
 			"environment": deployEnv,
 			"rc":          0,
@@ -1194,7 +1194,7 @@ func (c *Client) NewApplication(appName, appVersion string, appAutoInc bool, env
 			}
 		}
 
-		if result, ok := data["result"].(map[string]interface{}); ok {
+		if result, ok := data["result"].(map[string]any); ok {
 			if id, ok := result["id"].(float64); ok {
 				appID = int(id)
 			}
@@ -1228,7 +1228,7 @@ func (c *Client) MoveApplication(appName, appVersion, fromDomain, task string) (
 	domainEndpoint := fmt.Sprintf("/dmadminweb/API/domain/%s", url.QueryEscape(fromDomain))
 	data, err := c.getJSON(domainEndpoint)
 	if err == nil && data != nil {
-		if result, ok := data["result"].(map[string]interface{}); ok {
+		if result, ok := data["result"].(map[string]any); ok {
 			if id, ok := result["id"].(float64); ok {
 				fromID = strconv.Itoa(int(id))
 			}
@@ -1242,7 +1242,7 @@ func (c *Client) MoveApplication(appName, appVersion, fromDomain, task string) (
 	if err == nil && taskData != nil {
 		if tasks, ok := taskData["tasks"].([]interface{}); ok {
 			for _, t := range tasks {
-				if taskMap, ok := t.(map[string]interface{}); ok {
+				if taskMap, ok := t.(map[string]any); ok {
 					if name, ok := taskMap["name"].(string); ok && name == task {
 						if id, ok := taskMap["id"].(float64); ok {
 							taskID = strconv.Itoa(int(id))
@@ -1296,7 +1296,7 @@ func (c *Client) ApproveApplication(appName, appVersion string) (int, string) {
 }
 
 // GetAttrs gets attributes for deployment based on app, component, environment, and server
-func (c *Client) GetAttrs(app, comp, env, srv string) map[string]interface{} {
+func (c *Client) GetAttrs(app, comp, env, srv string) map[string]any {
 	envID := "-1"
 	appID := "-1"
 	compID := "-1"
@@ -1307,7 +1307,7 @@ func (c *Client) GetAttrs(app, comp, env, srv string) map[string]interface{} {
 	envEndpoint := fmt.Sprintf("/dmadminweb/API/environment/%s", url.QueryEscape(env))
 	data, err := c.getJSON(envEndpoint)
 	if err == nil && data != nil {
-		if result, ok := data["result"].(map[string]interface{}); ok {
+		if result, ok := data["result"].(map[string]any); ok {
 			if id, ok := result["id"].(float64); ok {
 				envID = strconv.Itoa(int(id))
 			}
@@ -1328,7 +1328,7 @@ func (c *Client) GetAttrs(app, comp, env, srv string) map[string]interface{} {
 
 	// Find server and get attributes
 	for _, server := range servers {
-		if srvMap, ok := server.(map[string]interface{}); ok {
+		if srvMap, ok := server.(map[string]any); ok {
 			if name, ok := srvMap["name"].(string); ok && name == srv {
 				if id, ok := srvMap["id"].(float64); ok {
 					srvID := strconv.Itoa(int(id))
@@ -1349,7 +1349,7 @@ func (c *Client) GetAttrs(app, comp, env, srv string) map[string]interface{} {
 	appEndpoint := fmt.Sprintf("/dmadminweb/API/application/?name=%s", url.QueryEscape(app))
 	appData, err := c.getJSON(appEndpoint)
 	if err == nil && appData != nil {
-		if result, ok := appData["result"].(map[string]interface{}); ok {
+		if result, ok := appData["result"].(map[string]any); ok {
 			if name, ok := result["name"].(string); ok && name == app {
 				if id, ok := result["id"].(float64); ok {
 					appID = strconv.Itoa(int(id))
@@ -1357,7 +1357,7 @@ func (c *Client) GetAttrs(app, comp, env, srv string) map[string]interface{} {
 			} else {
 				if versions, ok := result["versions"].([]interface{}); ok {
 					for _, ver := range versions {
-						if verMap, ok := ver.(map[string]interface{}); ok {
+						if verMap, ok := ver.(map[string]any); ok {
 							if name, ok := verMap["name"].(string); ok && name == app {
 								if id, ok := verMap["id"].(float64); ok {
 									appID = strconv.Itoa(int(id))
@@ -1384,7 +1384,7 @@ func (c *Client) GetAttrs(app, comp, env, srv string) map[string]interface{} {
 	compEndpoint := fmt.Sprintf("/dmadminweb/API/component/%s", comp)
 	compData, err := c.getJSON(compEndpoint)
 	if err == nil && compData != nil {
-		if result, ok := compData["result"].(map[string]interface{}); ok {
+		if result, ok := compData["result"].(map[string]any); ok {
 			if id, ok := result["id"].(float64); ok {
 				compID = strconv.Itoa(int(id))
 			}
@@ -1401,11 +1401,11 @@ func (c *Client) GetAttrs(app, comp, env, srv string) map[string]interface{} {
 	}
 
 	// Merge all attributes
-	result := make(map[string]interface{})
+	result := make(map[string]any)
 
 	for _, attrList := range [][]interface{}{envAttrs, srvAttrs, appAttrs, compAttrs} {
 		for _, entry := range attrList {
-			if entryMap, ok := entry.(map[string]interface{}); ok {
+			if entryMap, ok := entry.(map[string]any); ok {
 				for k, v := range entryMap {
 					result[k] = v
 				}
@@ -1417,22 +1417,22 @@ func (c *Client) GetAttrs(app, comp, env, srv string) map[string]interface{} {
 }
 
 // GetApplicationAttrs gets attributes for an application
-func (c *Client) GetApplicationAttrs(appID int) map[string]interface{} {
+func (c *Client) GetApplicationAttrs(appID int) map[string]any {
 	endpoint := fmt.Sprintf("/dmadminweb/API/getvar/application/%d", appID)
 	data, err := c.getJSON(endpoint)
 	if err != nil {
-		return map[string]interface{}{}
+		return map[string]any{}
 	}
 
-	if attributes, ok := data["attributes"].(map[string]interface{}); ok {
+	if attributes, ok := data["attributes"].(map[string]any); ok {
 		return attributes
 	}
 
-	return map[string]interface{}{}
+	return map[string]any{}
 }
 
 // FindDomain finds a domain by name
-func (c *Client) FindDomain(findName string) map[string]interface{} {
+func (c *Client) FindDomain(findName string) map[string]any {
 	data, err := c.getJSON("/dmadminweb/GetAllDomains")
 	if err != nil {
 		return nil
@@ -1440,7 +1440,7 @@ func (c *Client) FindDomain(findName string) map[string]interface{} {
 
 	if domains, ok := data["domains"].([]interface{}); ok {
 		for _, dom := range domains {
-			if domMap, ok := dom.(map[string]interface{}); ok {
+			if domMap, ok := dom.(map[string]any); ok {
 				if name, ok := domMap["name"].(string); ok {
 					parts := strings.Split(name, ".")
 					if len(parts) > 0 {
@@ -1471,7 +1471,7 @@ func (c *Client) GetComponentName(compID int) string {
 	}
 
 	if success, _ := data["success"].(bool); success {
-		if result, ok := data["result"].(map[string]interface{}); ok {
+		if result, ok := data["result"].(map[string]any); ok {
 			domain, _ := result["domain"].(string)
 			name, _ := result["name"].(string)
 			return domain + "." + name
@@ -1482,11 +1482,11 @@ func (c *Client) GetComponentName(compID int) string {
 }
 
 // GetComponentFromID gets component data by ID
-func (c *Client) GetComponentFromID(compID int) map[string]interface{} {
+func (c *Client) GetComponentFromID(compID int) map[string]any {
 	endpoint := fmt.Sprintf("/dmadminweb/API/component/%d", compID)
 	data, err := c.getJSON(endpoint)
 	if err != nil {
-		return map[string]interface{}{}
+		return map[string]any{}
 	}
 	return data
 }
@@ -1496,7 +1496,7 @@ func (c *Client) GetPreviousCommit(compName, compVariant string) string {
 	parentCompID, _ := c.GetComponent(compName, compVariant, "", true, true)
 	if parentCompID > 0 {
 		data := c.GetComponentFromID(parentCompID)
-		if result, ok := data["result"].(map[string]interface{}); ok {
+		if result, ok := data["result"].(map[string]any); ok {
 			if gitCommit, ok := result["gitcommit"].(string); ok {
 				return gitCommit
 			}
@@ -1514,7 +1514,7 @@ func (c *Client) GetApplicationName(appID int) string {
 	}
 
 	if success, _ := data["success"].(bool); success {
-		if result, ok := data["result"].(map[string]interface{}); ok {
+		if result, ok := data["result"].(map[string]any); ok {
 			domain, _ := result["domain"].(string)
 			name, _ := result["name"].(string)
 			return domain + "." + name
@@ -1565,7 +1565,7 @@ func (c *Client) AssignAppToEnv(appName string, envs []string) {
 }
 
 // CloneRepo clones a repository and reads features.toml
-func CloneRepo(project string) (map[string]interface{}, error) {
+func CloneRepo(project string) (map[string]any, error) {
 	fmt.Println("### Grabbing features.toml ###")
 
 	tempDir := os.TempDir() + "/deployhub_clone_" + strconv.FormatInt(time.Now().Unix(), 10)
@@ -1590,7 +1590,7 @@ func CloneRepo(project string) (map[string]interface{}, error) {
 		return nil, nil
 	}
 
-	var data map[string]interface{}
+	var data map[string]any
 	if _, err := toml.DecodeFile(featuresFile, &data); err != nil {
 		return nil, err
 	}
@@ -1621,7 +1621,7 @@ func GetScriptPath() (string, error) {
 }
 
 // UpdateEnvIDAttrs updates environment attributes
-func (c *Client) UpdateEnvIDAttrs(envID int, attrs map[string]interface{}) (bool, interface{}, string) {
+func (c *Client) UpdateEnvIDAttrs(envID int, attrs map[string]any) (bool, interface{}, string) {
 	endpoint := fmt.Sprintf("/dmadminweb/API/setvar/environment/%d", envID)
 	url := c.BaseURL + endpoint
 
@@ -1698,14 +1698,14 @@ func (c *Client) AddCompVerToAppVer(appID, compID int) {
 	}
 
 	if success, _ := data["success"].(bool); success {
-		if result, ok := data["result"].(map[string]interface{}); ok {
+		if result, ok := data["result"].(map[string]any); ok {
 			if components, ok := result["components"].([]interface{}); ok {
 				if lastComp, ok := result["lastcompver"].(float64); ok {
 					lastCompID = int(lastComp)
 				}
 
 				for _, comp := range components {
-					if compMap, ok := comp.(map[string]interface{}); ok {
+					if compMap, ok := comp.(map[string]any); ok {
 						if id, ok := compMap["id"].(float64); ok {
 							appBaseCompID := c.GetBaseComponent(int(id))
 							if appBaseCompID == baseCompID {
@@ -1743,7 +1743,7 @@ func (c *Client) GetBaseComponent(compID int) int {
 		return -1
 	}
 
-	if result, ok := data["result"].(map[string]interface{}); ok {
+	if result, ok := data["result"].(map[string]any); ok {
 		if id, ok := result["id"].(float64); ok {
 			return int(id)
 		}
@@ -1770,7 +1770,7 @@ func (c *Client) AssignCompToApp(appID, compID, parentCompID, xpos, ypos int) {
 }
 
 // LogDeployApplication logs a deployment
-func (c *Client) LogDeployApplication(deployData map[string]interface{}) map[string]interface{} {
+func (c *Client) LogDeployApplication(deployData map[string]any) map[string]any {
 	endpoint := "/dmadminweb/API/deploy"
 
 	compVersion, _ := deployData["compversion"].([]string)
@@ -1975,7 +1975,7 @@ func (c *Client) GetComponentAttrs(compID int) map[string]string {
 }
 
 // PostTextFile uploads a text file to a component
-func (c *Client) PostTextFile(compID int, filename, fileType string) map[string]interface{} {
+func (c *Client) PostTextFile(compID int, filename, fileType string) map[string]any {
 	var fileData []byte
 	var err error
 
@@ -1989,18 +1989,18 @@ func (c *Client) PostTextFile(compID int, filename, fileType string) map[string]
 			fileData, err = io.ReadAll(resp.Body)
 		} else {
 			fmt.Printf("WARNING: %s not found\n", filename)
-			return map[string]interface{}{}
+			return map[string]any{}
 		}
 	}
 
 	if err != nil || len(fileData) == 0 {
-		return map[string]interface{}{}
+		return map[string]any{}
 	}
 
 	encodedData := base64.StdEncoding.EncodeToString(fileData)
 	lines := strings.Split(encodedData, "\n")
 
-	payload := map[string]interface{}{
+	payload := map[string]any{
 		"compid":   compID,
 		"filetype": fileType,
 		"file":     lines,
@@ -2008,7 +2008,7 @@ func (c *Client) PostTextFile(compID int, filename, fileType string) map[string]
 
 	result, err := c.postJSON("/msapi/textfile", payload)
 	if err != nil {
-		return map[string]interface{}{
+		return map[string]any{
 			"message": fmt.Sprintf("Could not persist '%s' with compid: '%d'", filename, compID),
 		}
 	}
@@ -2017,7 +2017,7 @@ func (c *Client) PostTextFile(compID int, filename, fileType string) map[string]
 }
 
 // UpdateDepPkgs updates dependency packages
-func (c *Client) UpdateDepPkgs(compID int, filename string, glic map[string]interface{}) map[string]interface{} {
+func (c *Client) UpdateDepPkgs(compID int, filename string, glic map[string]any) map[string]any {
 	// Get SBOM type
 	sbomData, err := c.getJSON("/msapi/sbomtype")
 	var sbomType string
@@ -2029,7 +2029,7 @@ func (c *Client) UpdateDepPkgs(compID int, filename string, glic map[string]inte
 
 	parts := strings.Split(filename, "@")
 	if len(parts) != 2 {
-		return map[string]interface{}{"error": "Invalid filename format"}
+		return map[string]any{"error": "Invalid filename format"}
 	}
 
 	fileType := strings.ToLower(parts[0])
@@ -2037,23 +2037,23 @@ func (c *Client) UpdateDepPkgs(compID int, filename string, glic map[string]inte
 
 	file, err := os.Open(actualFilename)
 	if err != nil {
-		return map[string]interface{}{
+		return map[string]any{
 			"message": fmt.Sprintf("Could not open '%s' with compid: '%d'", actualFilename, compID),
 		}
 	}
 	defer file.Close()
 
-	var data map[string]interface{}
+	var data map[string]any
 	if err := json.NewDecoder(file).Decode(&data); err != nil {
-		return map[string]interface{}{
+		return map[string]any{
 			"message": fmt.Sprintf("Could not parse JSON in '%s'", actualFilename),
 		}
 	}
 
-	var result map[string]interface{}
+	var result map[string]any
 
 	if sbomType == "fullfile" {
-		postData := map[string]interface{}{
+		postData := map[string]any{
 			"_key":    strconv.Itoa(compID),
 			"content": data,
 		}
@@ -2066,7 +2066,7 @@ func (c *Client) UpdateDepPkgs(compID int, filename string, glic map[string]inte
 
 			if dependencies, ok := glic["dependencies"].([]interface{}); ok {
 				for _, dep := range dependencies {
-					if depMap, ok := dep.(map[string]interface{}); ok {
+					if depMap, ok := dep.(map[string]any); ok {
 						if moduleName, ok := depMap["moduleName"].(string); ok {
 							if moduleVersion, ok := depMap["moduleVersion"].(string); ok {
 								if moduleLicense, ok := depMap["moduleLicense"].(string); ok {
@@ -2084,11 +2084,11 @@ func (c *Client) UpdateDepPkgs(compID int, filename string, glic map[string]inte
 			if components, ok := data["components"].([]interface{}); ok {
 				var newData []interface{}
 				for _, comp := range components {
-					if compMap, ok := comp.(map[string]interface{}); ok {
+					if compMap, ok := comp.(map[string]any); ok {
 						if purl, ok := compMap["purl"].(string); ok {
 							if license, exists := glicHash[purl]; exists {
-								compMap["licenses"] = []map[string]interface{}{
-									{"license": map[string]interface{}{"name": license}},
+								compMap["licenses"] = []map[string]any{
+									{"license": map[string]any{"name": license}},
 								}
 							}
 						}
@@ -2104,8 +2104,8 @@ func (c *Client) UpdateDepPkgs(compID int, filename string, glic map[string]inte
 	}
 
 	if err != nil {
-		return map[string]interface{}{
-			"message": fmt.Sprintf("Could not persist '%s' with compid: '%d'", actualFilename, compID),
+		return map[string]any{
+			"message": "", // fmt.Sprintf("Could not persist '%s' with compid: '%d'", actualFilename, compID),
 		}
 	}
 
@@ -2113,11 +2113,11 @@ func (c *Client) UpdateDepPkgs(compID int, filename string, glic map[string]inte
 }
 
 // GetJSON provides public access to getJSON method
-func (c *Client) GetJSON(endpoint string) (map[string]interface{}, error) {
+func (c *Client) GetJSON(endpoint string) (map[string]any, error) {
 	return c.getJSON(endpoint)
 }
 
 // PostJSON provides public access to postJSON method
-func (c *Client) PostJSON(endpoint string, payload interface{}) (map[string]interface{}, error) {
+func (c *Client) PostJSON(endpoint string, payload interface{}) (map[string]any, error) {
 	return c.postJSON(endpoint, payload)
 }
