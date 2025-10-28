@@ -1,0 +1,64 @@
+# .github/workflows/build.yml
+name: Go Build
+
+# Trigger the workflow on pushes to the main branch
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  # Allow manual running of the workflow from the GitHub UI
+  workflow_dispatch:
+
+jobs:
+  build:
+    # Run the job on the latest version of Ubuntu
+    name: Build Go binaries
+    runs-on: ubuntu-latest
+
+    # Define all the combinations of operating systems & architectures
+    strategy:
+      matrix:
+        goos: [linux, darwin, windows]
+        goarch: [amd64, arm64]
+      fail-fast: false # Continue building other archs if one fails
+
+    steps:
+      # -- Checkout the repository code --
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      # -- Setup the Go environment --
+      # Uses the '1.x' major version for Go
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod" # Reads version from go.mod
+          cache: true # Cache dependencies
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Run tests
+        if: matrix.goarch == 'amd64' # Only test on native arch
+        run: go test -v ./...
+
+      # -- Build the Go CLI binary --
+      # The '-o' flag specifies the output filename (ortelius-cli)
+      # The './cmd/cli' assumes the main function is in that directory
+      - name: Build binaries
+        run: |
+          mkdir -p build/${{ matrix.goos }}-${{ matrix.goarch }}
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o build/${{ matrix.goos }}-${{ matrix.goarch }}/ortelius-cli.exe .
+          else
+            GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o build/${{ matrix.goos }}-${{ matrix.goarch }}/ortelius-cli .
+          fi
+
+      # -- Archive and upload the binary as an artifact --
+      # This makes the compiled executable available for download/use
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ortelius-cli-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: build/${{ matrix.goos }}-${{ matrix.goarch }}
