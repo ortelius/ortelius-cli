@@ -21,32 +21,32 @@ jobs:
       matrix:
         goos: [linux, darwin, windows]
         goarch: [amd64, arm64]
-	  fail-fast: false  # Continue building other archs if one fails
+    fail-fast: false  # Continue building other archs if one fails
 
     steps:
-	  # -- Checkout the repository code --
+  # -- Checkout the repository code --
       - name: Checkout source
         uses: actions/checkout@v4
 
       # -- Setup the Go environment --
-	  # Uses the '1.x' major version for Go
-	  - name: Set up Go
+    # Uses the '1.x' major version for Go
+    - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'   # Reads versuib from go.mod
-		  cache: true  # Cache dependencies
-		  
-	  - name: Install dependencies
-	    run: go mod download
-		
-	  - name: Run tests
-	    if: matrix.goarch == 'amd64'  # Only test on native arch
-		run: go test -v ./...
+      cache: true  # Cache dependencies
+  
+    - name: Install dependencies
+      run: go mod download
+
+       - name: Run tests
+         if: matrix.goarch == 'amd64'  # Only test on native arch
+       run: go test -v ./...
 
       # -- Build the Go CLI binary --
       # The '-o' flag specifies the output filename (ortelius-cli)
       # The './cmd/cli' assumes the main function is in that directory
-	  - name: Build binaries
+      - name: Build binaries
         run: |
           mkdir -p build/${{ matrix.goos }}-${{ matrix.goarch }}
           if [ "${{ matrix.goos }}" = "windows" ]; then
@@ -57,7 +57,7 @@ jobs:
 
       # -- Archive and upload the binary as an artifact --
       # This makes the compiled executable available for download/use
-	  - name: Upload build artifacts
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ortelius-cli-${{ matrix.goos }}-${{ matrix.goarch }}
