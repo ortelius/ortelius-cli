@@ -26,12 +26,12 @@ jobs:
     steps:
       # -- Checkout the repository code --
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
 
       # -- Setup the Go environment --
       # Uses the '1.x' major version for Go
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6
         with:
           go-version-file: "go.mod" # Reads version from go.mod
           cache: true # Cache dependencies
@@ -58,7 +58,7 @@ jobs:
       # -- Archive and upload the binary as an artifact --
       # This makes the compiled executable available for download/use
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
         with:
           name: ortelius-cli-${{ matrix.goos }}-${{ matrix.goarch }}
           path: build/${{ matrix.goos }}-${{ matrix.goarch }}
